@@ -14,8 +14,8 @@ ${EIGEN_INCLUDE_DIRS}
 # ${EIGEN_INCLUDE_DIR}/unsupported
 ${OpenCV_INCLUDE_DIRS})
 
-# Build local library
-#####################
+# Find project files
+####################
 
 set(GeneralFeatureTracker_SOURCE_FILES
     src/FeatureTracker.cpp
@@ -26,12 +26,24 @@ set(GeneralFeatureTracker_HEADER_FILES
     include/FeatureTracker.h
 )
 
+# optional dependency: yaml-cpp
+find_package(yaml-cpp QUIET)
+if(yaml-cpp_FOUND)
+    message("Including optional dependency yaml-cpp")
+    list(APPEND GeneralFeatureTracker_SOURCE_FILES
+    src/Configure.cpp)
+    list(APPEND GeneralFeatureTracker_HEADER_FILES
+    include/Configure.h)
+endif()
+
 # Add files from within the project
 add_library(GeneralFeatureTracker
     ${GeneralFeatureTracker_SOURCE_FILES}
     ${GeneralFeatureTracker_HEADER_FILES}
 )
 
+# Build local library
+#####################
 target_include_directories(GeneralFeatureTracker PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>  
     $<INSTALL_INTERFACE:include>
@@ -40,6 +52,7 @@ target_include_directories(GeneralFeatureTracker PUBLIC
 
 target_link_libraries(GeneralFeatureTracker
     ${OpenCV_LIBS}
+    yaml-cpp
     # Eigen3::Eigen
 )
 

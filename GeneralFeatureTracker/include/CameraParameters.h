@@ -1,10 +1,13 @@
+#pragma once
+
 #include "eigen3/Eigen/Dense"
 #include "opencv2/core/core.hpp"
 #include "opencv2/core/eigen.hpp"
 #include <vector>
 
+namespace GFT {
 struct CameraParameters {
-    CameraParameters(cv::Mat K, std::vector<double> distortionParams={0,0,0,0}, Eigen::Matrix4d pose=Eigen::Matrix4d::Identity()) {
+    CameraParameters(cv::Mat K, Eigen::Matrix4d pose=Eigen::Matrix4d::Identity(), std::vector<double> distortionParams={0,0,0,0}) {
         assert(K.rows == 3 && K.cols == 3);
         
         this->K = K;
@@ -22,3 +25,4 @@ struct CameraParameters {
     std::vector<double> distortionParams;
     Eigen::Matrix<double, 3,4> P; // Rectified projection matrix
 };
+}
