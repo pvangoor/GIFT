@@ -11,6 +11,8 @@
 #include "iostream"
 #include "string"
 
+using namespace GFT;
+
 void FeatureTracker::processImage(const Mat &image) {
     processImages(vector<Mat>({image}));
 }
@@ -28,7 +30,7 @@ void FeatureTracker::processImages(const vector<Mat> &images) {
     vector<vector<Point2f>> newFeatures;
     for (int i=0; i<images.size(); ++i) {
         vector<Point2f> cameraFeatures = this->detectNewFeatures(images[i]);
-        cv::undistortPoints(cameraFeatures, cameraFeatures, cameras[i].K, cameras[i].distortionParams);
+        // cv::undistortPoints(cameraFeatures, cameraFeatures, cameras[i].K, cameras[i].distortionParams);
         newFeatures.emplace_back(cameraFeatures);
     }
 
@@ -135,7 +137,7 @@ vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> feat
         foundLandmarks.emplace_back(lm);
     }
 
-    return landmarks;
+    return foundLandmarks;
 }
 
 MODE::TrackerMode FeatureTracker::readMode(String modeName) {
@@ -155,7 +157,7 @@ MODE::TrackerMode FeatureTracker::readMode(String modeName) {
 }
 
 void FeatureTracker::setCameraConfiguration(int cameraNumber, const CameraParameters &configuration) {
-    assert(!(mode == MODE::MONO));
+    assert(cameraNumber == 0 || !(mode == MODE::MONO));
     assert(cameraNumber <= cameras.size());
     if (cameras.size() > cameraNumber) {
         cameras[cameraNumber] = configuration;
@@ -168,6 +170,7 @@ void FeatureTracker::setCameraConfiguration(int cameraNumber, const CameraParame
 
 FeatureTracker::FeatureTracker(MODE::TrackerMode mode) {
     this->mode = mode;
+
 }
 
 vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image, int cameraNumber) const {
@@ -176,7 +179,7 @@ vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image, int cameraNu
     cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
 
     vector<Point2f> proposedFeatures;
-    goodFeaturesToTrack(image, proposedFeatures, 2*numFeatures, 0.001, featureDist);
+    goodFeaturesToTrack(imageGrey, proposedFeatures, 2*numFeatures, 0.001, featureDist);
 
     // Remove duplicate features
     vector<Point2f> newFeatures;
@@ -199,6 +202,8 @@ vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image, int cameraNu
 
 void FeatureTracker::addNewLandmarks(vector<Landmark> newLandmarks) {
     for (auto & lm : newLandmarks) {
+        if (landmarks.size() >= numFeatures) break;
+
         lm.idNumber = ++currentNumber;
         landmarks.emplace_back(lm);
     }

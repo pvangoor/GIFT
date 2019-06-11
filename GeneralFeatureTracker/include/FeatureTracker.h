@@ -2,8 +2,7 @@
 // Created by pieter on 31/03/19.
 //
 
-#ifndef FEATURETRACKER_H
-#define FEATURETRACKER_H
+#pragma once
 
 #include "CameraParameters.h"
 #include "eigen3/Eigen/Dense"
@@ -15,6 +14,8 @@
 using namespace Eigen;
 using namespace std;
 using namespace cv;
+
+namespace GFT {
 
 namespace MODE {
     enum TrackerMode {
@@ -40,7 +41,7 @@ private:
     Ptr<Feature2D> describer = ORB::create(numFeatures, 1.2f, 8, 63, 0, 2, ORB::HARRIS_SCORE, 63); // feature describer;
     Ptr<BFMatcher> bfMatcher = BFMatcher::create(cv::NORM_HAMMING, true);
 
-    MODE::TrackerMode mode = MODE::STEREO;
+    MODE::TrackerMode mode = MODE::MONO;
 
     double fundamentalThreshold = 0.01;
 
@@ -51,16 +52,6 @@ private:
     double maxDepth = 1e6;
 
     Matrix3d fundamentalMatrix;
-
-
-//    // Variables used in tracking
-//    Mat prevImageLeft;
-//    Mat prevImageRight;
-//
-//    vector<Point2f> leftTrackedPoints, rightTrackedPoints;
-//    vector<Vector3d> landmarks;
-//    vector<int> numbers;
-
 
     vector<CameraParameters> cameras;
 
@@ -95,5 +86,4 @@ protected:
 
 };
 
-
-#endif //FEATURETRACKER_H
+}
