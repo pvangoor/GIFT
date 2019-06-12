@@ -4,13 +4,11 @@
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
-// #include "opencv2/core/types.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
+// #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/features2d/features2d.hpp"
-// #include "opencv2/video/tracking.hpp"
 
 #include "GeneralFeatureTracker/FeatureTracker.h"
-#include "GeneralFeatureTracker/CameraParameters.h"
+// #include "GeneralFeatureTracker/CameraParameters.h"
 #include "GeneralFeatureTracker/Configure.h"
 
 int main(int argc, char *argv[]) {
