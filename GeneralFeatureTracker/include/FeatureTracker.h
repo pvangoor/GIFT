@@ -25,7 +25,8 @@ namespace MODE {
 
 struct Landmark {
     vector<Point2f> camCoordinates;
-    Vector3d position;
+    vector<Point2f> camCoordinatesNorm;
+    Vector3d position = Vector3d::Zero();
     int idNumber;
 };
 
@@ -74,7 +75,7 @@ protected:
     MODE::TrackerMode readMode(String modeName);
 
     vector<Point2f> detectNewFeatures(const Mat &image, int cameraNumber=0) const;
-    vector<Landmark> matchImageFeatures(vector<vector<Point2f>> features, vector<Mat> images) const;
+    vector<Landmark> matchImageFeatures(vector<vector<Point2f>> features, vector<vector<Point2f>> featuresNorm, vector<Mat> images) const;
     void addNewLandmarks(vector<Landmark> newLandmarks);
     void computeLandmarkPositions();
 

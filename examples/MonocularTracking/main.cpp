@@ -7,9 +7,11 @@
 // #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/features2d/features2d.hpp"
 
-#include "GeneralFeatureTracker/FeatureTracker.h"
+// #include "GeneralFeatureTracker/FeatureTracker.h"
 // #include "GeneralFeatureTracker/CameraParameters.h"
-#include "GeneralFeatureTracker/Configure.h"
+// #include "GeneralFeatureTracker/Configure.h"
+#include "FeatureTracker.h"
+#include "Configure.h"
 
 int main(int argc, char *argv[]) {
     cv::String folderName = "/home/pieter/Documents/Datasets/rectified/image_0";

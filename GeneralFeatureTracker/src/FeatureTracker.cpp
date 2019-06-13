@@ -28,13 +28,15 @@ void FeatureTracker::processImages(const vector<Mat> &images) {
 
     // Find potential new features
     vector<vector<Point2f>> newFeatures;
+    vector<vector<Point2f>> newFeaturesNorm;
     for (int i=0; i<images.size(); ++i) {
         vector<Point2f> cameraFeatures = this->detectNewFeatures(images[i]);
-        // cv::undistortPoints(cameraFeatures, cameraFeatures, cameras[i].K, cameras[i].distortionParams);
-        newFeatures.emplace_back(cameraFeatures);
+        vector<Point2f> cameraFeaturesNorm;
+        cv::undistortPoints(cameraFeatures, cameraFeaturesNorm, cameras[i].K, cameras[i].distortionParams);
+        newFeaturesNorm.emplace_back(cameraFeaturesNorm);
     }
 
-    vector<Landmark> newLandmarks = this->matchImageFeatures(newFeatures, images);
+    vector<Landmark> newLandmarks = this->matchImageFeatures(newFeatures, newFeaturesNorm, images);
     this->addNewLandmarks(newLandmarks);
     this->computeLandmarkPositions();
 
@@ -95,11 +97,15 @@ void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
     vector<float> err;
     calcOpticalFlowPyrLK(previousImages[cameraNumber], image, oldPoints, points, status, err);
 
+    vector<Point2f> pointsNorm;
+    cv::undistortPoints(cameraFeatures, cameraFeaturesNorm, cameras[cameraNumber].K, cameras[cameraNumber].distortionParams);
+
     for (long int i=points.size()-1; i >= 0; --i) {
         if (status[i] == 0) {
             landmarks.erase(landmarks.begin() + i);
         } else {
             landmarks[i].camCoordinates[cameraNumber] = points[i];
+            landmarks[i].camCoordinatesNorm[cameraNumber] = pointsNorm[i];
         }
     }
 }
@@ -123,12 +129,14 @@ bool FeatureTracker::checkStereoQuality(const Point2f &leftKp, const Point2f &ri
     }
 }
 
-vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> features, vector<Mat> images) const {
+vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> features, vector<vector<Point2f>> featuresNorm, vector<Mat> images) const {
     vector<Landmark> foundLandmarks;
     for (int i=0; i<features[0].size(); ++i) {
         Landmark lm;
         Point2f proposedFeature = features[0][i];
+        Point2f proposedFeatureNorm = features[0][i];
         lm.camCoordinates.emplace_back(proposedFeature);
+        lm.camCoordinatesNorm.emplace_back(proposedFeatureNorm);
 
         if (mode == MODE::STEREO) {
             // TODO

@@ -1,6 +1,6 @@
 # include_directories(${PROJECT_SOURCE_DIR}/include)
 
-find_package(GeneralFeatureTracker)
+# find_package(GeneralFeatureTracker)
 find_package(OpenCV 3 REQUIRED)
 
 add_executable(MonocularTracking main.cpp)
