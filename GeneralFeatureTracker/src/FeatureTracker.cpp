@@ -100,7 +100,7 @@ void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
     calcOpticalFlowPyrLK(previousImages[cameraNumber], image, oldPoints, points, status, err);
 
     vector<Point2f> pointsNorm;
-    cv::undistortPoints(cameraFeatures, cameraFeaturesNorm, cameras[cameraNumber].K, cameras[cameraNumber].distortionParams);
+    cv::undistortPoints(points, pointsNorm, cameras[cameraNumber].K, cameras[cameraNumber].distortionParams);
 
     for (long int i=points.size()-1; i >= 0; --i) {
         if (status[i] == 0) {
@@ -112,7 +112,7 @@ void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
     }
 }
 
-vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> features, vector<Mat> images) const {
+vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> features, vector<vector<Point2f>> featuresNorm, vector<Mat> images) const {
     vector<Landmark> foundLandmarks;
     for (int i=0; i<features[0].size(); ++i) {
         Landmark lm;
