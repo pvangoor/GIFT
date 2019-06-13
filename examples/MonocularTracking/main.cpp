@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     cv::String folderName = "/home/pieter/Documents/Datasets/rectified/image_0";
 
     // Set up a monocular feature tracker
-    GFT::FeatureTracker ft = GFT::FeatureTracker(GFT::MODE::MONO);
+    GFT::FeatureTracker ft = GFT::FeatureTracker(GFT::TrackerMode::MONO);
     GFT::CameraParameters cam0 = GFT::readCameraConfig(folderName+"/cam0.yaml");
     ft.setCameraConfiguration(0, cam0);
 
