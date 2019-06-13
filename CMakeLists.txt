@@ -17,9 +17,7 @@ if(NOT TARGET uninstall)
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()
 
-
-option( BUILD_EXAMPLES "Build Tools" ON )
-
+option( BUILD_EXAMPLES "Build Tools" OFF)
 if(BUILD_EXAMPLES)
     message("Building the examples...")
     add_subdirectory(examples)

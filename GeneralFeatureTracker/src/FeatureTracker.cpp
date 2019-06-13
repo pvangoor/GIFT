@@ -44,12 +44,12 @@ void FeatureTracker::processImages(const vector<Mat> &images) {
 
 void FeatureTracker::computeLandmarkPositions() {
     for (auto & lm : landmarks) {
-        if (mode == MODE::MONO) {
+        if (mode == TrackerMode::MONO) {
             lm.position << lm.camCoordinates[0].x, lm.camCoordinates[0].y, 1;
             lm.position.normalize();
         }
 
-        if (mode == MODE::STEREO) {
+        if (mode == TrackerMode::STEREO) {
             lm.position = this->solveStereo(lm.camCoordinates[0], lm.camCoordinates[1]);
         }
     }
@@ -65,23 +65,25 @@ Vector3d FeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& right
     return position;
 }
 
-// Vector3d FeatureTracker::triangulateLS(const Point2f &leftKp, const Point2f &rightKp) {
-//     Matrix<double,6,4> solutionMat;
+Vector3d FeatureTracker::solveMultiView(const vector<Point2f> imageCoordinates) const {
+    int camNum = cameras.size();
+    assert(imageCoordinates.size() == cameras.size());
+    assert(camNum >= 2);
 
-//     Vector3d eigLeftKp, eigRightKp;
-//     eigLeftKp << leftKp.x, leftKp.y, 1;
-//     eigRightKp << rightKp.x, rightKp.y, 1;
+    MatrixXd solutionMat(3*camNum, 4);
 
-//     solutionMat.block<3,4>(0,0) = skew_matrix(eigLeftKp) * leftCam.P;
-//     solutionMat.block<3,4>(3,0) = skew_matrix(eigRightKp) * rightCam.P;
+    for (int i=0; i<camNum; ++i) {
+        Vector3d imageCoord;
+        imageCoord << imageCoordinates[i].x, imageCoordinates[i].y, 1;
+        solutionMat.block<3,4>(3*i,0) = skew_matrix(imageCoord) * cameras[i].P;
+    }
 
-//     JacobiSVD<MatrixXd> svd(solutionMat, ComputeThinU | ComputeFullV);
-//     Vector4d pHom = svd.matrixV().block<4,1>(0,3);
+    JacobiSVD<MatrixXd> svd(solutionMat, ComputeThinU | ComputeFullV);
+    Vector4d positionHomogeneous = svd.matrixV().block<4,1>(0,3);
 
-// //    cout << "pHom" << endl << pHom << endl;
-//     Vector3d p = pHom.block<3,1>(0,0) / pHom(3);
-//     return p;
-// }
+    Vector3d position = positionHomogeneous.block<3,1>(0,0) / positionHomogeneous(3);
+    return position;
+}
 
 void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
     if (previousImages.empty()) return;
@@ -110,26 +112,7 @@ void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
     }
 }
 
-bool FeatureTracker::checkStereoQuality(const Point2f &leftKp, const Point2f &rightKp) {
-    switch(mode) {
-        case MODE::MULTIVIEW : {
-            Vector3d homLeft, homRight;
-            homLeft << leftKp.x, leftKp.y, 1;
-            homRight << rightKp.x, rightKp.y, 1;
-
-            double quality = (homLeft.transpose() * fundamentalMatrix * homRight);
-            return (quality <= fundamentalThreshold);
-        }
-        case MODE::STEREO : {
-            return (abs(leftKp.y - rightKp.y) <= stereoThreshold);
-        }
-        default : {
-            return true;
-        }
-    }
-}
-
-vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> features, vector<vector<Point2f>> featuresNorm, vector<Mat> images) const {
+vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> features, vector<Mat> images) const {
     vector<Landmark> foundLandmarks;
     for (int i=0; i<features[0].size(); ++i) {
         Landmark lm;
@@ -138,7 +121,7 @@ vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> feat
         lm.camCoordinates.emplace_back(proposedFeature);
         lm.camCoordinatesNorm.emplace_back(proposedFeatureNorm);
 
-        if (mode == MODE::STEREO) {
+        if (mode == TrackerMode::STEREO) {
             // TODO
         }
 
@@ -148,24 +131,8 @@ vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> feat
     return foundLandmarks;
 }
 
-MODE::TrackerMode FeatureTracker::readMode(String modeName) {
-//    if (modeName == "monocular") {
-//        return MONO;
-//    }
-    if (modeName == "mono") {
-        return MODE::MONO;
-    }
-    if (modeName == "stereo") {
-        return MODE::STEREO;
-    }
-    if (modeName == "multiview") {
-        return MODE::MULTIVIEW;
-    }
-    return MODE::MULTIVIEW;
-}
-
 void FeatureTracker::setCameraConfiguration(int cameraNumber, const CameraParameters &configuration) {
-    assert(cameraNumber == 0 || !(mode == MODE::MONO));
+    assert(cameraNumber == 0 || !(mode == TrackerMode::MONO));
     assert(cameraNumber <= cameras.size());
     if (cameras.size() > cameraNumber) {
         cameras[cameraNumber] = configuration;
@@ -176,7 +143,7 @@ void FeatureTracker::setCameraConfiguration(int cameraNumber, const CameraParame
 }
 
 
-FeatureTracker::FeatureTracker(MODE::TrackerMode mode) {
+FeatureTracker::FeatureTracker(TrackerMode mode) {
     this->mode = mode;
 
 }
@@ -187,7 +154,7 @@ vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image, int cameraNu
     cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
 
     vector<Point2f> proposedFeatures;
-    goodFeaturesToTrack(imageGrey, proposedFeatures, 2*numFeatures, 0.001, featureDist);
+    goodFeaturesToTrack(imageGrey, proposedFeatures, 2*maxFeatures, 0.001, featureDist);
 
     // Remove duplicate features
     vector<Point2f> newFeatures;
@@ -210,7 +177,7 @@ vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image, int cameraNu
 
 void FeatureTracker::addNewLandmarks(vector<Landmark> newLandmarks) {
     for (auto & lm : newLandmarks) {
-        if (landmarks.size() >= numFeatures) break;
+        if (landmarks.size() >= maxFeatures) break;
 
         lm.idNumber = ++currentNumber;
         landmarks.emplace_back(lm);
