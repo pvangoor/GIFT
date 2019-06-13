@@ -63,7 +63,7 @@ Vector3d FeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& right
     return position;
 }
 
-Vector3d FeatureTracker::triangulateLS(const vector<Point2f> imageCoordinates) const {
+Vector3d FeatureTracker::solveMultiView(const vector<Point2f> imageCoordinates) const {
     int camNum = cameras.size();
     assert(imageCoordinates.size() == cameras.size());
     assert(camNum >= 2);
