@@ -79,7 +79,7 @@ protected:
     void computeLandmarkPositions();
 
     Vector3d solveStereo(const Point2f& leftKp, const Point2f& rightKp) const;
-    Vector3d triangulateLS(const Point2f& leftKp, const Point2f& rightKp);
+    Vector3d triangulateLS(const vector<Point2f> imageCoordinates) const;
     bool checkStereoQuality(const Point2f &leftKp, const Point2f &rightKp);
     void trackLandmarks(const Mat &image, int cameraNumber);
 //    void trackExistingFeatures(const cv::Mat &image, vector<Vector3d>& features)

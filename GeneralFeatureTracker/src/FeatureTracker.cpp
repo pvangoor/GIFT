@@ -63,23 +63,25 @@ Vector3d FeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& right
     return position;
 }
 
-// Vector3d FeatureTracker::triangulateLS(const Point2f &leftKp, const Point2f &rightKp) {
-//     Matrix<double,6,4> solutionMat;
+Vector3d FeatureTracker::triangulateLS(const vector<Point2f> imageCoordinates) const {
+    int camNum = cameras.size();
+    assert(imageCoordinates.size() == cameras.size());
+    assert(camNum >= 2);
 
-//     Vector3d eigLeftKp, eigRightKp;
-//     eigLeftKp << leftKp.x, leftKp.y, 1;
-//     eigRightKp << rightKp.x, rightKp.y, 1;
+    MatrixXd solutionMat(3*camNum, 4);
 
-//     solutionMat.block<3,4>(0,0) = skew_matrix(eigLeftKp) * leftCam.P;
-//     solutionMat.block<3,4>(3,0) = skew_matrix(eigRightKp) * rightCam.P;
+    for (int i=0; i<camNum; ++i) {
+        Vector3d imageCoord;
+        imageCoord << imageCoordinates[i].x, imageCoordinates[i].y, 1;
+        solutionMat.block<3,4>(3*i,0) = skew_matrix(imageCoord) * cameras[i].P;
+    }
 
-//     JacobiSVD<MatrixXd> svd(solutionMat, ComputeThinU | ComputeFullV);
-//     Vector4d pHom = svd.matrixV().block<4,1>(0,3);
+    JacobiSVD<MatrixXd> svd(solutionMat, ComputeThinU | ComputeFullV);
+    Vector4d positionHomogeneous = svd.matrixV().block<4,1>(0,3);
 
-// //    cout << "pHom" << endl << pHom << endl;
-//     Vector3d p = pHom.block<3,1>(0,0) / pHom(3);
-//     return p;
-// }
+    Vector3d position = positionHomogeneous.block<3,1>(0,0) / positionHomogeneous(3);
+    return position;
+}
 
 void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
     if (previousImages.empty()) return;
