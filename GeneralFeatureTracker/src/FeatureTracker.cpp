@@ -45,17 +45,18 @@ void FeatureTracker::processImages(const vector<Mat> &images) {
 void FeatureTracker::computeLandmarkPositions() {
     for (auto & lm : landmarks) {
         if (mode == TrackerMode::MONO) {
-            lm.position << lm.camCoordinates[0].x, lm.camCoordinates[0].y, 1;
+            lm.position << lm.camCoordinatesNorm[0].x, lm.camCoordinatesNorm[0].y, 1;
             lm.position.normalize();
         }
 
         if (mode == TrackerMode::STEREO) {
-            lm.position = this->solveStereo(lm.camCoordinates[0], lm.camCoordinates[1]);
+            lm.position = this->solveStereo(lm.camCoordinatesNorm[0], lm.camCoordinatesNorm[1]);
         }
     }
 }
 
 Vector3d FeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& rightKp) const {
+    assert(leftKp.x > rightKp.x);
     Vector3d position;
     position << leftKp.x, leftKp.y, 1;
 
@@ -65,16 +66,16 @@ Vector3d FeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& right
     return position;
 }
 
-Vector3d FeatureTracker::solveMultiView(const vector<Point2f> imageCoordinates) const {
+Vector3d FeatureTracker::solveMultiView(const vector<Point2f> imageCoordinatesNorm) const {
     int camNum = cameras.size();
-    assert(imageCoordinates.size() == cameras.size());
+    assert(imageCoordinatesNorm.size() == cameras.size());
     assert(camNum >= 2);
 
     MatrixXd solutionMat(3*camNum, 4);
 
     for (int i=0; i<camNum; ++i) {
         Vector3d imageCoord;
-        imageCoord << imageCoordinates[i].x, imageCoordinates[i].y, 1;
+        imageCoord << imageCoordinatesNorm[i].x, imageCoordinatesNorm[i].y, 1;
         solutionMat.block<3,4>(3*i,0) = skew_matrix(imageCoord) * cameras[i].P;
     }
 
@@ -185,7 +186,7 @@ void FeatureTracker::addNewLandmarks(vector<Landmark> newLandmarks) {
 }
 
 
-Eigen::Matrix3d skew_matrix(const Eigen::Vector3d& t){
+Eigen::Matrix3d GFT::skew_matrix(const Eigen::Vector3d& t){
     Eigen::Matrix3d t_hat;
     t_hat << 0, -t(2), t(1),
             t(2), 0, -t(0),

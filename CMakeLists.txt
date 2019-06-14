@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(GeneralFeatureTracker
-VERSION 0.0.1)
+VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 17)
 
 
@@ -17,7 +17,7 @@ if(NOT TARGET uninstall)
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()
 
-option( BUILD_EXAMPLES "Build Tools" OFF)
+option( BUILD_EXAMPLES "Build Tools" ON)
 if(BUILD_EXAMPLES)
     message("Building the examples...")
     add_subdirectory(examples)
