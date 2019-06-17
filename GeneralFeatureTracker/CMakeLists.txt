@@ -27,13 +27,15 @@ set(GeneralFeatureTracker_HEADER_FILES
 )
 
 # optional dependency: yaml-cpp
-find_package(yaml-cpp QUIET)
+find_package(yaml-cpp REQUIRED)
 if(yaml-cpp_FOUND)
     message("Including optional dependency yaml-cpp")
     list(APPEND GeneralFeatureTracker_SOURCE_FILES
     src/Configure.cpp)
     list(APPEND GeneralFeatureTracker_HEADER_FILES
     include/Configure.h)
+else()
+    message("yaml-cpp was not found.")
 endif()
 
 # Add files from within the project

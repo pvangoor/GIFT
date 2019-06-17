@@ -33,6 +33,7 @@ void FeatureTracker::processImages(const vector<Mat> &images) {
         vector<Point2f> cameraFeatures = this->detectNewFeatures(images[i]);
         vector<Point2f> cameraFeaturesNorm;
         cv::undistortPoints(cameraFeatures, cameraFeaturesNorm, cameras[i].K, cameras[i].distortionParams);
+        newFeatures.emplace_back(cameraFeatures);
         newFeaturesNorm.emplace_back(cameraFeaturesNorm);
     }
 
@@ -104,7 +105,12 @@ void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
     cv::undistortPoints(points, pointsNorm, cameras[cameraNumber].K, cameras[cameraNumber].distortionParams);
 
     for (long int i=points.size()-1; i >= 0; --i) {
-        if (status[i] == 0) {
+        bool eraseCondition = (status[i] == 0);
+        if (!imageMasks[cameraNumber].empty()) {
+            eraseCondition |= imageMasks[cameraNumber].at<uchar>(points[i]);
+        }
+
+        if (eraseCondition) {
             landmarks.erase(landmarks.begin() + i);
         } else {
             landmarks[i].camCoordinates[cameraNumber] = points[i];
@@ -140,7 +146,8 @@ void FeatureTracker::setCameraConfiguration(int cameraNumber, const CameraParame
     } else {
         // allow cameras to be added via this method
         cameras.emplace_back(configuration);
-        imageMasks.resize(imageMasks.size() + 1);
+        Mat emptyMask;
+        imageMasks.emplace_back(emptyMask);
     }   
 }
 
@@ -156,7 +163,7 @@ vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image, int cameraNu
     cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
 
     vector<Point2f> proposedFeatures;
-    goodFeaturesToTrack(imageGrey, proposedFeatures, 2*maxFeatures, 0.001, featureDist);
+    goodFeaturesToTrack(imageGrey, proposedFeatures, 2*maxFeatures, 0.001, featureDist, imageMasks[cameraNumber]);
 
     // Remove duplicate features
     vector<Point2f> newFeatures;
