@@ -42,6 +42,7 @@ protected:
     int currentNumber = 0;
     vector<Mat> previousImages;
     vector<Landmark> landmarks;
+    vector<Mat> imageMasks;
 
     // Stereo Specific
     double stereoBaseline = 0.1;
@@ -56,6 +57,10 @@ public:
     void processImages(const vector<Mat> &images);
     void processImage(const Mat &image);
     vector<Landmark> outputLandmarks() const { return landmarks; };
+
+    // Masking
+    void setMask(const Mat & mask, int cameraNumber=0);
+    void setMasks(const vector<Mat> & masks);
 
 protected:
     vector<Point2f> detectNewFeatures(const Mat &image, int cameraNumber=0) const;

@@ -140,7 +140,8 @@ void FeatureTracker::setCameraConfiguration(int cameraNumber, const CameraParame
     } else {
         // allow cameras to be added via this method
         cameras.emplace_back(configuration);
-    }
+        imageMasks.resize(imageMasks.size() + 1);
+    }   
 }
 
 
@@ -184,6 +185,17 @@ void FeatureTracker::addNewLandmarks(vector<Landmark> newLandmarks) {
         landmarks.emplace_back(lm);
     }
 }
+
+void FeatureTracker::setMask(const Mat & mask, int cameraNumber) {
+    imageMasks[cameraNumber] = mask;
+}
+
+
+void FeatureTracker::setMasks(const vector<Mat> & masks) {
+    assert(masks.size() == imageMasks.size());
+    imageMasks = masks;
+}
+
 
 
 Eigen::Matrix3d GFT::skew_matrix(const Eigen::Vector3d& t){
