@@ -17,11 +17,11 @@ ${OpenCV_INCLUDE_DIRS})
 # Find project files
 ####################
 
-set(GeneralFeatureTracker_SOURCE_FILES
+set(GIFT_SOURCE_FILES
     src/FeatureTracker.cpp
 )
 
-set(GeneralFeatureTracker_HEADER_FILES
+set(GIFT_HEADER_FILES
     include/CameraParameters.h
     include/FeatureTracker.h
 )
@@ -30,29 +30,29 @@ set(GeneralFeatureTracker_HEADER_FILES
 find_package(yaml-cpp REQUIRED)
 if(yaml-cpp_FOUND)
     message("Including optional dependency yaml-cpp")
-    list(APPEND GeneralFeatureTracker_SOURCE_FILES
+    list(APPEND GIFT_SOURCE_FILES
     src/Configure.cpp)
-    list(APPEND GeneralFeatureTracker_HEADER_FILES
+    list(APPEND GIFT_HEADER_FILES
     include/Configure.h)
 else()
     message("yaml-cpp was not found.")
 endif()
 
 # Add files from within the project
-add_library(GeneralFeatureTracker
-    ${GeneralFeatureTracker_SOURCE_FILES}
-    ${GeneralFeatureTracker_HEADER_FILES}
+add_library(GIFT
+    ${GIFT_SOURCE_FILES}
+    ${GIFT_HEADER_FILES}
 )
 
 # Build local library
 #####################
-target_include_directories(GeneralFeatureTracker PUBLIC
+target_include_directories(GIFT PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>  
     $<INSTALL_INTERFACE:include>
     ${ADDITIONAL_INCLUDE_DIRS}
 )
 
-target_link_libraries(GeneralFeatureTracker
+target_link_libraries(GIFT
     ${OpenCV_LIBS}
     yaml-cpp
     # Eigen3::Eigen
@@ -75,10 +75,10 @@ configure_package_config_file(
 
 
 # Export '<PROJECT-NAME>Targets.cmake' to build dir (to find package in build dir without install)
-export(TARGETS GeneralFeatureTracker FILE "${CMAKE_CURRENT_BINARY_DIR}/${targets_export_name}.cmake")
+export(TARGETS GIFT FILE "${CMAKE_CURRENT_BINARY_DIR}/${targets_export_name}.cmake")
 
 # # Targets:
-install(TARGETS GeneralFeatureTracker
+install(TARGETS GIFT
         EXPORT "${targets_export_name}"
         LIBRARY DESTINATION "lib"
         ARCHIVE DESTINATION "lib"
