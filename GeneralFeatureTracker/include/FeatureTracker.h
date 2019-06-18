@@ -51,7 +51,7 @@ protected:
 public:
     // Initialisation and configuration
     FeatureTracker(TrackerMode mode = TrackerMode::MONO);
-    void setCameraConfiguration(int cameraNumber, const CameraParameters &configuration);
+    void setCameraConfiguration(const CameraParameters &configuration, int cameraNumber=0);
 
     // Core
     void processImages(const vector<Mat> &images);
@@ -64,6 +64,8 @@ public:
 
 protected:
     vector<Point2f> detectNewFeatures(const Mat &image, int cameraNumber=0) const;
+    vector<vector<Point2f>> detectNewStereoFeatures(const cv::Mat & imageLeft, const cv::Mat &imageRight) const;
+    vector<Point2f> removeDuplicateFeatures(const vector<Point2f> &proposedFeatures, int cameraNumber=0) const;
     vector<Landmark> matchImageFeatures(vector<vector<Point2f>> features, vector<vector<Point2f>> featuresNorm, vector<Mat> images) const;
 
     void trackLandmarks(const Mat &image, int cameraNumber);

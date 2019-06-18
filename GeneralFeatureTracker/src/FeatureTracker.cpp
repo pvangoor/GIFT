@@ -28,15 +28,24 @@ void FeatureTracker::processImages(const vector<Mat> &images) {
 
     // Find potential new features
     vector<vector<Point2f>> newFeatures;
+    if (mode == TrackerMode::STEREO) {
+        newFeatures = this->detectNewStereoFeatures(images[0], images[1]);
+    } else {
+        for (int i=0; i<images.size(); ++i) {
+            vector<Point2f> cameraFeatures = this->detectNewFeatures(images[i]);
+            newFeatures.emplace_back(cameraFeatures);
+        }
+    }
+
+    // Normalise new features
     vector<vector<Point2f>> newFeaturesNorm;
-    for (int i=0; i<images.size(); ++i) {
-        vector<Point2f> cameraFeatures = this->detectNewFeatures(images[i]);
+    for (int i=0; i<cameras.size(); ++i) {
         vector<Point2f> cameraFeaturesNorm;
-        cv::undistortPoints(cameraFeatures, cameraFeaturesNorm, cameras[i].K, cameras[i].distortionParams);
-        newFeatures.emplace_back(cameraFeatures);
+        cv::undistortPoints(newFeatures[i], cameraFeaturesNorm, cameras[i].K, cameras[i].distortionParams);
         newFeaturesNorm.emplace_back(cameraFeaturesNorm);
     }
 
+    // Compute positions and add to state
     vector<Landmark> newLandmarks = this->matchImageFeatures(newFeatures, newFeaturesNorm, images);
     this->addNewLandmarks(newLandmarks);
     this->computeLandmarkPositions();
@@ -138,7 +147,7 @@ vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> feat
     return foundLandmarks;
 }
 
-void FeatureTracker::setCameraConfiguration(int cameraNumber, const CameraParameters &configuration) {
+void FeatureTracker::setCameraConfiguration(const CameraParameters &configuration, int cameraNumber) {
     assert(cameraNumber == 0 || !(mode == TrackerMode::MONO));
     assert(cameraNumber <= cameras.size());
     if (cameras.size() > cameraNumber) {
@@ -158,14 +167,48 @@ FeatureTracker::FeatureTracker(TrackerMode mode) {
 }
 
 vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image, int cameraNumber) const {
-    // Obtain possible features
     Mat imageGrey;
     cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
 
     vector<Point2f> proposedFeatures;
     goodFeaturesToTrack(imageGrey, proposedFeatures, 2*maxFeatures, 0.001, featureDist, imageMasks[cameraNumber]);
+    vector<Point2f> newFeatures = this->removeDuplicateFeatures(proposedFeatures, cameraNumber);
 
-    // Remove duplicate features
+    return newFeatures;
+}
+
+vector<vector<Point2f>> FeatureTracker::detectNewStereoFeatures(const cv::Mat &imageLeft, const cv::Mat &imageRight) const {
+    vector<vector<Point2f>> newFeatures(2);
+
+    // Obtain left features
+    Mat imageGreyLeft;
+    cv::cvtColor(imageLeft, imageGreyLeft, cv::COLOR_BGR2GRAY);
+    goodFeaturesToTrack(imageGreyLeft, newFeatures[0], 2*maxFeatures, 0.001, featureDist, imageMasks[0]);
+    newFeatures[0] = this->removeDuplicateFeatures(newFeatures[0]);
+
+    // Track features to the right image
+    vector<uchar> status;
+    vector<float> err;
+    calcOpticalFlowPyrLK(imageLeft, imageRight, newFeatures[0], newFeatures[1], status, err);
+
+    assert(newFeatures[0].size() == newFeatures[1].size());
+
+    for (long int i=newFeatures[0].size()-1; i >= 0; --i) {
+        bool eraseCondition = (status[i] == 0);
+        if (!imageMasks[0].empty()) eraseCondition |= imageMasks[0].at<uchar>(newFeatures[0][i]);
+        if (!imageMasks[1].empty()) eraseCondition |= imageMasks[1].at<uchar>(newFeatures[1][i]);
+
+        if (eraseCondition) {
+            newFeatures[0].erase(newFeatures[0].begin() +i);
+            newFeatures[1].erase(newFeatures[1].begin() +i);
+        }
+    }
+
+    return newFeatures;
+
+}
+
+vector<Point2f> FeatureTracker::removeDuplicateFeatures(const vector<Point2f> &proposedFeatures, int cameraNumber) const {
     vector<Point2f> newFeatures;
     for (const auto & proposedFeature : proposedFeatures) {
         bool useFlag = true;
@@ -180,7 +223,6 @@ vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image, int cameraNu
             newFeatures.emplace_back(proposedFeature);
         }
     }
-
     return newFeatures;
 }
 

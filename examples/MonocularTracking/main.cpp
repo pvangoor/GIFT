@@ -16,10 +16,14 @@
 int main(int argc, char *argv[]) {
     cv::String folderName = "/home/pieter/Documents/Datasets/rectified/image_0";
 
+    cv::Mat mask = cv::Mat::zeros(720,1280,CV_8U);
+    mask(Rect(0, 60, 1250, 500)) = 1;
+
     // Set up a monocular feature tracker
     GFT::FeatureTracker ft = GFT::FeatureTracker(GFT::TrackerMode::MONO);
     GFT::CameraParameters cam0 = GFT::readCameraConfig(folderName+"/cam0.yaml");
-    ft.setCameraConfiguration(0, cam0);
+    ft.setCameraConfiguration(cam0, 0);
+    ft.setMask(mask, 0);
 
     vector<cv::String> imageFileNames;
     cv::glob(folderName+"/*.png", imageFileNames);
