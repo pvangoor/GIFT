@@ -51,9 +51,6 @@ int main(int argc, char *argv[]) {
         std::cout << ++i << " / " << total << std::endl;
     }
 
-
-
-    
-    std::cout << "Hello library!" << std::endl;
+    std::cout << "Complete." << std::endl;
 
 }
