@@ -16,8 +16,8 @@ In the future the dependency on Eigen may be removed.
 GIFT can be built and installed using cmake and make.
 
 ```bash
-git clone https://github.com/pvangoor/GeneralFeatureTracker
-cd GeneralFeatureTracker
+git clone https://github.com/pvangoor/GIFT
+cd GIFT
 mkdir build
 cd build
 cmake ..
