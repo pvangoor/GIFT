@@ -124,7 +124,7 @@ void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
         } else {
             landmarks[i].camCoordinates[cameraNumber] = points[i];
             landmarks[i].camCoordinatesNorm[cameraNumber] = pointsNorm[i];
-            ++landmarks.lifetime;
+            ++landmarks[i].lifetime;
         }
     }
 }
