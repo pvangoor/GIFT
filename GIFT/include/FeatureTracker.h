@@ -26,6 +26,7 @@ struct Landmark {
     vector<Point2f> camCoordinatesNorm;
     Vector3d position = Vector3d::Zero();
     int idNumber;
+    int lifetime = 0;
 };
 
 Eigen::Matrix3d skew_matrix(const Eigen::Vector3d& t);
