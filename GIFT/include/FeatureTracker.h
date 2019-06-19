@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Landmark.h"
 #include "CameraParameters.h"
 #include "eigen3/Eigen/Dense"
 #include <vector>
@@ -19,13 +20,6 @@ namespace GFT {
 
 enum class TrackerMode {
     MONO, STEREO, MULTIVIEW
-};
-
-struct Landmark {
-    vector<Point2f> camCoordinates;
-    vector<Point2f> camCoordinatesNorm;
-    Vector3d position = Vector3d::Zero();
-    int idNumber;
 };
 
 Eigen::Matrix3d skew_matrix(const Eigen::Vector3d& t);
