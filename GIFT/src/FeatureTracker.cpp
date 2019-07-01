@@ -11,7 +11,7 @@
 #include "iostream"
 #include "string"
 
-using namespace GFT;
+using namespace GIFT;
 
 void FeatureTracker::processImage(const Mat &image) {
     processImages(vector<Mat>({image}));
@@ -248,7 +248,7 @@ void FeatureTracker::setMasks(const vector<Mat> & masks) {
 
 
 
-Eigen::Matrix3d GFT::skew_matrix(const Eigen::Vector3d& t){
+Eigen::Matrix3d GIFT::skew_matrix(const Eigen::Vector3d& t){
     Eigen::Matrix3d t_hat;
     t_hat << 0, -t(2), t(1),
             t(2), 0, -t(0),

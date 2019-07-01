@@ -1,14 +1,14 @@
 #include "Configure.h"
 #include "vector"
 
-// using namespace GFT;
+// using namespace GIFT;
 
-GFT::CameraParameters GFT::readCameraConfig(const std::string &fileName) {
+GIFT::CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
     YAML::Node config = YAML::LoadFile(fileName);
 
     Eigen::Matrix3d K;
     if (config["K"]) {
-        K = GFT::convertYamlToMatrix(config["K"]);
+        K = GIFT::convertYamlToMatrix(config["K"]);
     } else {
         throw "The intrinsic matrix is not given.";
     }
@@ -17,12 +17,12 @@ GFT::CameraParameters GFT::readCameraConfig(const std::string &fileName) {
      
     Eigen::Matrix4d pose;
     if (config["pose"]) {
-        pose = GFT::convertYamlToMatrix(config["pose"]);
+        pose = GIFT::convertYamlToMatrix(config["pose"]);
     } else {
         pose.setIdentity();
     }
 
-    GFT::CameraParameters cam = GFT::CameraParameters(cvK, pose);
+    GIFT::CameraParameters cam = GIFT::CameraParameters(cvK, pose);
 
     if (config["distortionParams"]) {
         std::vector<double> distortionParams;
@@ -35,7 +35,7 @@ GFT::CameraParameters GFT::readCameraConfig(const std::string &fileName) {
     return cam;
 }
 
-Eigen::MatrixXd GFT::convertYamlToMatrix(YAML::Node yaml) {
+Eigen::MatrixXd GIFT::convertYamlToMatrix(YAML::Node yaml) {
     int m = yaml["rows"].as<int>();
     int n = yaml["cols"].as<int>();
     Eigen::MatrixXd mat(m, n);

@@ -16,7 +16,7 @@ using namespace Eigen;
 using namespace std;
 using namespace cv;
 
-namespace GFT {
+namespace GIFT {
 
 enum class TrackerMode {
     MONO, STEREO, MULTIVIEW

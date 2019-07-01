@@ -4,9 +4,9 @@
 #include "string"
 #include "yaml-cpp/yaml.h"
 
-namespace GFT {
+namespace GIFT {
 
-GFT::CameraParameters readCameraConfig(const std::string &fileName);
+GIFT::CameraParameters readCameraConfig(const std::string &fileName);
 
 // int testFunc() {
 //     return 5;

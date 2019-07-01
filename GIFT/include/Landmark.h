@@ -1,8 +1,10 @@
+#pragma once
+
 #include <vector>
 #include "eigen3/Eigen/Dense"
 #include "opencv2/core/core.hpp"
 
-namespace GFT {
+namespace GIFT {
 
 struct Landmark {
     std::vector<cv::Point2f> camCoordinates;

@@ -16,8 +16,8 @@ int main(int argc, char *argv[]) {
     mask(Rect(0, 60, 1250, 500)) = 1;
 
     // Set up a monocular feature tracker
-    GFT::FeatureTracker ft = GFT::FeatureTracker(GFT::TrackerMode::MONO);
-    GFT::CameraParameters cam0 = GFT::readCameraConfig(folderName+"/cam0.yaml");
+    GIFT::FeatureTracker ft = GIFT::FeatureTracker(GIFT::TrackerMode::MONO);
+    GIFT::CameraParameters cam0 = GIFT::readCameraConfig(folderName+"/cam0.yaml");
     ft.setCameraConfiguration(cam0, 0);
     ft.setMask(mask, 0);
 
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 
         ft.processImage(image);
 
-        std::vector<GFT::Landmark> landmarks = ft.outputLandmarks();
+        std::vector<GIFT::Landmark> landmarks = ft.outputLandmarks();
         std::vector<cv::Point2f> features;
         for (const auto &lm : landmarks) {
             features.emplace_back(lm.camCoordinates[0]);
