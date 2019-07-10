@@ -134,7 +134,7 @@ vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> feat
     for (int i=0; i<features[0].size(); ++i) {
         Landmark lm;
         Point2f proposedFeature = features[0][i];
-        Point2f proposedFeatureNorm = features[0][i];
+        Point2f proposedFeatureNorm = featuresNorm[0][i];
         lm.camCoordinates.emplace_back(proposedFeature);
         lm.camCoordinatesNorm.emplace_back(proposedFeatureNorm);
 

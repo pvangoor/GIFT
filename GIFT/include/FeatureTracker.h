@@ -29,14 +29,16 @@ protected:
     // Core settings
     TrackerMode mode = TrackerMode::MONO;
     vector<CameraParameters> cameras;
-    int maxFeatures = 500;
-    double featureDist = 20;
 
     // Variables used in the tracking algorithms
     int currentNumber = 0;
     vector<Mat> previousImages;
     vector<Landmark> landmarks;
     vector<Mat> imageMasks;
+
+public:
+    int maxFeatures = 500;
+    double featureDist = 20;
 
     // Stereo Specific
     double stereoBaseline = 0.1;
