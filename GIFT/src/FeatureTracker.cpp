@@ -41,7 +41,9 @@ void FeatureTracker::processImages(const vector<Mat> &images) {
     vector<vector<Point2f>> newFeaturesNorm;
     for (int i=0; i<cameras.size(); ++i) {
         vector<Point2f> cameraFeaturesNorm;
-        cv::undistortPoints(newFeatures[i], cameraFeaturesNorm, cameras[i].K, cameras[i].distortionParams);
+        if (!newFeatures[i].empty()) {
+            cv::undistortPoints(newFeatures[i], cameraFeaturesNorm, cameras[i].K, cameras[i].distortionParams);
+        }
         newFeaturesNorm.emplace_back(cameraFeaturesNorm);
     }
 
