@@ -26,7 +26,8 @@ void FeatureTracker::processImages(const vector<Mat> &images) {
     }
     if (this->previousImages.empty()) {
         for (const Mat &image: images) {
-            Mat copyImage = Mat(image);
+            Mat copyImage;
+            image.copyTo(copyImage);
             this->previousImages.emplace_back(copyImage);
         }
     } else {

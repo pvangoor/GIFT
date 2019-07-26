@@ -11,14 +11,15 @@
 #include "Configure.h"
 
 int main(int argc, char *argv[]) {
-    cv::String folderName = "/home/pieter/Documents/Datasets/ardupilot/flight1/";
+    cv::String folderName = "/home/pieter/datasets/";
 
     // Set up a monocular feature tracker
     GIFT::FeatureTracker ft = GIFT::FeatureTracker(GIFT::TrackerMode::MONO);
-    GIFT::CameraParameters cam0 = GIFT::readCameraConfig(folderName+"/cam0.yaml");
+    GIFT::CameraParameters cam0 = GIFT::readCameraConfig(folderName+"euroc.yaml");
     ft.setCameraConfiguration(cam0, 0);
+    ft.maxFeatures = 50;
 
-    cv::VideoCapture cap(folderName+"small.mp4");
+    cv::VideoCapture cap(folderName+"euroc.mp4");
     cv::namedWindow("debug");
 
     cv::Mat image;
