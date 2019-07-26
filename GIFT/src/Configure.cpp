@@ -1,14 +1,14 @@
 #include "Configure.h"
 #include "vector"
 
-// using namespace GIFT;
+using namespace GIFT;
 
-GIFT::CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
+CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
     YAML::Node config = YAML::LoadFile(fileName);
 
     Eigen::Matrix3d K;
     if (config["K"]) {
-        K = GIFT::convertYamlToMatrix(config["K"]);
+        K = convertYamlToMatrix(config["K"]);
     } else {
         throw "The intrinsic matrix is not given.";
     }
@@ -17,12 +17,12 @@ GIFT::CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
      
     Eigen::Matrix4d pose;
     if (config["pose"]) {
-        pose = GIFT::convertYamlToMatrix(config["pose"]);
+        pose = convertYamlToMatrix(config["pose"]);
     } else {
         pose.setIdentity();
     }
 
-    GIFT::CameraParameters cam = GIFT::CameraParameters(cvK, pose);
+    CameraParameters cam = CameraParameters(cvK, pose);
 
     if (config["distortionParams"]) {
         std::vector<double> distortionParams;
