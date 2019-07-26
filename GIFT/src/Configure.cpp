@@ -10,7 +10,7 @@ CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
     if (config["K"]) {
         K = convertYamlToMatrix(config["K"]);
     } else {
-        throw "The intrinsic matrix is not given.";
+        throw("The intrinsic matrix is not given.");
     }
     cv::Mat cvK;
     cv::eigen2cv(K, cvK);

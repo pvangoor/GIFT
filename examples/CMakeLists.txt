@@ -1,1 +1,2 @@
 add_subdirectory(MonocularTracking)
+add_subdirectory(EgoMotion)
