@@ -133,6 +133,8 @@ void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
         if (eraseCondition) {
             landmarks.erase(landmarks.begin() + i);
         } else {
+            landmarks[i].opticalFlowRaw[cameraNumber] = Vector2d(landmarks[i].camCoordinates[cameraNumber].x - points[i].x,landmarks[i].camCoordinates[cameraNumber].y - points[i].y);
+            landmarks[i].opticalFlowNorm[cameraNumber] = Vector2d(landmarks[i].camCoordinatesNorm[cameraNumber].x - pointsNorm[i].x,landmarks[i].camCoordinatesNorm[cameraNumber].y - pointsNorm[i].y);
             landmarks[i].camCoordinates[cameraNumber] = points[i];
             landmarks[i].camCoordinatesNorm[cameraNumber] = pointsNorm[i];
             ++landmarks[i].lifetime;
@@ -148,6 +150,8 @@ vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> feat
         Point2f proposedFeatureNorm = featuresNorm[0][i];
         lm.camCoordinates.emplace_back(proposedFeature);
         lm.camCoordinatesNorm.emplace_back(proposedFeatureNorm);
+        lm.opticalFlowRaw.emplace_back(Vector2d::Zero());
+        lm.opticalFlowNorm.emplace_back(Vector2d::Zero());
 
         if (mode == TrackerMode::STEREO) {
             // TODO
