@@ -25,6 +25,7 @@ set(GIFT_HEADER_FILES
     include/CameraParameters.h
     include/FeatureTracker.h
     include/Landmark.h
+    include/EgoMotion.h
 )
 
 # optional dependency: yaml-cpp

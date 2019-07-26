@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     GIFT::FeatureTracker ft = GIFT::FeatureTracker(GIFT::TrackerMode::MONO);
     GIFT::CameraParameters cam0 = GIFT::readCameraConfig(folderName+"euroc.yaml");
     ft.setCameraConfiguration(cam0, 0);
-    ft.maxFeatures = 50;
+    ft.maxFeatures = 250;
 
     cv::VideoCapture cap(folderName+"euroc.mp4");
     cv::namedWindow("debug");

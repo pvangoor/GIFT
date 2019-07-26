@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Landmark.h"
+#include "EgoMotion.h"
 #include "CameraParameters.h"
 #include "eigen3/Eigen/Dense"
 #include <vector>
@@ -57,6 +58,9 @@ public:
     // Masking
     void setMask(const Mat & mask, int cameraNumber=0);
     void setMasks(const vector<Mat> & masks);
+
+    // EgoMotion
+    EgoMotion computeEgoMotion(int minLifetime=1) const;
 
 protected:
     vector<Point2f> detectNewFeatures(const Mat &image, int cameraNumber=0) const;
