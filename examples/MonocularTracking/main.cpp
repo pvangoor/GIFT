@@ -27,9 +27,10 @@ int main(int argc, char *argv[]) {
     long int total = imageFileNames.size();
     int i = 0;
     cv::namedWindow("debug");
+    cv::Mat image;
 
     for (const auto& fileName : imageFileNames) {
-        cv::Mat image = cv::imread(fileName);
+        image = cv::imread(fileName);
 
         ft.processImage(image);
 

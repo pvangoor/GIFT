@@ -24,7 +24,16 @@ void FeatureTracker::processImages(const vector<Mat> &images) {
     for (int i=0; i < cameras.size(); ++i) {
         this->trackLandmarks(images[i], i);
     }
-    this->previousImages = images;
+    if (this->previousImages.empty()) {
+        for (const Mat &image: images) {
+            Mat copyImage = Mat(image);
+            this->previousImages.emplace_back(copyImage);
+        }
+    } else {
+        for (int i = 0; i<images.size(); ++i) {
+            images[i].copyTo(this->previousImages[i]);
+        }
+    }
 
     // Find potential new features
     vector<vector<Point2f>> newFeatures;
