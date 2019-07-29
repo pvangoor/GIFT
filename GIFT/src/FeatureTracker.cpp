@@ -24,16 +24,18 @@ void FeatureTracker::processImages(const vector<Mat> &images) {
     for (int i=0; i < cameras.size(); ++i) {
         this->trackLandmarks(images[i], i);
     }
+
+    // Save the current frames for tracking the next frame
     if (this->previousImages.empty()) {
         for (const Mat &image: images) {
-            Mat copyImage = Mat(image);
+            Mat copyImage;
             this->previousImages.emplace_back(copyImage);
         }
-    } else {
-        for (int i = 0; i<images.size(); ++i) {
-            images[i].copyTo(this->previousImages[i]);
-        }
     }
+    for (int i = 0; i<images.size(); ++i) {
+        images[i].copyTo(this->previousImages[i]);
+    }
+    
 
     // Find potential new features
     vector<vector<Point2f>> newFeatures;
@@ -187,7 +189,7 @@ vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image, int cameraNu
     cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
 
     vector<Point2f> proposedFeatures;
-    goodFeaturesToTrack(imageGrey, proposedFeatures, 2*maxFeatures, 0.001, featureDist, imageMasks[cameraNumber]);
+    goodFeaturesToTrack(imageGrey, proposedFeatures, maxFeatures, 0.01, featureDist, imageMasks[cameraNumber]);
     vector<Point2f> newFeatures = this->removeDuplicateFeatures(proposedFeatures, cameraNumber);
 
     return newFeatures;
