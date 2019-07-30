@@ -19,12 +19,14 @@ ${OpenCV_INCLUDE_DIRS})
 
 set(GIFT_SOURCE_FILES
     src/FeatureTracker.cpp
+    src/EgoMotion.cpp
 )
 
 set(GIFT_HEADER_FILES
     include/CameraParameters.h
     include/FeatureTracker.h
     include/Landmark.h
+    include/EgoMotion.h
 )
 
 # optional dependency: yaml-cpp

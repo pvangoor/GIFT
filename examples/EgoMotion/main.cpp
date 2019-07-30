@@ -9,6 +9,7 @@
 
 #include "FeatureTracker.h"
 #include "Configure.h"
+#include "EgoMotion.h"
 
 int main(int argc, char *argv[]) {
     cv::String folderName = "/home/pieter/Documents/Datasets/ardupilot/flight1/";
@@ -17,13 +18,16 @@ int main(int argc, char *argv[]) {
     GIFT::FeatureTracker ft = GIFT::FeatureTracker(GIFT::TrackerMode::MONO);
     GIFT::CameraParameters cam0 = GIFT::readCameraConfig(folderName+"/cam0.yaml");
     ft.setCameraConfiguration(cam0, 0);
+    ft.maxFeatures = 50;
 
     cv::VideoCapture cap(folderName+"small.mp4");
     cv::namedWindow("debug");
 
     cv::Mat image;
+    int count = 0;
+    int maxCount = 1000;
 
-    while (cap.read(image)) {
+    while (cap.read(image) && ++count < maxCount) {
 
         // Track the features
         ft.processImage(image);
@@ -50,6 +54,11 @@ int main(int argc, char *argv[]) {
             cv::circle(flowImage, p0, 2, cv::Scalar(255,0,0));
         }
         cv::imshow("flow", flowImage);
+
+
+        // Compute EgoMotion
+        GIFT::EgoMotion egoMotion(landmarks);
+        std::cout << egoMotion.linearVelocity << std::endl;
 
 
         cv::waitKey(1);
