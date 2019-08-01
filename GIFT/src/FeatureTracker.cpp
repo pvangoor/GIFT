@@ -129,7 +129,7 @@ void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
     for (long int i=points.size()-1; i >= 0; --i) {
         bool eraseCondition = (status[i] == 0);
         if (!imageMasks[cameraNumber].empty()) {
-            eraseCondition |= imageMasks[cameraNumber].at<uchar>(points[i]);
+            eraseCondition |= (imageMasks[cameraNumber].at<uchar>(points[i])==0);
         }
 
         if (eraseCondition) {
@@ -150,6 +150,7 @@ vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> feat
         Landmark lm;
         Point2f proposedFeature = features[0][i];
         Point2f proposedFeatureNorm = featuresNorm[0][i];
+
         lm.camCoordinates.emplace_back(proposedFeature);
         lm.camCoordinatesNorm.emplace_back(proposedFeatureNorm);
         lm.opticalFlowRaw.emplace_back(Vector2d::Zero());
