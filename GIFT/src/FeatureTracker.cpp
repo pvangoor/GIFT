@@ -135,11 +135,16 @@ void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
         if (eraseCondition) {
             landmarks.erase(landmarks.begin() + i);
         } else {
-            landmarks[i].opticalFlowRaw[cameraNumber] = Vector2d(landmarks[i].camCoordinates[cameraNumber].x - points[i].x,landmarks[i].camCoordinates[cameraNumber].y - points[i].y);
-            landmarks[i].opticalFlowNorm[cameraNumber] = Vector2d(landmarks[i].camCoordinatesNorm[cameraNumber].x - pointsNorm[i].x,landmarks[i].camCoordinatesNorm[cameraNumber].y - pointsNorm[i].y);
-            landmarks[i].camCoordinates[cameraNumber] = points[i];
-            landmarks[i].camCoordinatesNorm[cameraNumber] = pointsNorm[i];
-            ++landmarks[i].lifetime;
+            Landmark & lm = landmarks[i];
+            lm.opticalFlowRaw[cameraNumber] = Vector2d(lm.camCoordinates[cameraNumber].x - points[i].x,lm.camCoordinates[cameraNumber].y - points[i].y);
+            lm.opticalFlowNorm[cameraNumber] = Vector2d(lm.camCoordinatesNorm[cameraNumber].x - pointsNorm[i].x,lm.camCoordinatesNorm[cameraNumber].y - pointsNorm[i].y);
+            lm.camCoordinates[cameraNumber] = points[i];
+            lm.camCoordinatesNorm[cameraNumber] = pointsNorm[i];
+            ++lm.lifetime;
+            
+            lm.pointColor[cameraNumber] = {image.at<Vec3b>(points[i]).val[0],
+                                           image.at<Vec3b>(points[i]).val[1],
+                                           image.at<Vec3b>(points[i]).val[2]};
         }
     }
 }
@@ -155,6 +160,11 @@ vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> feat
         lm.camCoordinatesNorm.emplace_back(proposedFeatureNorm);
         lm.opticalFlowRaw.emplace_back(Vector2d::Zero());
         lm.opticalFlowNorm.emplace_back(Vector2d::Zero());
+
+        color pixelColor = {images[0].at<Vec3b>(features[0][i]).val[0],
+                            images[0].at<Vec3b>(features[0][i]).val[1],
+                            images[0].at<Vec3b>(features[0][i]).val[2]};
+        lm.pointColor.emplace_back(pixelColor);
 
         if (mode == TrackerMode::STEREO) {
             // TODO
