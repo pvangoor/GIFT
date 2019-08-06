@@ -17,6 +17,7 @@ struct Landmark {
 
     Eigen::Vector2d opticalFlowRaw;
     Eigen::Vector2d opticalFlowNorm;
+    Eigen::Vector3d opticalFlowSphere;
 
     colorVec pointColor;    
     int idNumber;
