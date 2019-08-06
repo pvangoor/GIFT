@@ -3,20 +3,27 @@
 #include "Landmark.h"
 #include "eigen3/Eigen/Dense"
 
+using namespace Eigen;
+using namespace std;
+
 namespace GIFT {
 
-struct EgoMotion {
-    Eigen::Vector3d linearVelocity = Eigen::Vector3d::Zero();
-    Eigen::Vector3d angularVelocity = Eigen::Vector3d::Zero();
+class EgoMotion {
+public:
+    Vector3d linearVelocity;
+    Vector3d angularVelocity;
     double optimisedResidual = INFINITY;
-    int numberOfFeatures = 0;
+    int numberOfFeatures;
 
-    EgoMotion(const std::vector<GIFT::Landmark>& landmarks);
+    static constexpr double optimisationThreshold = 1e-3;
+    static constexpr int maxIterations = 10;
 
-    void computeFromOF(const std::vector<GIFT::Landmark>& landmarks, int cameraNumber=0);
+    EgoMotion(const vector<GIFT::Landmark>& landmarks);
 
-    Eigen::Vector3d gaussNewtonStep(const Eigen::Vector3d& V, const std::vector<Eigen::Vector2d>& flow, const std::vector<Eigen::Vector2d> y) const;
-
+private:
+    static double optimize(const vector<pair<Vector3d, Vector3d>>& flows, Vector3d& linVel, Vector3d& angVel);
+    static void optimizationStep(const vector<pair<Vector3d, Vector3d>>& flows, Vector3d& linVel, Vector3d& angVel);
+    static double computeResidual(const vector<pair<Vector3d, Vector3d>>& flows, const Vector3d& linVel, const Vector3d& angVel);
 };
 
 }

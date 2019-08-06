@@ -1,84 +1,106 @@
 #include "EgoMotion.h"
+#include <utility>
 
 using namespace std;
 using namespace Eigen;
 using namespace GIFT;
 
 EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks) {
-    this->computeFromOF(landmarks);
-}
+    Vector3d linVel(1,0,0);
+    Vector3d angVel(0,0,0);
 
-
-void EgoMotion::computeFromOF(const std::vector<GIFT::Landmark>& landmarks, int cameraNumber) {
-    vector<Vector2d> y, flow;
-    for (const auto & landmark: landmarks) {
-        Vector2d yi;
-        yi << landmark.camCoordinatesNorm.x, landmark.camCoordinatesNorm.y;
-        y.emplace_back(yi);
-        flow.emplace_back(landmark.opticalFlowRaw);
+    vector<pair<Vector3d, Vector3d>> flows;
+    this->numberOfFeatures = 0;
+    for (const auto& lm: landmarks) {
+        if (lm.lifetime < 2) continue;
+        flows.emplace_back(make_pair(lm.sphereCoordinates,lm.opticalFlowSphere));
+        ++this->numberOfFeatures;
     }
 
-    Vector3d V(0,1,1);
-    for (int i=0;i<10;++i) {
-        V = V + 10*gaussNewtonStep(V, flow, y);
-        V.normalize();
-    }
-    this->linearVelocity = V;
+    double residual = optimize(flows, linVel, angVel);
+    
+    this->optimisedResidual = residual;
+    this->linearVelocity = linVel;
+    this->angularVelocity = angVel;
 
 }
 
-Vector3d EgoMotion::gaussNewtonStep(const Vector3d& V, const vector<Vector2d>& flow, const vector<Vector2d> y) const {
-    auto Pi2 = [](const Vector2d& vec) {return Matrix2d::Identity() - vec * vec.transpose() / (vec.squaredNorm()); };
-    auto Pi3 = [](const Vector3d& vec) {return Matrix3d::Identity() - vec * vec.transpose() / (vec.squaredNorm()); };
+double EgoMotion::optimize(const vector<pair<Vector3d, Vector3d>>& flows, Vector3d& linVel, Vector3d& angVel) {
+    double lastResidual = 1e8;
+    double residual = computeResidual(flows, linVel, angVel);
 
-
-
-    int n = flow.size();
-
-    MatrixXd M(2*n,3), Y(2*n,1);
-    vector<Matrix<double,2,3>> A(n), AB(n);
-    vector<Vector2d> e(n);
-
-    for (int i = 0; i < n; ++i) {
-        double u = y[i].x();
-        double v = y[i].y();
-        A[i] << 1, 0, -u,
-                0, 1, -v;
-        AB[i] <<   u*v, -(1+u*u),  v,
-                 1+v*v,     -u*v, -u;
-
-        e[i] = (A[i]*V).normalized();
-
-        M.block<2,3>(2*i,0) = Pi2(e[i])*AB[i];
-        Y.block<2,1>(2*i,0) = Pi2(e[i])*flow[i];
+    int iteration = 0;
+    while ((abs(lastResidual - residual) > optimisationThreshold) && (iteration < maxIterations)) {
+        lastResidual = residual;
+        optimizationStep(flows, linVel, angVel);
+        residual = computeResidual(flows, linVel, angVel);
+        ++iteration;
     }
 
-    Matrix3d MTMInv = (M.transpose()*M).inverse();
-    MatrixXd MPseudoInv = MTMInv*M.transpose();
-    Vector3d omega = MTMInv*M.transpose()*Y;
-    MatrixXd residualVec = (Y - M*omega);
-    double residual = residualVec.squaredNorm();
+    return residual;
+}
 
+double EgoMotion::computeResidual(const vector<pair<Vector3d, Vector3d>>& flows, const Vector3d& linVel, const Vector3d& angVel) {
+    Vector3d wHat = linVel.normalized();
 
-    // Compute the Jacobian
-    MatrixXd JacY(2*n,3);
-    for (int i=0; i<n; ++i) {
-        JacY.block<2,3>(2*i,0) = -(e[i].transpose()*flow[i]*Matrix2d::Identity() + e[i]*flow[i].transpose()) * Pi2(e[i]) * A[i] / (A[i]*V).norm();
+    double residual = 0;
+    int normalisationFactor = 0;
+    for (const auto& flow : flows) {
+        const Vector3d& phi = flow.second;
+        const Vector3d& eta = flow.first;
+
+        double res_i = wHat.dot((phi + angVel.cross(eta)).cross(eta));
+        residual += pow(res_i,2);
+        ++normalisationFactor;
+    }
+    normalisationFactor = max(normalisationFactor,1);
+    residual = residual / normalisationFactor;
+
+    return residual;
+}
+
+void EgoMotion::optimizationStep(const std::vector<pair<Vector3d, Vector3d>>& flows, Vector3d& linVel, Vector3d& angVel) {
+    auto Proj3 = [](const Vector3d& vec) { return Matrix3d::Identity() - vec*vec.transpose()/vec.squaredNorm(); };
+
+    Vector3d wHat = linVel.normalized();
+
+    Matrix3d tempHess11 = Matrix3d::Zero();
+    Matrix3d tempHess12 = Matrix3d::Zero();
+    Matrix3d tempHess22 = Matrix3d::Zero();
+    Vector3d tempGrad2 = Vector3d::Zero();
+
+    for (const auto& flow : flows) {
+        // Each flow is a pair of spherical bearing eta and perpendicular flow vector phi.
+        const Vector3d& phi = flow.second;
+        const Vector3d& eta = flow.first;
+
+        Vector3d ZOmega = (phi + angVel.cross(eta)).cross(eta);
+        Matrix3d ProjEta = Proj3(eta);
+
+        tempHess11 += ZOmega*ZOmega.transpose();
+        tempHess12 += wHat.transpose()*ZOmega*ProjEta + ZOmega*wHat.transpose()*ProjEta;
+        tempHess22 += ProjEta*wHat*wHat.transpose()*ProjEta;
+
+        tempGrad2 += wHat.transpose()*ZOmega*ProjEta*wHat;
     }
 
-    MatrixXd JacMOmega1(2*n,3);
-    Matrix3d tempJacMOmega2 = Matrix3d::Zero();
-    Matrix3d tempJacMOmega3 = Matrix3d::Zero();
+    Matrix<double, 6,6> hessian;
+    Matrix<double, 6,1> gradient;
 
-    for (int i=0; i<n; ++i) {
-        Matrix<double,2,3> temp = (e[i].transpose()*AB[i]*omega*Matrix2d::Identity() + e[i]*(AB[i]*omega).transpose()) * Pi2(e[i]) * A[i] / (A[i]*V).norm();
-        JacMOmega1.block<2,3>(2*i,0) = -temp;
-        tempJacMOmega2 += -AB[i].transpose() * (e[i].transpose()*flow[i]*Matrix2d::Identity() + e[i]*flow[i].transpose()) * Pi2(e[i]) * A[i] / (A[i]*V).norm();
-        tempJacMOmega3 += -AB[i].transpose() * temp;
-    }
+    Matrix3d ProjWHat = Proj3(wHat);
+    hessian.block<3,3>(0,0) = ProjWHat*tempHess11*ProjWHat;
+    hessian.block<3,3>(0,3) = -ProjWHat*tempHess12;
+    hessian.block<3,3>(3,0) = hessian.block<3,3>(0,3).transpose();
+    hessian.block<3,3>(3,3) = tempHess22;
 
-    MatrixXd Jacobian = JacMOmega1 + MPseudoInv.transpose()*(tempJacMOmega2+tempJacMOmega3);
+    gradient.block<3,1>(0,0) = ProjWHat*tempHess11*wHat;
+    gradient.block<3,1>(3,0) = -tempGrad2;
 
-    Vector3d GNStep = -(Jacobian.transpose()*Jacobian).inverse() * Jacobian.transpose() * residualVec;
-    return Pi3(V) * GNStep;
+    // Step with Newton's method
+    // Compute the solution to Hess^{-1} * grad
+    Matrix<double,6,1> step = hessian.bdcSvd(ComputeFullU | ComputeFullV).solve(gradient);
+    wHat += step.block<3,1>(0,0);
+
+    linVel = linVel.norm() * wHat.normalized();
+    angVel += step.block<3,1>(3,0);
 }
