@@ -58,7 +58,8 @@ int main(int argc, char *argv[]) {
 
         // Compute EgoMotion
         GIFT::EgoMotion egoMotion(landmarks);
-        std::cout << egoMotion.linearVelocity << std::endl;
+        std::cout << "Estimated Linear Velocity:" << std::endl;
+        std::cout << egoMotion.linearVelocity << '\n' << std::endl;
 
 
         cv::waitKey(1);
