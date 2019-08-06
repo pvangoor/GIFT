@@ -21,6 +21,7 @@ public:
 
     
     EgoMotion(const vector<GIFT::Landmark>& landmarks);
+    EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows);
     vector<pair<Vector3d, Vector3d>> estimateFlows(const vector<GIFT::Landmark>& landmarks) const;
     vector<pair<Point2f, Vector2d>> estimateFlowsNorm(const vector<GIFT::Landmark>& landmarks) const;
 

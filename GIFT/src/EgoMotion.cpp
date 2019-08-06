@@ -7,23 +7,34 @@ using namespace Eigen;
 using namespace cv;
 using namespace GIFT;
 
-EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks) {
+EgoMotion::EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows) {
     Vector3d linVel(0,0,1);
     Vector3d angVel(0,0,0);
 
-    vector<pair<Vector3d, Vector3d>> flows;
-    this->numberOfFeatures = 0;
-    for (const auto& lm: landmarks) {
-        if (lm.lifetime < 2) continue;
-        flows.emplace_back(make_pair(lm.sphereCoordinates,lm.opticalFlowSphere));
-        ++this->numberOfFeatures;
-    }
-
-    double residual = optimize(flows, linVel, angVel);
+    double residual = optimize(sphereFlows, linVel, angVel);
     
     this->optimisedResidual = residual;
     this->linearVelocity = linVel;
     this->angularVelocity = angVel;
+    this->numberOfFeatures = sphereFlows.size();
+}
+
+EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks) {
+    vector<pair<Vector3d, Vector3d>> sphereFlows;
+    for (const auto& lm: landmarks) {
+        if (lm.lifetime < 2) continue;
+        sphereFlows.emplace_back(make_pair(lm.sphereCoordinates,lm.opticalFlowSphere));
+    }
+
+    Vector3d linVel(0,0,1);
+    Vector3d angVel(0,0,0);
+
+    double residual = optimize(sphereFlows, linVel, angVel);
+    
+    this->optimisedResidual = residual;
+    this->linearVelocity = linVel;
+    this->angularVelocity = angVel;
+    this->numberOfFeatures = sphereFlows.size();
 
 }
 
