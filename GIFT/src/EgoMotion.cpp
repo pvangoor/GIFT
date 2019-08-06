@@ -1,12 +1,14 @@
 #include "EgoMotion.h"
 #include <utility>
+#include <iostream>
 
 using namespace std;
 using namespace Eigen;
+using namespace cv;
 using namespace GIFT;
 
 EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks) {
-    Vector3d linVel(1,0,0);
+    Vector3d linVel(0,0,1);
     Vector3d angVel(0,0,0);
 
     vector<pair<Vector3d, Vector3d>> flows;
@@ -29,15 +31,30 @@ double EgoMotion::optimize(const vector<pair<Vector3d, Vector3d>>& flows, Vector
     double lastResidual = 1e8;
     double residual = computeResidual(flows, linVel, angVel);
 
+    Vector3d bestLinVel = linVel;
+    Vector3d bestAngVel = angVel;
+    double bestResidual = INFINITY;
+
     int iteration = 0;
     while ((abs(lastResidual - residual) > optimisationThreshold) && (iteration < maxIterations)) {
         lastResidual = residual;
         optimizationStep(flows, linVel, angVel);
         residual = computeResidual(flows, linVel, angVel);
         ++iteration;
+
+        cout << "residual: " << residual << endl;
+
+        if (residual < bestResidual) {
+            bestResidual = residual;
+            bestLinVel = linVel;
+            bestAngVel = angVel;
+        }
     }
 
-    return residual;
+    linVel = bestLinVel;
+    angVel = bestAngVel;
+
+    return bestResidual;
 }
 
 double EgoMotion::computeResidual(const vector<pair<Vector3d, Vector3d>>& flows, const Vector3d& linVel, const Vector3d& angVel) {
@@ -99,8 +116,46 @@ void EgoMotion::optimizationStep(const std::vector<pair<Vector3d, Vector3d>>& fl
     // Step with Newton's method
     // Compute the solution to Hess^{-1} * grad
     Matrix<double,6,1> step = hessian.bdcSvd(ComputeFullU | ComputeFullV).solve(gradient);
-    wHat += step.block<3,1>(0,0);
+    wHat += -step.block<3,1>(0,0);
 
     linVel = linVel.norm() * wHat.normalized();
-    angVel += step.block<3,1>(3,0);
+    angVel += -step.block<3,1>(3,0);
+}
+
+vector<pair<Point2f, Vector2d>> EgoMotion::estimateFlowsNorm(const vector<GIFT::Landmark>& landmarks) const {
+    vector<pair<Vector3d, Vector3d>> flowsSphere = estimateFlows(landmarks);
+    vector<pair<Point2f, Vector2d>> flowsNorm;
+
+    for (const auto& flowSphere: flowsSphere) {
+        const Vector3d& eta = flowSphere.first;
+        const Vector3d& phi = flowSphere.second;
+
+        double eta3 = eta.z();
+        Point2f etaNorm(eta.x() / eta3, eta.y() / eta3);
+        Vector2d phiNorm;
+        phiNorm << 1/eta3 * (phi.x() - etaNorm.x*phi.z()),
+                   1/eta3 * (phi.y() - etaNorm.y*phi.z());
+        flowsNorm.emplace_back(make_pair(etaNorm, phiNorm));
+    }
+
+    return flowsNorm;
+}
+
+vector<pair<Vector3d, Vector3d>> EgoMotion::estimateFlows(const vector<GIFT::Landmark>& landmarks) const {
+    auto Proj3 = [](const Vector3d& vec) { return Matrix3d::Identity() - vec*vec.transpose()/vec.squaredNorm(); };
+
+    vector<pair<Vector3d, Vector3d>> estFlows;
+
+    for (const auto& lm: landmarks) {
+        const Vector3d& eta = lm.sphereCoordinates;
+        const Vector3d etaVel = Proj3(eta) * this->linearVelocity;
+
+        double invDepth = 0;
+        if (etaVel.norm() > 0) invDepth = etaVel.dot(this->angularVelocity.cross(eta)) / etaVel.squaredNorm();
+
+        Vector3d flow = -this->angularVelocity.cross(eta) + invDepth * etaVel;
+        estFlows.emplace_back(make_pair(eta, flow));
+    }
+
+    return estFlows;
 }

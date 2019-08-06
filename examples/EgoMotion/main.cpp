@@ -33,6 +33,16 @@ int main(int argc, char *argv[]) {
         ft.processImage(image);
         std::vector<GIFT::Landmark> landmarks = ft.outputLandmarks();
 
+        // Compute EgoMotion
+        GIFT::EgoMotion egoMotion(landmarks);
+        std::cout << "Estimated Linear Velocity:" << std::endl;
+        std::cout << egoMotion.linearVelocity << '\n';
+        std::cout << "Estimated Angular Velocity:" << std::endl;
+        std::cout << egoMotion.angularVelocity << '\n' << std::endl;
+
+        auto estFlows = egoMotion.estimateFlowsNorm(landmarks);
+
+
         // Draw the keypoints
         std::vector<cv::Point2f> features;
         for (const auto &lm : landmarks) {
@@ -44,7 +54,7 @@ int main(int argc, char *argv[]) {
         cv::drawKeypoints(image, keypoints, kpImage, cv::Scalar(0,0,255));
         cv::imshow("points", kpImage);
 
-        // Draw the optical flow
+        // Draw the optical flow as well as the estimates
         cv::Mat flowImage;
         image.copyTo(flowImage);
         for (const auto &lm : landmarks) {
@@ -55,12 +65,26 @@ int main(int argc, char *argv[]) {
         }
         cv::imshow("flow", flowImage);
 
-
-        // Compute EgoMotion
-        GIFT::EgoMotion egoMotion(landmarks);
-        std::cout << "Estimated Linear Velocity:" << std::endl;
-        std::cout << egoMotion.linearVelocity << '\n' << std::endl;
-
+        // Draw the normalised flow and estimates
+        constexpr int viewScale = 500;
+        cv::Mat estFlowImage(viewScale*2, viewScale*2, CV_8UC3, Scalar(255,255,255));
+        image.copyTo(flowImage);
+        for (const auto& flow : estFlows) {
+            Point2f p1 = flow.first;
+            Point2f p0 = p1 - Point2f(flow.second.x(), flow.second.y());
+            p0 = Point2f(viewScale,viewScale) + p0*viewScale;
+            p1 = Point2f(viewScale,viewScale) + p1*viewScale;
+            cv::line(estFlowImage, p0, p1, cv::Scalar(255,0,0));
+        }
+        for (const auto &lm : landmarks) {
+            Point2f p1 = lm.camCoordinatesNorm;
+            Point2f p0 = p1 - Point2f(lm.opticalFlowNorm.x(), lm.opticalFlowNorm.y());
+            p0 = Point2f(viewScale,viewScale) + p0*viewScale;
+            p1 = Point2f(viewScale,viewScale) + p1*viewScale;
+            cv::line(estFlowImage, p0, p1, cv::Scalar(255,0,255));
+            cv::circle(estFlowImage, p0, 2, cv::Scalar(255,0,0));
+        }
+        cv::imshow("estimated flow", estFlowImage);
 
         cv::waitKey(1);
     }
