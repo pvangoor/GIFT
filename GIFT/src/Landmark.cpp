@@ -8,8 +8,8 @@ using namespace Eigen;
 Landmark::Landmark(const Point2f& newCamCoords, const Point2f& newCamCoordsNorm, int idNumber, const colorVec& col) {
     this->camCoordinates = newCamCoords;
     this->camCoordinatesNorm = newCamCoordsNorm;
-    const double yNormInv = 1.0 / (newCamCoordsNorm.x*newCamCoordsNorm.x + newCamCoordsNorm.y*newCamCoordsNorm.y + 1.0);
-    this->sphereCoordinates << yNormInv*newCamCoordsNorm.x, yNormInv*newCamCoordsNorm.y, yNormInv;
+    this->sphereCoordinates << newCamCoordsNorm.x, newCamCoordsNorm.y, 1;
+    this->sphereCoordinates.normalize();
 
     this->opticalFlowRaw.setZero();
     this->opticalFlowNorm.setZero();
@@ -26,8 +26,8 @@ void Landmark::update(const cv::Point2f& newCamCoords, const cv::Point2f& newCam
 
     this->camCoordinates = newCamCoords;
     this->camCoordinatesNorm = newCamCoordsNorm;
-    const double yNormInv = 1.0 / (newCamCoordsNorm.x*newCamCoordsNorm.x + newCamCoordsNorm.y*newCamCoordsNorm.y + 1.0);
-    this->sphereCoordinates << yNormInv*newCamCoordsNorm.x, yNormInv*newCamCoordsNorm.y, yNormInv;
+    this->sphereCoordinates << newCamCoordsNorm.x, newCamCoordsNorm.y, 1;
+    this->sphereCoordinates.normalize();
     ++lifetime;
 
     this->pointColor = col;

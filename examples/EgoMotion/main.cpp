@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
         // Draw the keypoints
         std::vector<cv::Point2f> features;
         for (const auto &lm : landmarks) {
-            features.emplace_back(lm.camCoordinates[0]);
+            features.emplace_back(lm.camCoordinates);
         }
         std::vector<cv::KeyPoint> keypoints;
         cv::KeyPoint::convert(features, keypoints);
@@ -48,8 +48,8 @@ int main(int argc, char *argv[]) {
         cv::Mat flowImage;
         image.copyTo(flowImage);
         for (const auto &lm : landmarks) {
-            Point2f p1 = lm.camCoordinates[0];
-            Point2f p0 = p1 - Point2f(lm.opticalFlowRaw[0].x(), lm.opticalFlowRaw[0].y());
+            Point2f p1 = lm.camCoordinates;
+            Point2f p0 = p1 - Point2f(lm.opticalFlowRaw.x(), lm.opticalFlowRaw.y());
             cv::line(flowImage, p0, p1, cv::Scalar(255,0,255));
             cv::circle(flowImage, p0, 2, cv::Scalar(255,0,0));
         }

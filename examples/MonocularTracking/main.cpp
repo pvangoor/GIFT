@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
         std::vector<GIFT::Landmark> landmarks = ft.outputLandmarks();
         std::vector<cv::Point2f> features;
         for (const auto &lm : landmarks) {
-            features.emplace_back(lm.camCoordinates[0]);
+            features.emplace_back(lm.camCoordinates);
         }
         std::vector<cv::KeyPoint> keypoints;
         cv::KeyPoint::convert(features, keypoints);

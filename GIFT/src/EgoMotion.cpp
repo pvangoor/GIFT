@@ -13,9 +13,9 @@ void EgoMotion::computeFromOF(const std::vector<GIFT::Landmark>& landmarks, int 
     vector<Vector2d> y, flow;
     for (const auto & landmark: landmarks) {
         Vector2d yi;
-        yi << landmark.camCoordinatesNorm[cameraNumber].x, landmark.camCoordinatesNorm[cameraNumber].y;
+        yi << landmark.camCoordinatesNorm.x, landmark.camCoordinatesNorm.y;
         y.emplace_back(yi);
-        flow.emplace_back(landmark.opticalFlowRaw[cameraNumber]);
+        flow.emplace_back(landmark.opticalFlowRaw);
     }
 
     Vector3d V(0,1,1);

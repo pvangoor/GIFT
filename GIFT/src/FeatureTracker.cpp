@@ -66,16 +66,12 @@ void FeatureTracker::processImages(const vector<Mat> &images) {
 }
 
 void FeatureTracker::computeLandmarkPositions() {
-    for (auto & lm : landmarks) {
-        if (mode == TrackerMode::MONO) {
-            lm.position << lm.camCoordinatesNorm[0].x, lm.camCoordinatesNorm[0].y, 1;
-            lm.position.normalize();
-        }
-
-        if (mode == TrackerMode::STEREO) {
-            lm.position = this->solveStereo(lm.camCoordinatesNorm[0], lm.camCoordinatesNorm[1]);
-        }
-    }
+    if (mode == TrackerMode::MONO) return;
+    // for (auto & lm : landmarks) {
+    //     if (mode == TrackerMode::STEREO) {
+    //         lm.position = this->solveStereo(lm.camCoordinatesNorm[0], lm.camCoordinatesNorm[1]);
+    //     }
+    // }
 }
 
 Vector3d FeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& rightKp) const {
@@ -115,7 +111,7 @@ void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
 
     vector<Point2f> oldPoints;
     for (const auto & feature: landmarks) {
-        oldPoints.emplace_back(feature.camCoordinates[cameraNumber]);
+        oldPoints.emplace_back(feature.camCoordinates);
     }
 
     vector<Point2f> points;
@@ -127,44 +123,38 @@ void FeatureTracker::trackLandmarks(const Mat &image, int cameraNumber) {
     cv::undistortPoints(points, pointsNorm, cameras[cameraNumber].K, cameras[cameraNumber].distortionParams);
 
     for (long int i=points.size()-1; i >= 0; --i) {
-        bool eraseCondition = (status[i] == 0);
-        if (!imageMasks[cameraNumber].empty()) {
-            eraseCondition |= (imageMasks[cameraNumber].at<uchar>(points[i])==0);
+        if (status[i] == 0) {
+            landmarks.erase(landmarks.begin() + i);
+            continue;
         }
 
-        if (eraseCondition) {
-            landmarks.erase(landmarks.begin() + i);
-        } else {
-            Landmark & lm = landmarks[i];
-            lm.opticalFlowRaw[cameraNumber] = Vector2d(lm.camCoordinates[cameraNumber].x - points[i].x,lm.camCoordinates[cameraNumber].y - points[i].y);
-            lm.opticalFlowNorm[cameraNumber] = Vector2d(lm.camCoordinatesNorm[cameraNumber].x - pointsNorm[i].x,lm.camCoordinatesNorm[cameraNumber].y - pointsNorm[i].y);
-            lm.camCoordinates[cameraNumber] = points[i];
-            lm.camCoordinatesNorm[cameraNumber] = pointsNorm[i];
-            ++lm.lifetime;
-            
-            lm.pointColor[cameraNumber] = {image.at<Vec3b>(points[i]).val[0],
-                                           image.at<Vec3b>(points[i]).val[1],
-                                           image.at<Vec3b>(points[i]).val[2]};
+        if (!imageMasks[cameraNumber].empty()) {
+            if (imageMasks[cameraNumber].at<uchar>(points[i])==0) {
+                landmarks.erase(landmarks.begin() + i);
+                continue;
+            } 
         }
+
+        colorVec pointColor = {image.at<Vec3b>(points[i]).val[0],
+                                image.at<Vec3b>(points[i]).val[1],
+                                image.at<Vec3b>(points[i]).val[2]};
+        landmarks[i].update(points[i], pointsNorm[i], pointColor);
+        
     }
 }
 
 vector<Landmark> FeatureTracker::matchImageFeatures(vector<vector<Point2f>> features, vector<vector<Point2f>> featuresNorm, vector<Mat> images) const {
     vector<Landmark> foundLandmarks;
     for (int i=0; i<features[0].size(); ++i) {
-        Landmark lm;
+        
         Point2f proposedFeature = features[0][i];
         Point2f proposedFeatureNorm = featuresNorm[0][i];
 
-        lm.camCoordinates.emplace_back(proposedFeature);
-        lm.camCoordinatesNorm.emplace_back(proposedFeatureNorm);
-        lm.opticalFlowRaw.emplace_back(Vector2d::Zero());
-        lm.opticalFlowNorm.emplace_back(Vector2d::Zero());
+        colorVec pointColor = {images[0].at<Vec3b>(features[0][i]).val[0],
+                               images[0].at<Vec3b>(features[0][i]).val[1],
+                               images[0].at<Vec3b>(features[0][i]).val[2]};
 
-        color pixelColor = {images[0].at<Vec3b>(features[0][i]).val[0],
-                            images[0].at<Vec3b>(features[0][i]).val[1],
-                            images[0].at<Vec3b>(features[0][i]).val[2]};
-        lm.pointColor.emplace_back(pixelColor);
+        Landmark lm(proposedFeature, proposedFeatureNorm, -1,pointColor);
 
         if (mode == TrackerMode::STEREO) {
             // TODO
@@ -191,6 +181,7 @@ void FeatureTracker::setCameraConfiguration(const CameraParameters &configuratio
 
 
 FeatureTracker::FeatureTracker(TrackerMode mode) {
+    assert(mode == TrackerMode::MONO);
     this->mode = mode;
 
 }
@@ -242,7 +233,7 @@ vector<Point2f> FeatureTracker::removeDuplicateFeatures(const vector<Point2f> &p
     for (const auto & proposedFeature : proposedFeatures) {
         bool useFlag = true;
         for (const auto & feature : this->landmarks) {
-            if (norm(proposedFeature - feature.camCoordinates[cameraNumber]) < featureDist) {
+            if (norm(proposedFeature - feature.camCoordinates) < featureDist) {
                 useFlag = false;
                 break;
             }
