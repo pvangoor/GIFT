@@ -23,6 +23,7 @@ struct Landmark {
     int idNumber;
     int lifetime = 0;
 
+    Landmark() {};
     Landmark(const cv::Point2f& newCamCoords, const cv::Point2f& newCamCoordsNorm, int idNumber, const colorVec& col = {0,0,0});
     void update(const cv::Point2f& newCamCoords, const cv::Point2f& newCamCoordsNorm, const colorVec& col = {0,0,0});
 
