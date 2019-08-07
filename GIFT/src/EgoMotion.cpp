@@ -19,11 +19,23 @@ EgoMotion::EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows) {
     this->numberOfFeatures = sphereFlows.size();
 }
 
-EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks) {
+EgoMotion::EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows, const Vector3d& initLinVel, const Vector3d& initAngVel) {
+    Vector3d linVel = initLinVel;
+    Vector3d angVel = initAngVel;
+
+    double residual = optimize(sphereFlows, linVel, angVel);
+    
+    this->optimisedResidual = residual;
+    this->linearVelocity = linVel;
+    this->angularVelocity = angVel;
+    this->numberOfFeatures = sphereFlows.size();
+}
+
+EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks, const double& dt) {
     vector<pair<Vector3d, Vector3d>> sphereFlows;
     for (const auto& lm: landmarks) {
         if (lm.lifetime < 2) continue;
-        sphereFlows.emplace_back(make_pair(lm.sphereCoordinates,lm.opticalFlowSphere));
+        sphereFlows.emplace_back(make_pair(lm.sphereCoordinates,lm.opticalFlowSphere/dt));
     }
 
     Vector3d linVel(0,0,1);
@@ -36,6 +48,23 @@ EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks) {
     this->angularVelocity = angVel;
     this->numberOfFeatures = sphereFlows.size();
 
+}
+
+EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks, const Vector3d& initLinVel, const Vector3d& initAngVel, const double& dt) {
+    vector<pair<Vector3d, Vector3d>> sphereFlows;
+    for (const auto& lm: landmarks) {
+        if (lm.lifetime < 2) continue;
+        sphereFlows.emplace_back(make_pair(lm.sphereCoordinates,lm.opticalFlowSphere/dt));
+    }
+    Vector3d linVel = initLinVel;
+    Vector3d angVel = initAngVel;
+
+    double residual = optimize(sphereFlows, linVel, angVel);
+    
+    this->optimisedResidual = residual;
+    this->linearVelocity = linVel;
+    this->angularVelocity = angVel;
+    this->numberOfFeatures = sphereFlows.size();
 }
 
 double EgoMotion::optimize(const vector<pair<Vector3d, Vector3d>>& flows, Vector3d& linVel, Vector3d& angVel) {
@@ -53,7 +82,7 @@ double EgoMotion::optimize(const vector<pair<Vector3d, Vector3d>>& flows, Vector
         residual = computeResidual(flows, linVel, angVel);
         ++iteration;
 
-        cout << "residual: " << residual << endl;
+        // cout << "residual: " << residual << endl;
 
         if (residual < bestResidual) {
             bestResidual = residual;

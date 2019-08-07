@@ -17,11 +17,13 @@ public:
     int numberOfFeatures;
 
     static constexpr double optimisationThreshold = 1e-7;
-    static constexpr int maxIterations = 10;
+    static constexpr int maxIterations = 30;
 
     
-    EgoMotion(const vector<GIFT::Landmark>& landmarks);
+    EgoMotion(const vector<GIFT::Landmark>& landmarks, const double& dt=1);
+    EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3d& initLinVel, const Vector3d& initAngVel, const double& dt=1);
     EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows);
+    EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows, const Vector3d& initLinVel, const Vector3d& initAngVel);
     vector<pair<Vector3d, Vector3d>> estimateFlows(const vector<GIFT::Landmark>& landmarks) const;
     vector<pair<Point2f, Vector2d>> estimateFlowsNorm(const vector<GIFT::Landmark>& landmarks) const;
 
