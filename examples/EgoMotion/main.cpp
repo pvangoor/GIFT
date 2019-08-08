@@ -1,6 +1,7 @@
 #include "iostream"
 #include "string"
 #include "vector"
+#include <stdexcept>
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -12,15 +13,25 @@
 #include "EgoMotion.h"
 
 int main(int argc, char *argv[]) {
-    cv::String folderName = "/home/pieter/Documents/Datasets/ardupilot/flight1/";
+    cv::String camConfigFile;
+    cv::String videoFile;
+    if (argc <= 1) {
+        camConfigFile = "/home/pieter/Documents/Datasets/ardupilot/flight1/cam0.yaml";
+        videoFile = "/home/pieter/Documents/Datasets/ardupilot/flight1/small.mp4";
+    } else if (argc == 3) {
+        camConfigFile = argv[1];
+        videoFile = argv[2];        
+    } else {
+        throw std::runtime_error("You must provide exactly the camera calibration and the video file.");
+    }
 
     // Set up a monocular feature tracker
     GIFT::FeatureTracker ft = GIFT::FeatureTracker(GIFT::TrackerMode::MONO);
-    GIFT::CameraParameters cam0 = GIFT::readCameraConfig(folderName+"/cam0.yaml");
+    GIFT::CameraParameters cam0 = GIFT::readCameraConfig(camConfigFile);
     ft.setCameraConfiguration(cam0, 0);
     ft.maxFeatures = 50;
 
-    cv::VideoCapture cap(folderName+"small.mp4");
+    cv::VideoCapture cap(videoFile);
     cv::namedWindow("debug");
 
     cv::Mat image;
