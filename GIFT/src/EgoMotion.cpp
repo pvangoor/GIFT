@@ -191,7 +191,7 @@ vector<pair<Vector3d, Vector3d>> EgoMotion::estimateFlows(const vector<GIFT::Lan
         const Vector3d etaVel = Proj3(eta) * this->linearVelocity;
 
         double invDepth = 0;
-        if (etaVel.norm() > 0) invDepth = etaVel.dot(this->angularVelocity.cross(eta)) / etaVel.squaredNorm();
+        if (etaVel.norm() > 0) invDepth = etaVel.dot(lm.opticalFlowSphere + this->angularVelocity.cross(eta)) / etaVel.squaredNorm();
 
         Vector3d flow = -this->angularVelocity.cross(eta) + invDepth * etaVel;
         estFlows.emplace_back(make_pair(eta, flow));
