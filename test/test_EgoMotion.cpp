@@ -90,3 +90,26 @@ TEST_F(EgoMotionTest, ConvergesFullVel) {
         EXPECT_LE(pow(estLinVel.dot(trueLinVel),2) - 1, 1e-2);
     }
 }
+
+TEST_F(EgoMotionTest, ConvergesAngVelFromLinVel) {
+    int testCount = 20;
+    for (int i = 0; i < testCount; ++i) {
+        Vector3d trueLinVel = (Vector3d::Random()).normalized();
+        Vector3d trueAngVel = Vector3d::Random()*4;
+
+        vector<pair<Vector3d, Vector3d>> sphereFlows;
+        for (const auto& etaRho: bearingsAndInvDepths) {
+            Vector3d phi = etaRho.second * (Matrix3d::Identity() - etaRho.first*etaRho.first.transpose()) * trueLinVel - trueAngVel.cross(etaRho.first);
+            sphereFlows.emplace_back(make_pair(etaRho.first, phi));
+        }
+
+        Vector3d initialLinVel = (trueLinVel + i*0.25*trueLinVel.norm()*Vector3d::Random()/testCount).normalized();
+
+        GIFT::EgoMotion egoMotion(sphereFlows, initialLinVel);
+        const Vector3d& estLinVel = egoMotion.linearVelocity.normalized();
+        const Vector3d& estAngVel = egoMotion.angularVelocity;
+
+        EXPECT_LE((estAngVel - trueAngVel).norm(), 1e-2);
+        EXPECT_LE(pow(estLinVel.dot(trueLinVel),2) - 1, 1e-2);
+    }
+}

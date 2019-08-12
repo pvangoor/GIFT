@@ -19,6 +19,18 @@ EgoMotion::EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows) {
     this->numberOfFeatures = sphereFlows.size();
 }
 
+EgoMotion::EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows, const Vector3d& initLinVel) {
+    Vector3d linVel = initLinVel;
+    Vector3d angVel = estimateAngularVelocity(sphereFlows, linVel);
+
+    double residual = optimize(sphereFlows, linVel, angVel);
+    
+    this->optimisedResidual = residual;
+    this->linearVelocity = linVel;
+    this->angularVelocity = angVel;
+    this->numberOfFeatures = sphereFlows.size();
+}
+
 EgoMotion::EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows, const Vector3d& initLinVel, const Vector3d& initAngVel) {
     Vector3d linVel = initLinVel;
     Vector3d angVel = initAngVel;
@@ -48,6 +60,24 @@ EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks, const double& dt) {
     this->angularVelocity = angVel;
     this->numberOfFeatures = sphereFlows.size();
 
+}
+
+EgoMotion::EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3d& initLinVel, const double& dt) {
+    vector<pair<Vector3d, Vector3d>> sphereFlows;
+    for (const auto& lm: landmarks) {
+        if (lm.lifetime < 2) continue;
+        sphereFlows.emplace_back(make_pair(lm.sphereCoordinates,lm.opticalFlowSphere/dt));
+    }
+
+    Vector3d linVel = initLinVel;
+    Vector3d angVel = estimateAngularVelocity(sphereFlows, linVel);
+
+    double residual = optimize(sphereFlows, linVel, angVel);
+    
+    this->optimisedResidual = residual;
+    this->linearVelocity = linVel;
+    this->angularVelocity = angVel;
+    this->numberOfFeatures = sphereFlows.size();
 }
 
 EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks, const Vector3d& initLinVel, const Vector3d& initAngVel, const double& dt) {
@@ -198,4 +228,23 @@ vector<pair<Vector3d, Vector3d>> EgoMotion::estimateFlows(const vector<GIFT::Lan
     }
 
     return estFlows;
+}
+
+Vector3d EgoMotion::estimateAngularVelocity(const vector<pair<Vector3d, Vector3d>>& sphereFlows, const Vector3d& linVel) {
+    // Uses ordinary least squares to estimate angular velocity from linear velocity and flows.
+    auto Proj3 = [](const Vector3d& vec) { return Matrix3d::Identity() - vec*vec.transpose()/vec.squaredNorm(); };
+    bool velocityFlag = (linVel.norm() <= 1e-8);
+
+    Matrix3d tempA = Matrix3d::Zero();
+    Vector3d tempB = Vector3d::Zero();
+
+    for (const auto & flow : sphereFlows) {
+        const Vector3d& eta = flow.first;
+        const Vector3d& phi = flow.second;
+        tempA += Proj3(eta);
+        tempB += eta.cross(Proj3( Proj3(eta)*linVel )*phi);
+    }
+
+    Vector3d angVel = - tempA.inverse()*tempB;
+    return angVel;
 }
