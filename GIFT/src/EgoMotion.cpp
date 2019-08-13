@@ -11,9 +11,10 @@ EgoMotion::EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows) {
     Vector3d linVel(0,0,1);
     Vector3d angVel(0,0,0);
 
-    double residual = optimize(sphereFlows, linVel, angVel);
+    pair<int, double> stepResPair = optimize(sphereFlows, linVel, angVel);
     
-    this->optimisedResidual = residual;
+    this->optimisedResidual = stepResPair.second;
+    this->optimisationSteps = stepResPair.first;
     this->linearVelocity = linVel;
     this->angularVelocity = angVel;
     this->numberOfFeatures = sphereFlows.size();
@@ -23,9 +24,10 @@ EgoMotion::EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows, const 
     Vector3d linVel = initLinVel;
     Vector3d angVel = estimateAngularVelocity(sphereFlows, linVel);
 
-    double residual = optimize(sphereFlows, linVel, angVel);
+    pair<int, double> stepResPair = optimize(sphereFlows, linVel, angVel);
     
-    this->optimisedResidual = residual;
+    this->optimisedResidual = stepResPair.second;
+    this->optimisationSteps = stepResPair.first;
     this->linearVelocity = linVel;
     this->angularVelocity = angVel;
     this->numberOfFeatures = sphereFlows.size();
@@ -35,9 +37,10 @@ EgoMotion::EgoMotion(const vector<pair<Vector3d, Vector3d>>& sphereFlows, const 
     Vector3d linVel = initLinVel;
     Vector3d angVel = initAngVel;
 
-    double residual = optimize(sphereFlows, linVel, angVel);
+    pair<int, double> stepResPair = optimize(sphereFlows, linVel, angVel);
     
-    this->optimisedResidual = residual;
+    this->optimisedResidual = stepResPair.second;
+    this->optimisationSteps = stepResPair.first;
     this->linearVelocity = linVel;
     this->angularVelocity = angVel;
     this->numberOfFeatures = sphereFlows.size();
@@ -53,9 +56,10 @@ EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks, const double& dt) {
     Vector3d linVel(0,0,1);
     Vector3d angVel(0,0,0);
 
-    double residual = optimize(sphereFlows, linVel, angVel);
+    pair<int, double> stepResPair = optimize(sphereFlows, linVel, angVel);
     
-    this->optimisedResidual = residual;
+    this->optimisedResidual = stepResPair.second;
+    this->optimisationSteps = stepResPair.first;
     this->linearVelocity = linVel;
     this->angularVelocity = angVel;
     this->numberOfFeatures = sphereFlows.size();
@@ -72,9 +76,10 @@ EgoMotion::EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3d& in
     Vector3d linVel = initLinVel;
     Vector3d angVel = estimateAngularVelocity(sphereFlows, linVel);
 
-    double residual = optimize(sphereFlows, linVel, angVel);
+    pair<int, double> stepResPair = optimize(sphereFlows, linVel, angVel);
     
-    this->optimisedResidual = residual;
+    this->optimisedResidual = stepResPair.second;
+    this->optimisationSteps = stepResPair.first;
     this->linearVelocity = linVel;
     this->angularVelocity = angVel;
     this->numberOfFeatures = sphereFlows.size();
@@ -89,21 +94,23 @@ EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks, const Vector3d& ini
     Vector3d linVel = initLinVel;
     Vector3d angVel = initAngVel;
 
-    double residual = optimize(sphereFlows, linVel, angVel);
+    pair<int, double> stepResPair = optimize(sphereFlows, linVel, angVel);
     
-    this->optimisedResidual = residual;
+    this->optimisedResidual = stepResPair.second;
+    this->optimisationSteps = stepResPair.first;
     this->linearVelocity = linVel;
     this->angularVelocity = angVel;
     this->numberOfFeatures = sphereFlows.size();
 }
 
-double EgoMotion::optimize(const vector<pair<Vector3d, Vector3d>>& flows, Vector3d& linVel, Vector3d& angVel) {
+pair<int,double> EgoMotion::optimize(const vector<pair<Vector3d, Vector3d>>& flows, Vector3d& linVel, Vector3d& angVel) {
     double lastResidual = 1e8;
     double residual = computeResidual(flows, linVel, angVel);
 
     Vector3d bestLinVel = linVel;
     Vector3d bestAngVel = angVel;
     double bestResidual = INFINITY;
+    int optimisationSteps = 0;
 
     int iteration = 0;
     while ((abs(lastResidual - residual) > optimisationThreshold) && (iteration < maxIterations)) {
@@ -118,13 +125,14 @@ double EgoMotion::optimize(const vector<pair<Vector3d, Vector3d>>& flows, Vector
             bestResidual = residual;
             bestLinVel = linVel;
             bestAngVel = angVel;
+            optimisationSteps = iteration;
         }
     }
 
     linVel = bestLinVel;
     angVel = bestAngVel;
 
-    return bestResidual;
+    return make_pair(optimisationSteps, bestResidual);
 }
 
 double EgoMotion::computeResidual(const vector<pair<Vector3d, Vector3d>>& flows, const Vector3d& linVel, const Vector3d& angVel) {
@@ -233,7 +241,15 @@ vector<pair<Vector3d, Vector3d>> EgoMotion::estimateFlows(const vector<GIFT::Lan
 Vector3d EgoMotion::estimateAngularVelocity(const vector<pair<Vector3d, Vector3d>>& sphereFlows, const Vector3d& linVel) {
     // Uses ordinary least squares to estimate angular velocity from linear velocity and flows.
     auto Proj3 = [](const Vector3d& vec) { return Matrix3d::Identity() - vec*vec.transpose()/vec.squaredNorm(); };
-    bool velocityFlag = (linVel.norm() <= 1e-8);
+    auto skew = [](const Vector3d& v) {
+    Matrix3d m;
+    m << 0, -v(2), v(1),
+         v(2), 0, -v(0),
+         -v(1), v(0), 0;
+    return m;
+    };
+
+    bool velocityFlag = (linVel.norm() > 1e-4);
 
     Matrix3d tempA = Matrix3d::Zero();
     Vector3d tempB = Vector3d::Zero();
@@ -241,10 +257,12 @@ Vector3d EgoMotion::estimateAngularVelocity(const vector<pair<Vector3d, Vector3d
     for (const auto & flow : sphereFlows) {
         const Vector3d& eta = flow.first;
         const Vector3d& phi = flow.second;
+
         tempA += Proj3(eta);
-        tempB += eta.cross(Proj3( Proj3(eta)*linVel )*phi);
+        if (velocityFlag) tempB += eta.cross(Proj3( Proj3(eta)*linVel )*phi);
+        else tempB += eta.cross(phi);
     }
 
-    Vector3d angVel = - tempA.inverse()*tempB;
+    Vector3d angVel = -tempA.inverse()*tempB;
     return angVel;
 }

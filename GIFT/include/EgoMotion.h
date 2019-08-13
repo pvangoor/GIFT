@@ -14,9 +14,10 @@ public:
     Vector3d linearVelocity;
     Vector3d angularVelocity;
     double optimisedResidual = INFINITY;
+    int optimisationSteps;
     int numberOfFeatures;
 
-    static constexpr double optimisationThreshold = 1e-7;
+    static constexpr double optimisationThreshold = 1e-8;
     static constexpr int maxIterations = 30;
 
     
@@ -32,7 +33,7 @@ public:
 
 private:
     static Vector3d angularFromLinearVelocity(const vector<pair<Vector3d, Vector3d>>& flows, Vector3d& linVel);
-    static double optimize(const vector<pair<Vector3d, Vector3d>>& flows, Vector3d& linVel, Vector3d& angVel);
+    static pair<int,double> optimize(const vector<pair<Vector3d, Vector3d>>& flows, Vector3d& linVel, Vector3d& angVel);
     static void optimizationStep(const vector<pair<Vector3d, Vector3d>>& flows, Vector3d& linVel, Vector3d& angVel);
     static double computeResidual(const vector<pair<Vector3d, Vector3d>>& flows, const Vector3d& linVel, const Vector3d& angVel);
 };
