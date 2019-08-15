@@ -69,8 +69,8 @@ int main(int argc, char *argv[]) {
         cv::Mat flowImage;
         image.copyTo(flowImage);
         for (const auto &lm : landmarks) {
-            Point2f p1 = lm.camCoordinates;
-            Point2f p0 = p1 - Point2f(lm.opticalFlowRaw.x(), lm.opticalFlowRaw.y());
+            cv::Point2f p1 = lm.camCoordinates;
+            cv::Point2f p0 = p1 - cv::Point2f(lm.opticalFlowRaw.x(), lm.opticalFlowRaw.y());
             cv::line(flowImage, p0, p1, cv::Scalar(255,0,255));
             cv::circle(flowImage, p0, 2, cv::Scalar(255,0,0));
         }
@@ -79,19 +79,18 @@ int main(int argc, char *argv[]) {
         // Draw the normalised flow and estimates
         constexpr int viewScale = 500;
         cv::Mat estFlowImage(viewScale*2, viewScale*2, CV_8UC3, Scalar(255,255,255));
-        image.copyTo(flowImage);
         for (const auto& flow : estFlows) {
-            Point2f p1 = flow.first;
-            Point2f p0 = p1 - Point2f(flow.second.x(), flow.second.y());
-            p0 = Point2f(viewScale,viewScale) + p0*viewScale;
-            p1 = Point2f(viewScale,viewScale) + p1*viewScale;
+            cv::Point2f p1 = flow.first;
+            cv::Point2f p0 = p1 - cv::Point2f(flow.second.x(), flow.second.y());
+            p0 = cv::Point2f(viewScale,viewScale) + p0*viewScale;
+            p1 = cv::Point2f(viewScale,viewScale) + p1*viewScale;
             cv::line(estFlowImage, p0, p1, cv::Scalar(255,0,0));
         }
         for (const auto &lm : landmarks) {
-            Point2f p1 = lm.camCoordinatesNorm;
-            Point2f p0 = p1 - Point2f(lm.opticalFlowNorm.x(), lm.opticalFlowNorm.y());
-            p0 = Point2f(viewScale,viewScale) + p0*viewScale;
-            p1 = Point2f(viewScale,viewScale) + p1*viewScale;
+            cv::Point2f p1 = lm.camCoordinatesNorm;
+            cv::Point2f p0 = p1 - cv::Point2f(lm.opticalFlowNorm.x(), lm.opticalFlowNorm.y());
+            p0 = cv::Point2f(viewScale,viewScale) + p0*viewScale;
+            p1 = cv::Point2f(viewScale,viewScale) + p1*viewScale;
             cv::line(estFlowImage, p0, p1, cv::Scalar(255,0,255));
             cv::circle(estFlowImage, p0, 2, cv::Scalar(255,0,0));
         }
