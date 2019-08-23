@@ -132,6 +132,10 @@ pair<int,double> EgoMotion::optimize(const vector<pair<Vector3d, Vector3d>>& flo
     linVel = bestLinVel;
     angVel = bestAngVel;
 
+    if (voteForLinVelInversion(flows, linVel, angVel)) {
+        linVel = -linVel;
+    }
+
     return make_pair(optimisationSteps, bestResidual);
 }
 
@@ -229,7 +233,7 @@ vector<pair<Vector3d, Vector3d>> EgoMotion::estimateFlows(const vector<GIFT::Lan
         const Vector3d etaVel = Proj3(eta) * this->linearVelocity;
 
         double invDepth = 0;
-        if (etaVel.norm() > 0) invDepth = etaVel.dot(lm.opticalFlowSphere + this->angularVelocity.cross(eta)) / etaVel.squaredNorm();
+        if (etaVel.norm() > 0) invDepth = -etaVel.dot(lm.opticalFlowSphere + this->angularVelocity.cross(eta)) / etaVel.squaredNorm();
 
         Vector3d flow = -this->angularVelocity.cross(eta) + invDepth * etaVel;
         estFlows.emplace_back(make_pair(eta, flow));
@@ -265,4 +269,21 @@ Vector3d EgoMotion::estimateAngularVelocity(const vector<pair<Vector3d, Vector3d
 
     Vector3d angVel = -tempA.inverse()*tempB;
     return angVel;
+}
+
+bool EgoMotion::voteForLinVelInversion(const vector<pair<Vector3d, Vector3d>>& flows, const Vector3d& linVel, const Vector3d& angVel) {
+    auto Proj3 = [](const Vector3d& vec) { return Matrix3d::Identity() - vec*vec.transpose()/vec.squaredNorm(); };
+    int invertVotes = 0;
+
+    for (const auto& flowPair: flows) {
+        const Vector3d& eta = flowPair.first;
+        const Vector3d etaVel = Proj3(eta) * linVel;
+
+        double scaledInvDepth = -etaVel.dot(flowPair.second + angVel.cross(eta));
+        if (scaledInvDepth > 0) --invertVotes;
+        else if (scaledInvDepth < 0) ++invertVotes;
+    }
+
+    bool invertDecision = (invertVotes > 0);
+    return invertDecision;
 }
