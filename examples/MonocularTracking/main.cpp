@@ -10,34 +10,41 @@
 #include "Configure.h"
 
 int main(int argc, char *argv[]) {
-    cv::String folderName = "/home/pieter/Documents/Datasets/rectified/image_0";
+    cv::String camConfigFile;
+    cv::String videoFile;
+    if (argc <= 1) {
+        camConfigFile = "/home/pieter/Documents/Datasets/ardupilot/flight1/cam0.yaml";
+        videoFile = "/home/pieter/Documents/Datasets/ardupilot/flight1/small.mp4";
+    } else if (argc == 3) {
+        camConfigFile = argv[1];
+        videoFile = argv[2];        
+    } else {
+        throw std::runtime_error("You must provide exactly the camera calibration and the video file.");
+    }
 
-    cv::Mat mask = cv::Mat::zeros(720,1280,CV_8U);
-    mask(Rect(0, 60, 1250, 500)) = 1;
+    cv::VideoCapture cap(videoFile);
+    cv::namedWindow("debug");
+    cv::Mat image;
+    cap.read(image);
+
+    cv::Mat mask = cv::Mat::zeros(image.size(), CV_8U);
+    mask(Rect(0, 0, 400, 300)) = 1;
 
     // Set up a monocular feature tracker
     GIFT::FeatureTracker ft = GIFT::FeatureTracker(GIFT::TrackerMode::MONO);
-    GIFT::CameraParameters cam0 = GIFT::readCameraConfig(folderName+"/cam0.yaml");
+    GIFT::CameraParameters cam0 = GIFT::readCameraConfig(camConfigFile);
     ft.setCameraConfiguration(cam0, 0);
     ft.setMask(mask, 0);
 
-    vector<cv::String> imageFileNames;
-    cv::glob(folderName+"/*.png", imageFileNames);
-    
-    long int total = imageFileNames.size();
-    int i = 0;
-    cv::namedWindow("debug");
-    cv::Mat image;
 
-    for (const auto& fileName : imageFileNames) {
-        image = cv::imread(fileName);
+    while (cap.read(image) ) {;
 
         ft.processImage(image);
 
         std::vector<GIFT::Landmark> landmarks = ft.outputLandmarks();
         std::vector<cv::Point2f> features;
         for (const auto &lm : landmarks) {
-            features.emplace_back(lm.camCoordinates[0]);
+            features.emplace_back(lm.camCoordinates);
         }
         std::vector<cv::KeyPoint> keypoints;
         cv::KeyPoint::convert(features, keypoints);
@@ -48,8 +55,6 @@ int main(int argc, char *argv[]) {
         cv::imshow("debug", kpImage);
         cv::waitKey(1);
 
-
-        std::cout << ++i << " / " << total << std::endl;
     }
 
     std::cout << "Complete." << std::endl;

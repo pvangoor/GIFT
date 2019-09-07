@@ -19,6 +19,8 @@ ${OpenCV_INCLUDE_DIRS})
 
 set(GIFT_SOURCE_FILES
     src/FeatureTracker.cpp
+    src/EgoMotion.cpp
+    src/Landmark.cpp
 )
 
 set(GIFT_HEADER_FILES
