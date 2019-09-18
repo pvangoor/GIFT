@@ -26,13 +26,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Set up a monocular feature tracker
-    GIFT::FeatureTracker ft = GIFT::FeatureTracker(GIFT::TrackerMode::MONO);
     GIFT::CameraParameters cam0 = GIFT::readCameraConfig(camConfigFile);
-    ft.setCameraConfiguration(cam0, 0);
-    ft.maxFeatures = 50;
+    GIFT::FeatureTracker ft = GIFT::FeatureTracker(cam0);
+    ft.maxFeatures = 250;
+    ft.featureDist = 20;
 
     cv::VideoCapture cap(videoFile);
-    cv::namedWindow("debug");
 
     cv::Mat image;
     int count = 0;
@@ -53,27 +52,7 @@ int main(int argc, char *argv[]) {
 
         auto estFlows = egoMotion.estimateFlowsNorm(landmarks);
 
-
-        // Draw the keypoints
-        std::vector<cv::Point2f> features;
-        for (const auto &lm : landmarks) {
-            features.emplace_back(lm.camCoordinates);
-        }
-        std::vector<cv::KeyPoint> keypoints;
-        cv::KeyPoint::convert(features, keypoints);
-        cv::Mat kpImage;
-        cv::drawKeypoints(image, keypoints, kpImage, cv::Scalar(0,0,255));
-        cv::imshow("points", kpImage);
-
-        // Draw the optical flow as well as the estimates
-        cv::Mat flowImage;
-        image.copyTo(flowImage);
-        for (const auto &lm : landmarks) {
-            cv::Point2f p1 = lm.camCoordinates;
-            cv::Point2f p0 = p1 - cv::Point2f(lm.opticalFlowRaw.x(), lm.opticalFlowRaw.y());
-            cv::line(flowImage, p0, p1, cv::Scalar(255,0,255));
-            cv::circle(flowImage, p0, 2, cv::Scalar(255,0,0));
-        }
+        cv::Mat flowImage = ft.drawFlowImage(Scalar(0,0,255), Scalar(0,255,255), 3, 2);
         cv::imshow("flow", flowImage);
 
         // Draw the normalised flow and estimates

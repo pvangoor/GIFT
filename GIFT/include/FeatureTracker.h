@@ -18,59 +18,51 @@ using namespace cv;
 
 namespace GIFT {
 
-enum class TrackerMode {
-    MONO, STEREO, MULTIVIEW
-};
-
 Eigen::Matrix3d skew_matrix(const Eigen::Vector3d& t);
 
 class FeatureTracker {
 protected:
-    // Core settings
-    TrackerMode mode = TrackerMode::MONO;
-    vector<CameraParameters> cameras;
+    CameraParameters camera;
 
     // Variables used in the tracking algorithms
     int currentNumber = 0;
-    vector<Mat> previousImages;
+    Mat previousImage;
     vector<Landmark> landmarks;
-    vector<Mat> imageMasks;
+    Mat imageMask;
 
 public:
     int maxFeatures = 500;
     double featureDist = 20;
+    double minHarrisQuality = 0.1;
 
-    // Stereo Specific
-    double stereoBaseline = 0.1;
-    double stereoThreshold = 1;
+    // // Stereo Specific
+    // double stereoBaseline = 0.1;
+    // double stereoThreshold = 1;
 
 public:
     // Initialisation and configuration
-    FeatureTracker(TrackerMode mode = TrackerMode::MONO);
-    void setCameraConfiguration(const CameraParameters &configuration, int cameraNumber=0);
+    FeatureTracker(const CameraParameters &configuration) { camera = configuration; };
+    void setCameraConfiguration(const CameraParameters &configuration);
 
     // Core
-    void processImages(const vector<Mat> &images);
     void processImage(const Mat &image);
     vector<Landmark> outputLandmarks() const { return landmarks; };
 
+    // Visualisation
+    Mat drawFeatureImage(const Scalar& color = Scalar(0,0,255), const int pointSize = 2, const int thickness = 1) const;
+    Mat drawFlowImage(const Scalar& featureColor = Scalar(0,0,255), const Scalar& flowColor = Scalar(0,255,255), const int pointSize = 2, const int thickness = 1) const;
+
     // Masking
     void setMask(const Mat & mask, int cameraNumber=0);
-    void setMasks(const vector<Mat> & masks);
 
 protected:
-    vector<Point2f> detectNewFeatures(const Mat &image, int cameraNumber=0) const;
-    vector<vector<Point2f>> detectNewStereoFeatures(const cv::Mat & imageLeft, const cv::Mat &imageRight) const;
-    vector<Point2f> removeDuplicateFeatures(const vector<Point2f> &proposedFeatures, int cameraNumber=0) const;
-    vector<Landmark> matchImageFeatures(vector<vector<Point2f>> features, vector<vector<Point2f>> featuresNorm, vector<Mat> images) const;
+    vector<Point2f> detectNewFeatures(const Mat &image) const;
+    vector<Point2f> removeDuplicateFeatures(const vector<Point2f> &proposedFeatures) const;
+    vector<Landmark> createNewLandmarks(const Mat &image, const vector<Point2f>& newFeatures);
 
-    void trackLandmarks(const Mat &image, int cameraNumber);
+    void trackLandmarks(const Mat &image);
     void addNewLandmarks(vector<Landmark> newLandmarks);
     void computeLandmarkPositions();
-
-    Vector3d solveStereo(const Point2f& leftKp, const Point2f& rightKp) const;
-    Vector3d solveMultiView(const vector<Point2f> imageCoordinates) const;
-    bool checkStereoQuality(const Point2f &leftKp, const Point2f &rightKp) const;
 };
 
 }
