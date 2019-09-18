@@ -55,7 +55,7 @@ public:
 
 public:
     // Initialisation and configuration
-    FeatureTracker(const CameraParameters &configuration) { camera = configuration; };
+    FeatureTracker(const CameraParameters &configuration = CameraParameters()) { camera = configuration; };
     void setCameraConfiguration(const CameraParameters &configuration);
 
     // Core
