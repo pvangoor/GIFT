@@ -13,6 +13,7 @@
 #include "EgoMotion.h"
 
 int main(int argc, char *argv[]) {
+
     cv::String camConfigFile;
     cv::String videoFile;
     if (argc <= 1) {
