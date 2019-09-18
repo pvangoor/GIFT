@@ -4,6 +4,7 @@
 #include <array>
 #include "eigen3/Eigen/Dense"
 #include "opencv2/core/core.hpp"
+#include "opencv2/features2d/features2d.hpp"
 
 using colorVec = std::array<uchar, 3>;
 
@@ -18,6 +19,8 @@ struct Landmark {
     Eigen::Vector2d opticalFlowRaw;
     Eigen::Vector2d opticalFlowNorm;
     Eigen::Vector3d opticalFlowSphere;
+
+    cv::KeyPoint keypoint;
 
     colorVec pointColor;    
     int idNumber;
