@@ -98,7 +98,7 @@ void FeatureTracker::trackLandmarks(const Mat &image) {
 }
 
 void FeatureTracker::setCameraConfiguration(const CameraParameters &configuration) {
-    // camera = configuration;
+    camera = configuration;
 }
 
 vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image) const {
