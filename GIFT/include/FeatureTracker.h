@@ -48,6 +48,7 @@ public:
     int maxFeatures = 500;
     double featureDist = 20;
     double minHarrisQuality = 0.1;
+    double featureSearchThreshold = 1.0;
 
     // // Stereo Specific
     // double stereoBaseline = 0.1;
@@ -65,6 +66,7 @@ public:
     // Visualisation
     Mat drawFeatureImage(const Scalar& color = Scalar(0,0,255), const int pointSize = 2, const int thickness = 1) const;
     Mat drawFlowImage(const Scalar& featureColor = Scalar(0,0,255), const Scalar& flowColor = Scalar(0,255,255), const int pointSize = 2, const int thickness = 1) const;
+    Mat drawFlow(const Scalar& featureColor = Scalar(0,0,255), const Scalar& flowColor = Scalar(0,255,255), const int pointSize = 2, const int thickness = 1) const;
 
     // Masking
     void setMask(const Mat & mask, int cameraNumber=0);

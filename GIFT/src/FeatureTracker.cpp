@@ -30,6 +30,8 @@ void FeatureTracker::processImage(const Mat &image) {
     this->trackLandmarks(image);
     image.copyTo(this->previousImage);
 
+    if (this->landmarks.size() > this->featureSearchThreshold*this->maxFeatures) return;
+
     vector<Point2f> newFeatures = this->detectNewFeatures(image);
     vector<Landmark> newLandmarks = this->createNewLandmarks(image, newFeatures);
 
@@ -170,6 +172,19 @@ Mat FeatureTracker::drawFlowImage(const Scalar& featureColor, const Scalar& flow
             line(flowImage, p0, p1, flowColor, thickness);
         }
     return flowImage;
+}
+
+Mat FeatureTracker::drawFlow(const Scalar& featureColor, const Scalar& flowColor, const int pointSize, const int thickness) const {
+    Mat flow(this->previousImage.size(), CV_8UC3);
+    flow.setTo(0);
+    
+    for (const auto &lm : this->landmarks) {
+            Point2f p1 = lm.camCoordinates;
+            Point2f p0 =  p1 - Point2f(lm.opticalFlowRaw.x(), lm.opticalFlowRaw.y());
+            circle(flow, p1, pointSize, featureColor, thickness);
+            line(flow, p0, p1, flowColor, thickness);
+        }
+    return flow;
 }
 
 
