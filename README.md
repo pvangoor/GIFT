@@ -10,6 +10,10 @@ In the future the dependency on Eigen may be removed.
 
 - Eigen3:  `sudo apt install libeigen3-dev`
 - OpenCV:  `sudo apt install libopencv-dev`
+- yaml-cpp: `sudo apt install libyaml-cpp-dev`
+
+If you wish to build the tests, you will need to install [googletest](https://github.com/google/googletest) from source.
+
 
 ## Building and Installing
 
