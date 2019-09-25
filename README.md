@@ -23,3 +23,10 @@ cd build
 cmake ..
 sudo make install
 ```
+
+## Citing
+
+GIFT was developed for use in an academic paper.
+If you use GIFT in an academic context, please cite the following publication:
+
+van Goor, Pieter and Mahony, Robert and Hamel, Tarek and Trumpf, Jochen. "A Geometric Observer Design for Visual Localisation and Mapping." *Accepted for publication in 2019 IEEE 58th Annual Conference on Decision and Control (CDC)*. IEEE, 2019.
