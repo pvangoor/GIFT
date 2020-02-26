@@ -62,6 +62,8 @@ public:
     // Core
     void processImage(const Mat &image);
     vector<Landmark> outputLandmarks() const { return landmarks; };
+    void trackLandmarks(const Mat &image0, const Mat &image1, vector<Landmark>& landmarkVector) const;
+    void addNewLandmarks(const Mat &image, vector<Landmark>& landmarkVector, int& currentIdNumber) const;
 
     // Visualisation
     Mat drawFeatureImage(const Scalar& color = Scalar(0,0,255), const int pointSize = 2, const int thickness = 1) const;
@@ -77,11 +79,11 @@ public:
 protected:
     vector<Point2f> detectNewFeatures(const Mat &image) const;
     vector<Point2f> removeDuplicateFeatures(const vector<Point2f> &proposedFeatures) const;
-    vector<Landmark> createNewLandmarks(const Mat &image, const vector<Point2f>& newFeatures);
+    vector<Landmark> createNewLandmarks(const Mat &image, const vector<Point2f>& newFeatures) const;
 
     void trackLandmarks(const Mat &image);
-    void addNewLandmarks(vector<Landmark> newLandmarks);
-    void computeLandmarkPositions();
+    void addNewLandmarks(const Mat &image);
+    // void computeLandmarkPositions();
 };
 
 }

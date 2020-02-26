@@ -33,7 +33,6 @@ class StereoFeatureTracker {
 
 protected:
     FeatureTracker trackerLeft;
-    FeatureTracker trackerRight;
     vector<StereoLandmark> stereoLandmarks;
 
 public:
@@ -65,6 +64,9 @@ public:
     // Core
     void processImages(const Mat &imageLeft, const Mat &imageRight);
     vector<StereoLandmark> outputStereoLandmarks() const { return stereoLandmarks; };
+
+    // Visualisation
+    Mat drawFeatureImage(const Scalar& color = Scalar(0,0,255), const int pointSize = 2, const int thickness = 1) const;
 
 protected:
     void removeLostStereoLandmarks(const vector<Landmark>& landmarksLeft, const vector<Landmark>& landmarksRight);

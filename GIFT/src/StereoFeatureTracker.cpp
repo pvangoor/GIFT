@@ -23,15 +23,14 @@ using namespace GIFT;
 
 void StereoFeatureTracker::processImages(const Mat &imageLeft, const Mat &imageRight) {
     trackerLeft.processImage(imageLeft);
-    trackerRight.processImage(imageRight);
 
     vector<Landmark> landmarksLeft = trackerLeft.outputLandmarks();
-    vector<Landmark> landmarksRight = trackerRight.outputLandmarks();
+    // vector<Landmark> landmarksRight = trackerRight.outputLandmarks();
 
-    removeLostStereoLandmarks(landmarksLeft, landmarksRight);
-    vector<StereoLandmark> newStereoLandmarks = createNewStereoLandmarks(landmarksLeft, imageLeft, landmarksRight, imageRight);
+    // removeLostStereoLandmarks(landmarksLeft, landmarksRight);
+    // vector<StereoLandmark> newStereoLandmarks = createNewStereoLandmarks(landmarksLeft, imageLeft, landmarksRight, imageRight);
     // addNewStereoLandmarks(newStereoLandmarks);
-    stereoLandmarks = newStereoLandmarks;
+    // stereoLandmarks = newStereoLandmarks;
 }
 
 void StereoFeatureTracker::removeLostStereoLandmarks(const vector<Landmark>& landmarksLeft, const vector<Landmark>& landmarksRight) {
@@ -115,7 +114,7 @@ Size winSize, const int maxLevel) const {
         Rect2f pyrBound = Rect2f(0,0, pyrImgR.cols-winSize.width-1, pyrImgR.rows-winSize.height-1);
 
         Mat dx_pyrImgL;
-        Sobel( pyrImgL, dx_pyrImgL, CV_16SC1, 1, 0, 3, 1.0, 0.0, BORDER_REPLICATE);
+        Sobel(pyrImgL, dx_pyrImgL, CV_16SC1, 1, 0, 3, 1.0, 0.0, BORDER_REPLICATE);
 
         // Find the stereo match for each point.
         for (int i=0; i<n; ++i) {
@@ -196,4 +195,8 @@ Size winSize, const int maxLevel) const {
 
     return newLandmarks;
 
+}
+
+Mat StereoFeatureTracker::drawFeatureImage(const Scalar& color, const int pointSize, const int thickness) const {
+    return trackerLeft.drawFeatureImage(color, pointSize, thickness);
 }

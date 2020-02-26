@@ -32,13 +32,10 @@ void FeatureTracker::processImage(const Mat &image) {
 
     if (this->landmarks.size() > this->featureSearchThreshold*this->maxFeatures) return;
 
-    vector<Point2f> newFeatures = this->detectNewFeatures(image);
-    vector<Landmark> newLandmarks = this->createNewLandmarks(image, newFeatures);
-
-    this->addNewLandmarks(newLandmarks);
+    this->addNewLandmarks(image);
 }
 
-vector<Landmark> FeatureTracker::createNewLandmarks(const Mat &image, const vector<Point2f>& newFeatures) {
+vector<Landmark> FeatureTracker::createNewLandmarks(const Mat &image, const vector<Point2f>& newFeatures) const {
     vector<Landmark> newLandmarks;
     if (newFeatures.empty()) return newLandmarks;
 
@@ -65,38 +62,7 @@ vector<Landmark> FeatureTracker::createNewLandmarks(const Mat &image, const vect
 void FeatureTracker::trackLandmarks(const Mat &image) {
     if (landmarks.empty()) return;
 
-    vector<Point2f> oldPoints;
-    for (const auto & feature: landmarks) {
-        oldPoints.emplace_back(feature.camCoordinates);
-    }
-
-    vector<Point2f> points;
-    vector<uchar> status;
-    vector<float> err;
-    calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err);
-
-    vector<Point2f> pointsNorm;
-    cv::undistortPoints(points, pointsNorm, camera.K, camera.distortionParams);
-
-    for (long int i=points.size()-1; i >= 0; --i) {
-        if (status[i] == 0) {
-            landmarks.erase(landmarks.begin() + i);
-            continue;
-        }
-
-        if (!imageMask.empty()) {
-            if (imageMask.at<uchar>(points[i])==0) {
-                landmarks.erase(landmarks.begin() + i);
-                continue;
-            } 
-        }
-
-        colorVec pointColor = {image.at<Vec3b>(points[i]).val[0],
-                                image.at<Vec3b>(points[i]).val[1],
-                                image.at<Vec3b>(points[i]).val[2]};
-        landmarks[i].update(points[i], pointsNorm[i], pointColor);
-        
-    }
+    trackLandmarks(this->previousImage, image, this->landmarks);
 }
 
 void FeatureTracker::setCameraConfiguration(const CameraParameters &configuration) {
@@ -132,13 +98,20 @@ vector<Point2f> FeatureTracker::removeDuplicateFeatures(const vector<Point2f> &p
     return newFeatures;
 }
 
-void FeatureTracker::addNewLandmarks(vector<Landmark> newLandmarks) {
+void FeatureTracker::addNewLandmarks(const Mat &image, vector<Landmark>& landmarkVector, int& currentIdNumber) const {
+    vector<Point2f> newFeatures = this->detectNewFeatures(image);
+    vector<Landmark> newLandmarks = this->createNewLandmarks(image, newFeatures);
+
     for (auto & lm : newLandmarks) {
         if (landmarks.size() >= maxFeatures) break;
 
-        lm.idNumber = ++currentNumber;
-        landmarks.emplace_back(lm);
+        lm.idNumber = ++currentIdNumber;
+        landmarkVector.emplace_back(lm);
     }
+}
+
+void FeatureTracker::addNewLandmarks(const Mat &image) {
+    addNewLandmarks(image, this->landmarks, this->currentNumber);
 }
 
 void FeatureTracker::setMask(const Mat & mask, int cameraNumber) {
@@ -185,6 +158,42 @@ Mat FeatureTracker::drawFlow(const Scalar& featureColor, const Scalar& flowColor
             line(flow, p0, p1, flowColor, thickness);
         }
     return flow;
+}
+
+void FeatureTracker::trackLandmarks(const Mat &image0, const Mat &image1, vector<Landmark>& landmarkVector) const {
+    if (landmarkVector.empty()) return;
+
+    vector<Point2f> oldPoints;
+    for (const auto & lm: landmarkVector) {
+        oldPoints.emplace_back(lm.camCoordinates);
+    }
+
+    vector<Point2f> points;
+    vector<uchar> status;
+    vector<float> err;
+    calcOpticalFlowPyrLK(image0, image1, oldPoints, points, status, err);
+
+    vector<Point2f> pointsNorm;
+    cv::undistortPoints(points, pointsNorm, camera.K, camera.distortionParams);
+
+    for (long int i=points.size()-1; i >= 0; --i) {
+        if (status[i] == 0) {
+            landmarkVector.erase(landmarkVector.begin() + i);
+            continue;
+        }
+
+        if (!imageMask.empty()) {
+            if (imageMask.at<uchar>(points[i])==0) {
+                landmarkVector.erase(landmarkVector.begin() + i);
+                continue;
+            } 
+        }
+
+        colorVec pointColor = {image1.at<Vec3b>(points[i]).val[0],
+                               image1.at<Vec3b>(points[i]).val[1],
+                               image1.at<Vec3b>(points[i]).val[2]};
+        landmarkVector[i].update(points[i], pointsNorm[i], pointColor);
+    }
 }
 
 
