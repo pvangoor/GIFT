@@ -1,2 +1,3 @@
 add_subdirectory(MonocularTracking)
+add_subdirectory(StereoTracking)
 add_subdirectory(EgoMotion)

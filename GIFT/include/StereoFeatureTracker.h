@@ -68,9 +68,13 @@ public:
 
 protected:
     void removeLostStereoLandmarks(const vector<Landmark>& landmarksLeft, const vector<Landmark>& landmarksRight);
-    vector<StereoLandmark> createNewStereoLandmarks(const vector<Landmark>& landmarksLeft, const Mat& imageLeft,
-                                                    const vector<Landmark>& landmarksRight, const Mat& imageRight) const;
+    vector<StereoLandmark> createNewStereoLandmarks(vector<Landmark>& landmarksLeft, const Mat& imageLeft,
+                                                    vector<Landmark>& landmarksRight, const Mat& imageRight) const;
     void addNewStereoLandmarks(const vector<StereoLandmark>& newStereoLandmarks);
+
+    // Stereo Landmark matching
+    vector<StereoLandmark> findStereoLandmarks(vector<Landmark>& landmarksLeft, const Mat& imageLeft, const Mat& imageRight,
+                                                Size winSize = Size(21,21), int maxLevel = 3) const;
 };
 
 }
