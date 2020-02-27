@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
         std::vector<GIFT::StereoLandmark> landmarks = ft.outputStereoLandmarks();
 
         // cv::Mat featureImage = ft.drawFeatureImage(Scalar(0,0,255), 5, 3);
-        cv::Mat featureImageLeft = ft.drawFeatureImage(Scalar(0,0,255), 5, 3);
+        cv::Mat featureImageLeft = ft.drawStereoFeatureImage(Scalar(0,0,255), Scalar(0,255,255), 2, 2);
 
         cv::imshow("debug", featureImageLeft);
         int k = cv::waitKey(1);

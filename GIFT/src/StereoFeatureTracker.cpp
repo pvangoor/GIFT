@@ -239,6 +239,16 @@ Mat StereoFeatureTracker::drawFeatureImage(const Scalar& color, const int pointS
     return trackerLeft.drawFeatureImage(this->previousImageLeft, this->getLandmarksLeft(), color, pointSize, thickness);
 }
 
+Mat StereoFeatureTracker::drawStereoFeatureImage(const Scalar& featureColor, const Scalar& flowColor, const int pointSize, const int thickness) const {
+    Mat featureImage;
+    this->previousImageLeft.copyTo(featureImage);
+    for (const auto &slm : stereoLandmarks) {
+            cv::circle(featureImage, slm.landmarkLeft.camCoordinates, pointSize, featureColor, thickness);
+            cv::line(featureImage, slm.landmarkLeft.camCoordinates, slm.landmarkRight.camCoordinates, flowColor, thickness);
+        }
+    return featureImage;
+}
+
 vector<Landmark> StereoFeatureTracker::getLandmarksLeft() const {
     vector<Landmark> landmarksLeft(stereoLandmarks.size());
         for (int i=0; i<stereoLandmarks.size(); ++i) {
