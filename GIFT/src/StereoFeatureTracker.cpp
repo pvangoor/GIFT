@@ -116,29 +116,19 @@ const vector<Point2f>& pointsLeft,
 vector<Point2f>& pointsRight,
 const Mat& imageLeft, const Mat& imageRight,
 Size winSize, const int maxLevel) const {
-    // Construct pyramids to calculate the optical flow
 
+    // Construct pyramids to calculate the optical flow
     Mat imageLeftGrey, imageRightGrey;
     cv::cvtColor(imageLeft, imageLeftGrey, cv::COLOR_BGR2GRAY);
     cv::cvtColor(imageRight, imageRightGrey, cv::COLOR_BGR2GRAY);
-    vector<Mat> pyramidLeft(maxLevel+1), pyramidRight(maxLevel+1);
-    for (int i=0; i <= maxLevel; ++i ) {
-        if (i > 0) {
-            pyrDown(pyramidLeft[i-1], pyramidLeft[i]);
-            pyrDown(pyramidRight[i-1], pyramidRight[i]);
-        } else {
-            pyramidLeft[0] = imageLeftGrey;
-            pyramidRight[0] = imageRightGrey;
-        }
-    }
-    for (int i=0; i<=maxLevel; ++i) {
-        copyMakeBorder(pyramidLeft[i], pyramidLeft[i], (winSize.height/2), (winSize.height/2), (winSize.width/2), (winSize.width/2), BORDER_REPLICATE);
-        copyMakeBorder(pyramidRight[i], pyramidRight[i], (winSize.height/2), (winSize.height/2), (winSize.width/2), (winSize.width/2), BORDER_REPLICATE);
-    }
+    vector<Mat> pyramidLeft = constructImagePyramid(imageLeftGrey, maxLevel, winSize);
+    vector<Mat> pyramidRight = constructImagePyramid(imageRightGrey, maxLevel, winSize);
+    
 
     // Precompute
     int n = pointsLeft.size();
     int vecSize = winSize.area();
+    Point2i windowOffset = (Point2i(winSize) - Point2i(1,1))/2;
 
     // Initialise x offsets to zero
     vector<double> offsets(n);
@@ -154,29 +144,18 @@ Size winSize, const int maxLevel) const {
         Rect2f pyrBound = Rect2f(0,0, pyrImgR.cols-winSize.width-1, pyrImgR.rows-winSize.height-1);
 
         Mat dx_pyrImgL;
-        Sobel(pyrImgL, dx_pyrImgL, CV_16SC1, 1, 0, 3, 1.0, 0.0, BORDER_REPLICATE);
+        Sobel(pyrImgL, dx_pyrImgL, CV_32F, 1, 0, 3, 1.0, 0.0, BORDER_REPLICATE);
 
         // Find the stereo match for each point.
         for (int i=0; i<n; ++i) {
             Point2f pointL = pointsLeft[i];
-            // Adjust coordinates of the point to match the pyramid level.
-            // The padding is taken care of in the rectangle definition.
-            pointL = pointL * pow(2,-lv);
+            // Adjust coordinates of the point to match the pyramid level and the padding offset.
             if (! pyrBound.contains(pointL)) continue;
-
-            // Retrieve the image and gradient data
-            Rect2f rectL = Rect2f(pointL.x, pointL.y, winSize.width, winSize.height);
-            Mat patchL = pyrImgL(rectL);
-            Mat dx_patchL = dx_pyrImgL(rectL);
+            pointL = pointL * pow(2,-lv) + Point2f(windowOffset);
 
             // Vectorise the image and gradient data
-            Mat vec_patchL(vecSize, 1, CV_32FC1), vec_dx_patchL(vecSize, 1, CV_32FC1);
-            for (int y=0; y<winSize.height; ++y) {
-                for (int x=0;x<winSize.width; ++x) {
-                    vec_patchL.at<float>(y*winSize.width+x, 0) = (float)patchL.at<uchar>(y,x);
-                    vec_dx_patchL.at<float>(y*winSize.width+x, 0) = (float)dx_patchL.at<uchar>(y,x);
-                }
-            }
+            Mat vec_patchL = getVectorizedPatch(pyrImgL, pointL, winSize);
+            Mat vec_dx_patchL = getVectorizedPatch(dx_pyrImgL, pointL, winSize);
             Mat jacobianT = (vec_dx_patchL.t() * vec_dx_patchL).inv() * vec_dx_patchL.t();
             
             // Converge the new point
@@ -190,24 +169,15 @@ Size winSize, const int maxLevel) const {
                 if (! pyrBound.contains(pointR)) break;
                 
                 // Get the patch and vectorise
-                Rect2f rectR = Rect2f(pointR.x, pointR.y, winSize.width, winSize.height);
-                Mat patchR = pyrImgR(rectR);
-                Mat vec_patchR(vecSize, 1, CV_32FC1);
-                for (int y=0; y<winSize.height; ++y) {
-                    for (int x=0;x<winSize.width; ++x) {
-                        vec_patchR.at<float>(y*winSize.width+x, 0) = (float)patchR.at<uchar>(y,x);
-                    }
-                }
+                Mat vec_patchR = getVectorizedPatch(pyrImgR, pointR, winSize);
 
                 // Compute the error and the step
                 Mat vec_error = vec_patchR - vec_patchL;
                 Mat step = jacobianT * vec_error;
 
-                // print(vec_error);
-                // print(step);
-                float stepf = -step.at<float>(0,0);
+                float stepf = step.at<float>(0,0);
                 offset = offset + stepf;
-                if (abs(stepf) < 1e-3 || ++stepCount >= 100) {
+                if (abs(stepf) < 1e-1 || ++stepCount >= 100) {
                     converged = true;
                 }
 
@@ -263,4 +233,29 @@ vector<Point2f> StereoFeatureTracker::getPointsLeft() const {
             pointsLeft[i] = (stereoLandmarks[i].landmarkLeft.camCoordinates);
         }
     return pointsLeft;
+}
+
+vector<Mat> StereoFeatureTracker::constructImagePyramid(const Mat& image, int maxLevel, Size winSize) {
+    vector<Mat> pyramid(maxLevel+1);
+    for (int i=0; i <= maxLevel; ++i ) {
+        if (i > 0) {
+            pyrDown(pyramid[i-1], pyramid[i]);
+        } else {
+            pyramid[0] = image;
+            pyramid[0].convertTo(pyramid[0], CV_32F);
+        }
+    }
+    for (int i=0; i<=maxLevel; ++i) {
+        copyMakeBorder(pyramid[i], pyramid[i], (winSize.height/2), (winSize.height/2), (winSize.width/2), (winSize.width/2), BORDER_REPLICATE);
+    }
+    return pyramid;
+}
+
+Mat StereoFeatureTracker::getVectorizedPatch(const Mat& image, const Point2f& point, const Size& winSize) {
+    // Point is at the centre.
+    Mat patch;
+    getRectSubPix(image, winSize, point, patch);
+    assert(patch.isContinuous());
+    patch = patch.reshape(0, patch.rows*patch.cols);
+    return patch;
 }

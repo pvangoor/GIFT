@@ -94,6 +94,10 @@ protected:
     void addNewStereoLandmarks(const vector<StereoLandmark>& newStereoLandmarks);
 
     void trackLandmarks(const Mat& imageLeft);
+
+    // Stereo point matching sub-functions
+    static vector<Mat> constructImagePyramid(const Mat& image, int maxLevel, Size winSize);
+    static Mat getVectorizedPatch(const Mat& image, const Point2f& point, const Size& winSize);
 };
 
 }
