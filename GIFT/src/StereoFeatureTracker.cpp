@@ -22,9 +22,14 @@
 using namespace GIFT;
 
 void StereoFeatureTracker::processImages(const Mat &imageLeft, const Mat &imageRight) {
-    trackerLeft.processImage(imageLeft);
+    // track existing landmarks using the left image
+    vector<Landmark> landmarksLeft(stereoLandmarks.size());
+    for (int i=0; i<stereoLandmarks.size(); ++i) {
+        landmarksLeft[i] = (stereoLandmarks[i].landmarkLeft);
+    }
+    trackerLeft.trackLandmarks(this->previousImageLeft, imageLeft, landmarksLeft);
 
-    vector<Landmark> landmarksLeft = trackerLeft.outputLandmarks();
+    // vector<Landmark> landmarksLeft = trackerLeft.outputLandmarks();
     // vector<Landmark> landmarksRight = trackerRight.outputLandmarks();
 
     // removeLostStereoLandmarks(landmarksLeft, landmarksRight);
@@ -42,7 +47,7 @@ void StereoFeatureTracker::removeLostStereoLandmarks(const vector<Landmark>& lan
 
     vector<StereoLandmark>::iterator iter = stereoLandmarks.begin();
     while (iter != stereoLandmarks.end()) {
-        if (checkValidLandmark(iter->landmarkLeft->idNumber, iter->landmarkRight->idNumber)) {
+        if (checkValidLandmark(iter->landmarkLeft.idNumber, iter->landmarkRight.idNumber)) {
             ++iter;
         } else {
             iter = stereoLandmarks.erase(iter);
@@ -52,28 +57,30 @@ void StereoFeatureTracker::removeLostStereoLandmarks(const vector<Landmark>& lan
 
 vector<StereoLandmark> StereoFeatureTracker::createNewStereoLandmarks(vector<Landmark>& landmarksLeft, const Mat& imageLeft,
                                                                       vector<Landmark>& landmarksRight, const Mat& imageRight) const {
-    vector<StereoLandmark> newLandmarks = findStereoLandmarks(landmarksLeft, imageLeft, imageRight);
+    // vector<StereoLandmark> newLandmarks = findStereoLandmarks(landmarksLeft, imageLeft, imageRight);
+    vector<StereoLandmark> newLandmarks;
     return newLandmarks;
 }
  
 void StereoFeatureTracker::addNewStereoLandmarks(const vector<StereoLandmark>& newStereoLandmarks) {
     set<int> idsLeft, idsRight;
     for (const StereoLandmark& lm : this->stereoLandmarks){
-        idsLeft.emplace(lm.landmarkLeft->idNumber);
-        idsRight.emplace(lm.landmarkRight->idNumber);
+        idsLeft.emplace(lm.landmarkLeft.idNumber);
+        idsRight.emplace(lm.landmarkRight.idNumber);
     }
 
     auto checkValidLandmark = [idsLeft, idsRight] (const int idLeft, const int idRight) {return (idsLeft.count(idLeft) * idsRight.count(idRight)); };
 
     for (const StereoLandmark& stereoLM : newStereoLandmarks) {
-        if (checkValidLandmark(stereoLM.landmarkLeft->idNumber, stereoLM.landmarkRight->idNumber)) {
+        if (checkValidLandmark(stereoLM.landmarkLeft.idNumber, stereoLM.landmarkRight.idNumber)) {
             this->stereoLandmarks.emplace_back(stereoLM);
         }
     }
 }
 
-vector<StereoLandmark> StereoFeatureTracker::findStereoLandmarks(
-vector<Landmark>& landmarksLeft,
+vector<bool> StereoFeatureTracker::matchStereoPoints(
+const vector<Point2f>& pointsLeft,
+vector<Point2f>& pointsRight,
 const Mat& imageLeft, const Mat& imageRight,
 Size winSize, const int maxLevel) const {
     // Construct pyramids to calculate the optical flow
@@ -97,7 +104,7 @@ Size winSize, const int maxLevel) const {
     }
 
     // Precompute
-    int n = landmarksLeft.size();
+    int n = pointsLeft.size();
     int vecSize = winSize.area();
 
     // Initialise x offsets to zero
@@ -118,8 +125,7 @@ Size winSize, const int maxLevel) const {
 
         // Find the stereo match for each point.
         for (int i=0; i<n; ++i) {
-            Landmark landmark = landmarksLeft[i];
-            Point2f pointL = landmark.camCoordinates;
+            Point2f pointL = pointsLeft[i];
             // Adjust coordinates of the point to match the pyramid level.
             // The padding is taken care of in the rectangle definition.
             pointL = pointL * pow(2,-lv);
@@ -184,16 +190,15 @@ Size winSize, const int maxLevel) const {
 
     // With the offsets computed, create the new right landmarks
     
-    vector<StereoLandmark> newLandmarks;
+    if (pointsRight.empty()) {
+        pointsRight.reserve(n);
+    }
     for (int i=0;i<n;++i) {
         if (!convergence[i]) continue;
-        Landmark newLandmarkRight;
-        newLandmarkRight.camCoordinates = landmarksLeft[i].camCoordinates + Point2f(offsets[i], 0.0);
-        StereoLandmark newStereoLandmark(landmarksLeft[i], newLandmarkRight, landmarksLeft[i].idNumber);
-        newLandmarks.emplace_back(newStereoLandmark);
+        pointsRight[i] = pointsLeft[i] + Point2f(offsets[i],0);
     }
 
-    return newLandmarks;
+    return convergence;
 
 }
 

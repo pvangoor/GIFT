@@ -29,16 +29,16 @@ using colorVec = std::array<uchar, 3>;
 namespace GIFT {
 
 struct StereoLandmark {
-    GIFT::Landmark* landmarkLeft;
-    GIFT::Landmark* landmarkRight;
+    GIFT::Landmark landmarkLeft;
+    GIFT::Landmark landmarkRight;
  
     int idNumberStereo;
     int lifetime = 0;
 
     StereoLandmark();
-    StereoLandmark(GIFT::Landmark& lmLeft, GIFT::Landmark& lmRight, int idNumberStereo) {
-        this->landmarkLeft = &lmLeft;
-        this->landmarkRight = &lmRight;
+    StereoLandmark(GIFT::Landmark lmLeft, GIFT::Landmark lmRight, int idNumberStereo) {
+        this->landmarkLeft = lmLeft;
+        this->landmarkRight = lmRight;
         this->idNumberStereo = idNumberStereo;
     }
     // void update();

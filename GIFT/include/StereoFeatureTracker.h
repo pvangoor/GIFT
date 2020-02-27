@@ -35,6 +35,10 @@ protected:
     FeatureTracker trackerLeft;
     vector<StereoLandmark> stereoLandmarks;
 
+    CameraParameters camLeft, camRight;
+    Mat previousImageLeft;
+
+
 public:
     // Stereo Specific
     double stereoBaseline = 0.1;
@@ -43,27 +47,35 @@ public:
 public:
     // Initialisation
     StereoFeatureTracker(const CameraParameters &camLeft, const CameraParameters &camRight) {
-        trackerLeft.setCameraConfiguration(camLeft);
-        trackerRight.setCameraConfiguration(camRight);
+        this->camLeft = camLeft;
+        this->camRight = camRight;
+        this->trackerLeft.setCameraConfiguration(camLeft);
     };
 
     // Configuration
     void setCameraConfiguration(const CameraParameters &camLeft, const CameraParameters &camRight) {
-        trackerLeft.setCameraConfiguration(camLeft);
-        trackerRight.setCameraConfiguration(camRight);
+        this->trackerLeft.setCameraConfiguration(camLeft);
+        this->camLeft = camLeft;
+        this->camRight = camRight;
     };
     void setCameraConfiguration(const CameraParameters &configuration, StereoCam stereoCam = StereoCam::Left) {
-        if (stereoCam == StereoCam::Left) trackerLeft.setCameraConfiguration(configuration);
-        else trackerRight.setCameraConfiguration(configuration);
+        if (stereoCam == StereoCam::Left){
+            this->trackerLeft.setCameraConfiguration(configuration);
+            this->camLeft = configuration;
+        }
+        else {
+            this->camRight = configuration;
+        }
     }
-    void setMask(const Mat & mask, StereoCam stereoCam = StereoCam::Left) {
-        if (stereoCam == StereoCam::Left) trackerLeft.setMask(mask);
-        else trackerRight.setMask(mask);
+    void setMask(const Mat & mask) {
+        trackerLeft.setMask(mask);
     }
 
     // Core
     void processImages(const Mat &imageLeft, const Mat &imageRight);
     vector<StereoLandmark> outputStereoLandmarks() const { return stereoLandmarks; };
+    vector<bool> matchStereoPoints(const vector<Point2f>& pointsLeft, vector<Point2f>& pointsRight,
+                                    const Mat& imageLeft, const Mat& imageRight, Size winSize=Size(21,21), const int maxLevel=3) const;
 
     // Visualisation
     Mat drawFeatureImage(const Scalar& color = Scalar(0,0,255), const int pointSize = 2, const int thickness = 1) const;
@@ -73,10 +85,6 @@ protected:
     vector<StereoLandmark> createNewStereoLandmarks(vector<Landmark>& landmarksLeft, const Mat& imageLeft,
                                                     vector<Landmark>& landmarksRight, const Mat& imageRight) const;
     void addNewStereoLandmarks(const vector<StereoLandmark>& newStereoLandmarks);
-
-    // Stereo Landmark matching
-    vector<StereoLandmark> findStereoLandmarks(vector<Landmark>& landmarksLeft, const Mat& imageLeft, const Mat& imageRight,
-                                                Size winSize = Size(21,21), int maxLevel = 3) const;
 };
 
 }
