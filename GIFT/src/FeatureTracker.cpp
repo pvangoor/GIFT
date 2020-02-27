@@ -75,16 +75,15 @@ vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image) const {
 
     vector<Point2f> proposedFeatures;
     goodFeaturesToTrack(imageGrey, proposedFeatures, maxFeatures, minHarrisQuality, featureDist, imageMask);
-    vector<Point2f> newFeatures = this->removeDuplicateFeatures(proposedFeatures);
 
-    return newFeatures;
+    return proposedFeatures;
 }
 
-vector<Point2f> FeatureTracker::removeDuplicateFeatures(const vector<Point2f> &proposedFeatures) const {
+vector<Point2f> FeatureTracker::removeDuplicateFeatures(const vector<Point2f> &proposedFeatures, const vector<Landmark>& landmarkVector) const {
     vector<Point2f> newFeatures;
     for (const auto & proposedFeature : proposedFeatures) {
         bool useFlag = true;
-        for (const auto & feature : this->landmarks) {
+        for (const auto & feature : landmarkVector) {
             if (norm(proposedFeature - feature.camCoordinates) < featureDist) {
                 useFlag = false;
                 break;
@@ -100,6 +99,7 @@ vector<Point2f> FeatureTracker::removeDuplicateFeatures(const vector<Point2f> &p
 
 void FeatureTracker::addNewLandmarks(const Mat &image, vector<Landmark>& landmarkVector, int& currentIdNumber) const {
     vector<Point2f> newFeatures = this->detectNewFeatures(image);
+    newFeatures = this->removeDuplicateFeatures(newFeatures, landmarkVector);
     vector<Landmark> newLandmarks = this->createNewLandmarks(image, newFeatures);
 
     for (auto & lm : newLandmarks) {
@@ -129,9 +129,13 @@ Eigen::Matrix3d GIFT::skew_matrix(const Eigen::Vector3d& t){
 }
 
 Mat FeatureTracker::drawFeatureImage(const Scalar& color, const int pointSize, const int thickness) const {
+    return drawFeatureImage(this->previousImage, this->landmarks,  color, pointSize, thickness);
+}
+
+Mat FeatureTracker::drawFeatureImage(const Mat& image, const vector<Landmark>& landmarks, const Scalar& color, const int pointSize, const int thickness) const {
         cv::Mat featureImage;
-        this->previousImage.copyTo(featureImage);
-        for (const auto &lm : this->landmarks) {
+        image.copyTo(featureImage);
+        for (const auto &lm : landmarks) {
             cv::circle(featureImage, lm.camCoordinates, pointSize, color, thickness);
         }
         return featureImage;

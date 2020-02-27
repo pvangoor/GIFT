@@ -38,6 +38,8 @@ protected:
     CameraParameters camLeft, camRight;
     Mat previousImageLeft;
 
+    int currentNumber = 0;
+
 
 public:
     // Stereo Specific
@@ -71,8 +73,13 @@ public:
         trackerLeft.setMask(mask);
     }
 
+    // Utility
+    vector<Landmark> getLandmarksLeft() const;
+    vector<Point2f> getPointsLeft() const;
+
     // Core
     void processImages(const Mat &imageLeft, const Mat &imageRight);
+
     vector<StereoLandmark> outputStereoLandmarks() const { return stereoLandmarks; };
     vector<bool> matchStereoPoints(const vector<Point2f>& pointsLeft, vector<Point2f>& pointsRight,
                                     const Mat& imageLeft, const Mat& imageRight, Size winSize=Size(21,21), const int maxLevel=3) const;
@@ -82,9 +89,10 @@ public:
 
 protected:
     void removeLostStereoLandmarks(const vector<Landmark>& landmarksLeft, const vector<Landmark>& landmarksRight);
-    vector<StereoLandmark> createNewStereoLandmarks(vector<Landmark>& landmarksLeft, const Mat& imageLeft,
-                                                    vector<Landmark>& landmarksRight, const Mat& imageRight) const;
+    vector<StereoLandmark> createNewStereoLandmarks(vector<Landmark>& landmarksLeft, const Mat& imageLeft);
     void addNewStereoLandmarks(const vector<StereoLandmark>& newStereoLandmarks);
+
+    void trackLandmarks(const Mat& imageLeft);
 };
 
 }

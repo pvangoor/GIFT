@@ -66,6 +66,7 @@ public:
     void addNewLandmarks(const Mat &image, vector<Landmark>& landmarkVector, int& currentIdNumber) const;
 
     // Visualisation
+    Mat drawFeatureImage(const Mat& image, const vector<Landmark>& landmarks, const Scalar& color, const int pointSize, const int thickness) const;
     Mat drawFeatureImage(const Scalar& color = Scalar(0,0,255), const int pointSize = 2, const int thickness = 1) const;
     Mat drawFlowImage(const Scalar& featureColor = Scalar(0,0,255), const Scalar& flowColor = Scalar(0,255,255), const int pointSize = 2, const int thickness = 1) const;
     Mat drawFlow(const Scalar& featureColor = Scalar(0,0,255), const Scalar& flowColor = Scalar(0,255,255), const int pointSize = 2, const int thickness = 1) const;
@@ -78,7 +79,7 @@ public:
 
 protected:
     vector<Point2f> detectNewFeatures(const Mat &image) const;
-    vector<Point2f> removeDuplicateFeatures(const vector<Point2f> &proposedFeatures) const;
+    vector<Point2f> removeDuplicateFeatures(const vector<Point2f> &proposedFeatures, const vector<Landmark>& landmarksVector) const;
     vector<Landmark> createNewLandmarks(const Mat &image, const vector<Point2f>& newFeatures) const;
 
     void trackLandmarks(const Mat &image);

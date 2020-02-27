@@ -22,20 +22,48 @@
 using namespace GIFT;
 
 void StereoFeatureTracker::processImages(const Mat &imageLeft, const Mat &imageRight) {
-    // track existing landmarks using the left image
-    vector<Landmark> landmarksLeft(stereoLandmarks.size());
-    for (int i=0; i<stereoLandmarks.size(); ++i) {
-        landmarksLeft[i] = (stereoLandmarks[i].landmarkLeft);
+    // Track the landmarks using the left image
+    this->trackLandmarks(imageLeft);
+    imageLeft.copyTo(this->previousImageLeft);
+
+    // Add new landmarks from the left image
+    vector<Landmark> landmarksLeft = getLandmarksLeft();
+    vector<StereoLandmark> newStereoLandmarks = this->createNewStereoLandmarks(landmarksLeft, imageLeft);
+    stereoLandmarks.insert( stereoLandmarks.end(), newStereoLandmarks.begin(), newStereoLandmarks.end() );
+
+    // Compute stereo matches
+    vector<Point2f> pointsRight, pointsLeft = getPointsLeft();
+    vector<bool> converged = matchStereoPoints(pointsLeft, pointsRight, imageLeft, imageRight);
+    for (int i=stereoLandmarks.size()-1; i>=0; --i) {
+        if (converged[i]) {
+            stereoLandmarks[i].landmarkRight.camCoordinates = pointsRight[i];
+        } else {
+            stereoLandmarks.erase(stereoLandmarks.begin()+i);
+        }
     }
+}
+
+void StereoFeatureTracker::trackLandmarks(const Mat& imageLeft) {
+    if (this->previousImageLeft.empty()) return;
+    // Track existing landmarks using the left image.
+    vector<Landmark> landmarksLeft = this->getLandmarksLeft();
     trackerLeft.trackLandmarks(this->previousImageLeft, imageLeft, landmarksLeft);
 
-    // vector<Landmark> landmarksLeft = trackerLeft.outputLandmarks();
-    // vector<Landmark> landmarksRight = trackerRight.outputLandmarks();
-
-    // removeLostStereoLandmarks(landmarksLeft, landmarksRight);
-    // vector<StereoLandmark> newStereoLandmarks = createNewStereoLandmarks(landmarksLeft, imageLeft, landmarksRight, imageRight);
-    // addNewStereoLandmarks(newStereoLandmarks);
-    // stereoLandmarks = newStereoLandmarks;
+    // Some left landmarks have been removed, but the order should remain unchanged.
+    if (landmarksLeft.empty()) {
+        stereoLandmarks = vector<StereoLandmark>();
+    } else {
+        int j = landmarksLeft.size()-1;
+        for (int i=stereoLandmarks.size()-1; i>=0; --i) {
+            if (stereoLandmarks[i].landmarkLeft.idNumber == landmarksLeft[j].idNumber) {
+                stereoLandmarks[i].landmarkLeft = landmarksLeft[i];
+                --j;
+            } else {
+                stereoLandmarks.erase(stereoLandmarks.begin()+i);
+            }
+        }
+    }
+    
 }
 
 void StereoFeatureTracker::removeLostStereoLandmarks(const vector<Landmark>& landmarksLeft, const vector<Landmark>& landmarksRight) {
@@ -55,10 +83,15 @@ void StereoFeatureTracker::removeLostStereoLandmarks(const vector<Landmark>& lan
     }
 }
 
-vector<StereoLandmark> StereoFeatureTracker::createNewStereoLandmarks(vector<Landmark>& landmarksLeft, const Mat& imageLeft,
-                                                                      vector<Landmark>& landmarksRight, const Mat& imageRight) const {
-    // vector<StereoLandmark> newLandmarks = findStereoLandmarks(landmarksLeft, imageLeft, imageRight);
+vector<StereoLandmark> StereoFeatureTracker::createNewStereoLandmarks(vector<Landmark>& landmarksLeft, const Mat& imageLeft) {
+    int n = landmarksLeft.size();
+    trackerLeft.addNewLandmarks(imageLeft, landmarksLeft, this->currentNumber);
+    
     vector<StereoLandmark> newLandmarks;
+    if (landmarksLeft.size() == n) return newLandmarks;
+    for (int i=n; i<landmarksLeft.size(); ++i) {
+        newLandmarks.emplace_back(StereoLandmark(landmarksLeft[i]));
+    }
     return newLandmarks;
 }
  
@@ -203,5 +236,21 @@ Size winSize, const int maxLevel) const {
 }
 
 Mat StereoFeatureTracker::drawFeatureImage(const Scalar& color, const int pointSize, const int thickness) const {
-    return trackerLeft.drawFeatureImage(color, pointSize, thickness);
+    return trackerLeft.drawFeatureImage(this->previousImageLeft, this->getLandmarksLeft(), color, pointSize, thickness);
+}
+
+vector<Landmark> StereoFeatureTracker::getLandmarksLeft() const {
+    vector<Landmark> landmarksLeft(stereoLandmarks.size());
+        for (int i=0; i<stereoLandmarks.size(); ++i) {
+            landmarksLeft[i] = (stereoLandmarks[i].landmarkLeft);
+        }
+    return landmarksLeft;
+}
+
+vector<Point2f> StereoFeatureTracker::getPointsLeft() const {
+    vector<Point2f> pointsLeft(stereoLandmarks.size());
+        for (int i=0; i<stereoLandmarks.size(); ++i) {
+            pointsLeft[i] = (stereoLandmarks[i].landmarkLeft.camCoordinates);
+        }
+    return pointsLeft;
 }

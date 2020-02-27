@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
         // cv::Mat featureImage = ft.drawFeatureImage(Scalar(0,0,255), 5, 3);
         cv::Mat featureImageLeft = ft.drawFeatureImage(Scalar(0,0,255), 5, 3);
 
-        cv::imshow("debug", imageLeft);
+        cv::imshow("debug", featureImageLeft);
         int k = cv::waitKey(1);
         if (k == 27) break;
     }

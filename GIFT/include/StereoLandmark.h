@@ -36,10 +36,14 @@ struct StereoLandmark {
     int lifetime = 0;
 
     StereoLandmark();
-    StereoLandmark(GIFT::Landmark lmLeft, GIFT::Landmark lmRight, int idNumberStereo) {
+    StereoLandmark(GIFT::Landmark lmLeft) {
+        this->landmarkLeft = lmLeft;
+        this->idNumberStereo = lmLeft.idNumber;
+    }
+    StereoLandmark(GIFT::Landmark lmLeft, GIFT::Landmark lmRight) {
         this->landmarkLeft = lmLeft;
         this->landmarkRight = lmRight;
-        this->idNumberStereo = idNumberStereo;
+        this->idNumberStereo = lmLeft.idNumber;
     }
     // void update();
 
