@@ -32,13 +32,12 @@ void StereoFeatureTracker::processImages(const Mat &imageLeft, const Mat &imageR
     stereoLandmarks.insert( stereoLandmarks.end(), newStereoLandmarks.begin(), newStereoLandmarks.end() );
 
     // Compute stereo matches
-    vector<Point2f> pointsRight, pointsLeft = getPointsLeft();
-    vector<bool> converged = matchStereoPoints(pointsLeft, pointsRight, imageLeft, imageRight);
+    vector<Landmark> landmarksRight = matchStereoPoints(imageLeft, imageRight);
     for (int i=stereoLandmarks.size()-1; i>=0; --i) {
-        if (converged[i]) {
-            stereoLandmarks[i].landmarkRight.camCoordinates = pointsRight[i];
-        } else {
+        if (landmarksRight[i].idNumber == -1) {
             stereoLandmarks.erase(stereoLandmarks.begin()+i);
+        } else {
+            stereoLandmarks[i].landmarkRight = landmarksRight[i];
         }
     }
 }
@@ -111,99 +110,37 @@ void StereoFeatureTracker::addNewStereoLandmarks(const vector<StereoLandmark>& n
     }
 }
 
-vector<bool> StereoFeatureTracker::matchStereoPoints(
-const vector<Point2f>& pointsLeft,
-vector<Point2f>& pointsRight,
+
+vector<Landmark> StereoFeatureTracker::matchStereoPoints(
 const Mat& imageLeft, const Mat& imageRight,
 Size winSize, const int maxLevel) const {
+    // Track the points from the left to the right image.
+    vector<uchar> status;
+    vector<float> err;
+    vector<Point2f> pointsRight;
+    calcOpticalFlowPyrLK(imageLeft, imageRight, this->getPointsLeft(), pointsRight, status, err, winSize, maxLevel);
 
-    // Construct pyramids to calculate the optical flow
-    Mat imageLeftGrey, imageRightGrey;
-    cv::cvtColor(imageLeft, imageLeftGrey, cv::COLOR_BGR2GRAY);
-    cv::cvtColor(imageRight, imageRightGrey, cv::COLOR_BGR2GRAY);
-    vector<Mat> pyramidLeft = constructImagePyramid(imageLeftGrey, maxLevel, winSize);
-    vector<Mat> pyramidRight = constructImagePyramid(imageRightGrey, maxLevel, winSize);
-    
+    // Get the normalised camera coordinates of the right points
+    vector<Point2f> pointsRightUndistorted;
+    undistortPoints(pointsRight, pointsRightUndistorted, this->camRight.K, this->camRight.distortionParams);
 
-    // Precompute
-    int n = pointsLeft.size();
-    int vecSize = winSize.area();
-    Point2i windowOffset = (Point2i(winSize) - Point2i(1,1))/2;
+    int n = pointsRight.size();
+    vector<Landmark> landmarksRight(n);
+    vector<Landmark> landmarksLeft = getLandmarksLeft();
+    // Check that each point is a valid stereo point
+    for (int i=0; i<n; ++i) {
+        landmarksRight[i].idNumber = -1;
+        if (status[i] == 0) 
+        if (abs(pointsRightUndistorted[i].y - landmarksLeft[i].camCoordinatesNorm.y) > stereoThreshold) continue;
 
-    // Initialise x offsets to zero
-    vector<double> offsets(n);
-    vector<bool> convergence(n);
-    for (int i=0;i<n;++i) offsets[i] = 0.0;
-
-
-    // Iterate over pyramid levels to find stereo matches, starting at the top.
-    for (int lv=maxLevel; lv >= 0; --lv) {
-        // Retrieve the pyramid level, and compute the gradient
-        Mat pyrImgL = pyramidLeft[lv];
-        Mat pyrImgR = pyramidRight[lv];
-        Rect2f pyrBound = Rect2f(0,0, pyrImgR.cols-winSize.width-1, pyrImgR.rows-winSize.height-1);
-
-        Mat dx_pyrImgL;
-        Sobel(pyrImgL, dx_pyrImgL, CV_32F, 1, 0, 3, 1.0, 0.0, BORDER_REPLICATE);
-
-        // Find the stereo match for each point.
-        for (int i=0; i<n; ++i) {
-            Point2f pointL = pointsLeft[i];
-            // Adjust coordinates of the point to match the pyramid level and the padding offset.
-            if (! pyrBound.contains(pointL)) continue;
-            pointL = pointL * pow(2,-lv) + Point2f(windowOffset);
-
-            // Vectorise the image and gradient data
-            Mat vec_patchL = getVectorizedPatch(pyrImgL, pointL, winSize);
-            Mat vec_dx_patchL = getVectorizedPatch(dx_pyrImgL, pointL, winSize);
-            Mat jacobianT = (vec_dx_patchL.t() * vec_dx_patchL).inv() * vec_dx_patchL.t();
-            
-            // Converge the new point
-            bool converged = false;
-            int stepCount = 0;
-            double& offset = offsets[i];
-            while (!converged) {
-                Point2f pointR = pointL + Point2f(offset, 0.0);
-
-                // Ensure the point has not left the image
-                if (! pyrBound.contains(pointR)) break;
-                
-                // Get the patch and vectorise
-                Mat vec_patchR = getVectorizedPatch(pyrImgR, pointR, winSize);
-
-                // Compute the error and the step
-                Mat vec_error = vec_patchR - vec_patchL;
-                Mat step = jacobianT * vec_error;
-
-                float stepf = step.at<float>(0,0);
-                offset = offset + stepf;
-                if (abs(stepf) < 1e-1 || ++stepCount >= 100) {
-                    converged = true;
-                }
-
-            }
-
-            // If converged, increase the offset to the next level
-            if (converged && lv > 0) offset = offset*2;
-            else if (offset < 0) offset = 0;
-            convergence[i] = converged;
-        }
-
+        landmarksRight[i] = Landmark(pointsRight[i], pointsRightUndistorted[i], landmarksLeft[i].idNumber, landmarksLeft[i].pointColor);
     }
 
-    // With the offsets computed, create the new right landmarks
-    
-    if (pointsRight.empty()) {
-        pointsRight.reserve(n);
-    }
-    for (int i=0;i<n;++i) {
-        if (!convergence[i]) continue;
-        pointsRight[i] = pointsLeft[i] + Point2f(offsets[i],0);
-    }
-
-    return convergence;
-
+    return landmarksRight;
 }
+
+
+
 
 Mat StereoFeatureTracker::drawFeatureImage(const Scalar& color, const int pointSize, const int thickness) const {
     return trackerLeft.drawFeatureImage(this->previousImageLeft, this->getLandmarksLeft(), color, pointSize, thickness);
@@ -259,3 +196,100 @@ Mat StereoFeatureTracker::getVectorizedPatch(const Mat& image, const Point2f& po
     patch = patch.reshape(0, patch.rows*patch.cols);
     return patch;
 }
+
+// vector<bool> StereoFeatureTracker::matchStereoPoints(
+// const vector<Point2f>& pointsLeft,
+// vector<Point2f>& pointsRight,
+// const Mat& imageLeft, const Mat& imageRight,
+// Size winSize, const int maxLevel) const {
+
+//     // Construct pyramids to calculate the optical flow
+//     Mat imageLeftGrey, imageRightGrey;
+//     cv::cvtColor(imageLeft, imageLeftGrey, cv::COLOR_BGR2GRAY);
+//     cv::cvtColor(imageRight, imageRightGrey, cv::COLOR_BGR2GRAY);
+//     vector<Mat> pyramidLeft = constructImagePyramid(imageLeftGrey, maxLevel, winSize);
+//     vector<Mat> pyramidRight = constructImagePyramid(imageRightGrey, maxLevel, winSize);
+    
+
+//     // Precompute
+//     int n = pointsLeft.size();
+//     int vecSize = winSize.area();
+//     Point2i windowOffset = (Point2i(winSize) - Point2i(1,1))/2;
+
+//     // Initialise x offsets to zero
+//     vector<double> offsets(n);
+//     vector<bool> convergence(n);
+//     for (int i=0;i<n;++i) offsets[i] = 0.0;
+
+
+//     // Iterate over pyramid levels to find stereo matches, starting at the top.
+//     for (int lv=maxLevel; lv >= 0; --lv) {
+//         // Retrieve the pyramid level, and compute the gradient
+//         Mat pyrImgL = pyramidLeft[lv];
+//         Mat pyrImgR = pyramidRight[lv];
+//         Rect2f pyrBound = Rect2f(0,0, pyrImgR.cols-winSize.width-1, pyrImgR.rows-winSize.height-1);
+
+//         Mat dx_pyrImgL;
+//         Sobel(pyrImgL, dx_pyrImgL, CV_32F, 1, 0, CV_SCHARR, 1.0, 0.0, BORDER_REPLICATE);
+
+//         // Find the stereo match for each point.
+//         for (int i=0; i<n; ++i) {
+//             Point2f pointL = pointsLeft[i];
+//             // Adjust coordinates of the point to match the pyramid level and the padding offset.
+//             pointL = pointL * pow(2,-lv) + Point2f(windowOffset);
+//             if (! pyrBound.contains(pointL)) continue;
+
+//             // Vectorise the image and gradient data
+//             Mat vec_patchL = getVectorizedPatch(pyrImgL, pointL, winSize);
+//             Mat vec_dx_patchL = getVectorizedPatch(dx_pyrImgL, pointL, winSize);
+//             Mat jacobianT = (vec_dx_patchL.t() * vec_dx_patchL).inv() * vec_dx_patchL.t();
+            
+//             // Converge the new point
+//             bool converged = false;
+//             int stepCount = 0;
+//             double& offset = offsets[i];
+//             while (!converged) {
+//                 Point2f pointR = pointL - Point2f(offset, 0.0);
+
+//                 // Ensure the point has not left the image
+//                 if (! pyrBound.contains(pointR)) break;
+                
+//                 // Get the patch and vectorise
+//                 Mat vec_patchR = getVectorizedPatch(pyrImgR, pointR, winSize);
+
+//                 // Compute the error and the step
+//                 Mat vec_error = vec_patchR - vec_patchL;
+//                 Mat step = - jacobianT * vec_error;
+
+//                 float stepf = step.at<float>(0,0);
+//                 if (abs(stepf) > 1e-2) {
+//                     offset = offset + 2*(float)(stepf > 0) - 1;
+//                 } else {
+//                     converged = true;
+//                 }
+//                 if ((++stepCount >= 100)) {
+//                     converged = true;
+//                 }
+
+//             }
+
+//             // If converged, increase the offset to the next level
+//             if (converged && lv > 0) offset = offset*2;
+//             else if (offset < 0) offset = 0;
+//             convergence[i] = converged;
+//         }
+
+//     }
+
+//     // With the offsets computed, create the new right points
+//     if (pointsRight.empty()) {
+//         pointsRight.reserve(n);
+//     }
+//     for (int i=0;i<n;++i) {
+//         if (!convergence[i]) continue;
+//         pointsRight[i] = pointsLeft[i] - Point2f(offsets[i],0);
+//     }
+
+//     return convergence;
+
+// }

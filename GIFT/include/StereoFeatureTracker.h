@@ -44,7 +44,7 @@ protected:
 public:
     // Stereo Specific
     double stereoBaseline = 0.1;
-    double stereoThreshold = 1;
+    double stereoThreshold = 0.1;
 
 public:
     // Initialisation
@@ -81,6 +81,7 @@ public:
     void processImages(const Mat &imageLeft, const Mat &imageRight);
 
     vector<StereoLandmark> outputStereoLandmarks() const { return stereoLandmarks; };
+    vector<Landmark> matchStereoPoints(const Mat& imageLeft, const Mat& imageRight, Size winSize=Size(21,21), const int maxLevel=3l) const;
     vector<bool> matchStereoPoints(const vector<Point2f>& pointsLeft, vector<Point2f>& pointsRight,
                                     const Mat& imageLeft, const Mat& imageRight, Size winSize=Size(21,21), const int maxLevel=3) const;
 
