@@ -36,7 +36,9 @@ int main(int argc, char *argv[]) {
 
         cv::imshow("debug", featureImage);
         int k = cv::waitKey(1);
+        if (k == 's') cv::imwrite("FeatureImage.png", featureImage);
         if (k == 27) break;
+
     }
 
 }

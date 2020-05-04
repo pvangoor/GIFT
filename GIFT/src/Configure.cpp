@@ -17,6 +17,7 @@
 
 #include "Configure.h"
 #include "vector"
+#include <stdexcept>
 
 using namespace GIFT;
 
@@ -26,8 +27,10 @@ CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
     Eigen::Matrix3d K;
     if (config["K"]) {
         K = convertYamlToMatrix(config["K"]);
+    } else if (config["camera_matrix"]) {
+        K = convertYamlToMatrix(config["camera_matrix"]);
     } else {
-        throw("The intrinsic matrix is not given.");
+        throw std::invalid_argument( "The intrinsic matrix is not given." );
     }
     cv::Mat cvK;
     cv::eigen2cv(K, cvK);
