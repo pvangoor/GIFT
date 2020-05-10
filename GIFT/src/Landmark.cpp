@@ -47,10 +47,10 @@ void Landmark::update(const cv::Point2f& newCamCoords, const cv::Point2f& newCam
     this->camCoordinates = newCamCoords;
     this->camCoordinatesNorm = newCamCoordsNorm;
 
-    Vector3d bearing = Vector3d(newCamCoordsNorm.x, newCamCoordsNorm.y, 1).normalized();
+    Vector3T bearing = Vector3T(newCamCoordsNorm.x, newCamCoordsNorm.y, 1).normalized();
 
     this->sphereCoordinates = bearing;
-    this->opticalFlowSphere = bearing.z() * (Matrix3d::Identity() - bearing*bearing.transpose()) * Vector3d(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
+    this->opticalFlowSphere = bearing.z() * (Matrix3T::Identity() - bearing*bearing.transpose()) * Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
 
     this->keypoint.pt = this->camCoordinates;
 

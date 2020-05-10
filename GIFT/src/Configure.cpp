@@ -35,7 +35,7 @@ CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
     cv::Mat cvK;
     cv::eigen2cv(K, cvK);
      
-    Eigen::Matrix4d pose;
+    Eigen::Matrix4T pose;
     if (config["pose"]) {
         pose = convertYamlToMatrix(config["pose"]);
     } else {
@@ -45,9 +45,9 @@ CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
     CameraParameters cam = CameraParameters(cvK, pose);
 
     if (config["distortionParams"]) {
-        std::vector<double> distortionParams;
+        std::vector<ftype> distortionParams;
         for (int i=0; i<config["distortionParams"].size(); ++i) {
-            distortionParams.emplace_back(config["distortionParams"][i].as<double>());
+            distortionParams.emplace_back(config["distortionParams"][i].as<ftype>());
         }
         cam.distortionParams = distortionParams;
     }
@@ -55,14 +55,14 @@ CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
     return cam;
 }
 
-Eigen::MatrixXd GIFT::convertYamlToMatrix(YAML::Node yaml) {
+Eigen::MatrixXT GIFT::convertYamlToMatrix(YAML::Node yaml) {
     int m = yaml["rows"].as<int>();
     int n = yaml["cols"].as<int>();
-    Eigen::MatrixXd mat(m, n);
+    Eigen::MatrixXT mat(m, n);
     int k = 0;
     for (int i=0;i<m;++i) {
         for (int j=0;j<n;++j) {
-            mat(i,j) = yaml["data"][k].as<double>();
+            mat(i,j) = yaml["data"][k].as<ftype>();
             ++k;
         }
     }
