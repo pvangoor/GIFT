@@ -148,8 +148,8 @@ void FeatureTracker::setMask(const Mat & mask, int cameraNumber) {
 
 
 
-Eigen::Matrix3d GIFT::skew_matrix(const Eigen::Vector3d& t){
-    Eigen::Matrix3d t_hat;
+Eigen::Matrix3T GIFT::skew_matrix(const Eigen::Vector3T& t){
+    Eigen::Matrix3T t_hat;
     t_hat << 0, -t(2), t(1),
             t(2), 0, -t(0),
             -t(1), t(0), 0;
@@ -199,34 +199,34 @@ void FeatureTracker::computeLandmarkPositions() {
     }
 }
 
-Vector3d FeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& rightKp) const {
+Vector3T FeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& rightKp) const {
     assert(leftKp.x > rightKp.x);
-    Vector3d position;
+    Vector3T position;
     position << leftKp.x, leftKp.y, 1;
 
-    double scale = stereoBaseline / (leftKp.x - rightKp.x);
+    ftype scale = stereoBaseline / (leftKp.x - rightKp.x);
     position = scale*position;
 
     return position;
 }
 
-Vector3d FeatureTracker::solveMultiView(const vector<Point2f> imageCoordinatesNorm) const {
+Vector3T FeatureTracker::solveMultiView(const vector<Point2f> imageCoordinatesNorm) const {
     int camNum = cameras.size();
     assert(imageCoordinatesNorm.size() == cameras.size());
     assert(camNum >= 2);
 
-    MatrixXd solutionMat(3*camNum, 4);
+    MatrixXT solutionMat(3*camNum, 4);
 
     for (int i=0; i<camNum; ++i) {
-        Vector3d imageCoord;
+        Vector3T imageCoord;
         imageCoord << imageCoordinatesNorm[i].x, imageCoordinatesNorm[i].y, 1;
         solutionMat.block<3,4>(3*i,0) = skew_matrix(imageCoord) * cameras[i].P;
     }
 
-    JacobiSVD<MatrixXd> svd(solutionMat, ComputeThinU | ComputeFullV);
-    Vector4d positionHomogeneous = svd.matrixV().block<4,1>(0,3);
+    JacobiSVD<MatrixXT> svd(solutionMat, ComputeThinU | ComputeFullV);
+    Vector4T positionHomogeneous = svd.matrixV().block<4,1>(0,3);
 
-    Vector3d position = positionHomogeneous.block<3,1>(0,0) / positionHomogeneous(3);
+    Vector3T position = positionHomogeneous.block<3,1>(0,0) / positionHomogeneous(3);
     return position;
 }
 

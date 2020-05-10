@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "ftype.h"
 #include <vector>
 #include <array>
 #include "eigen3/Eigen/Dense"
@@ -31,11 +32,11 @@ struct Landmark {
     cv::Point2f camCoordinates;
     cv::Point2f camCoordinatesNorm;
 
-    Eigen::Vector3d sphereCoordinates;
+    Eigen::Vector3T sphereCoordinates;
 
-    Eigen::Vector2d opticalFlowRaw;
-    Eigen::Vector2d opticalFlowNorm;
-    Eigen::Vector3d opticalFlowSphere;
+    Eigen::Vector2T opticalFlowRaw;
+    Eigen::Vector2T opticalFlowNorm;
+    Eigen::Vector3T opticalFlowSphere;
 
     cv::KeyPoint keypoint;
 

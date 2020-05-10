@@ -38,8 +38,8 @@ protected:
 
 public:
     // Stereo Specific
-    double stereoBaseline = 0.1;
-    double stereoThreshold = 1;
+    ftype stereoBaseline = 0.1;
+    ftype stereoThreshold = 1;
 
 public:
     // Initialisation

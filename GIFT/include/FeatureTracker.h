@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "ftype.h"
 #include "Landmark.h"
 #include "EgoMotion.h"
 #include "CameraParameters.h"
@@ -32,7 +33,7 @@ using namespace cv;
 
 namespace GIFT {
 
-Eigen::Matrix3d skew_matrix(const Eigen::Vector3d& t);
+Eigen::Matrix3T skew_matrix(const Eigen::Vector3T& t);
 
 class FeatureTracker {
 protected:
@@ -46,13 +47,13 @@ protected:
 
 public:
     int maxFeatures = 500;
-    double featureDist = 20;
-    double minHarrisQuality = 0.1;
-    double featureSearchThreshold = 1.0;
+    ftype featureDist = 20;
+    ftype minHarrisQuality = 0.1;
+    ftype featureSearchThreshold = 1.0;
 
     // // Stereo Specific
-    // double stereoBaseline = 0.1;
-    // double stereoThreshold = 1;
+    // ftype stereoBaseline = 0.1;
+    // ftype stereoThreshold = 1;
 
 public:
     // Initialisation and configuration

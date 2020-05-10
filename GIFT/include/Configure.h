@@ -29,7 +29,7 @@ GIFT::CameraParameters readCameraConfig(const std::string &fileName);
 //     return 5;
 // }
 
-Eigen::MatrixXd convertYamlToMatrix(YAML::Node yaml);
+Eigen::MatrixXT convertYamlToMatrix(YAML::Node yaml);
 
 
 }
