@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -28,20 +28,48 @@
 #include "FeatureTracker.h"
 #include "Configure.h"
 #include "EgoMotion.h"
+#include <getopt.h>
+#include <sys/time.h>
+
+static double time_seconds()
+{
+    struct timeval tp;
+    gettimeofday(&tp,NULL);
+    return tp.tv_sec + tp.tv_usec*1.0e-6;
+}
 
 int main(int argc, char *argv[]) {
-
     cv::String camConfigFile;
     cv::String videoFile;
-    if (argc <= 1) {
-        camConfigFile = "/home/pieter/Documents/Datasets/ardupilot/flight1/cam0.yaml";
-        videoFile = "/home/pieter/Documents/Datasets/ardupilot/flight1/small.mp4";
-    } else if (argc == 3) {
-        camConfigFile = argv[1];
-        videoFile = argv[2];        
-    } else {
+    int c;
+    extern int optind;
+    extern char *optarg;
+    bool show_images = true;
+    bool quiet = false;
+    bool show_fps = false;
+    unsigned maxCount = 1000;
+
+    while ((c = getopt(argc, argv, "qnM:")) != -1) {
+        switch (c) {
+        case 'n':
+            show_images = false;
+            break;
+        case 'q':
+            quiet = true;
+            break;
+        case 'M':
+            maxCount = atoi(optarg);
+            break;
+        }
+    }
+    argv += optind;
+    argc -= optind;
+
+    if (argc < 2) {
         throw std::runtime_error("You must provide exactly the camera calibration and the video file.");
     }
+    camConfigFile = argv[0];
+    videoFile = argv[1];
 
     // Set up a monocular feature tracker
     GIFT::CameraParameters cam0 = GIFT::readCameraConfig(camConfigFile);
@@ -52,23 +80,40 @@ int main(int argc, char *argv[]) {
     cv::VideoCapture cap(videoFile);
 
     cv::Mat image;
-    int count = 0;
-    int maxCount = 1000;
+    unsigned count = 0;
+    double tstart = time_seconds();
+    unsigned report_count = 0;
 
     while (cap.read(image) && ++count < maxCount) {
 
         // Track the features
         ft.processImage(image);
+
         std::vector<GIFT::Landmark> landmarks = ft.outputLandmarks();
 
         // Compute EgoMotion
         GIFT::EgoMotion egoMotion(landmarks);
-        std::cout << "Estimated Linear Velocity:" << std::endl;
-        std::cout << egoMotion.linearVelocity << '\n';
-        std::cout << "Estimated Angular Velocity:" << std::endl;
-        std::cout << egoMotion.angularVelocity << '\n' << std::endl;
+        if (!quiet) {
+            std::cout << "Estimated Linear Velocity:" << std::endl;
+            std::cout << egoMotion.linearVelocity << '\n';
+            std::cout << "Estimated Angular Velocity:" << std::endl;
+            std::cout << egoMotion.angularVelocity << '\n' << std::endl;
+        }
 
         auto estFlows = egoMotion.estimateFlowsNorm(landmarks);
+
+        if (++report_count == 100) {
+            double now = time_seconds();
+            double dt = now - tstart;
+            printf("%.2f fps\n", report_count/dt);
+            tstart = now;
+            report_count = 0;
+        }
+
+
+        if (!show_images) {
+            continue;
+        }
 
         cv::Mat flowImage = ft.drawFlowImage(Scalar(0,0,255), Scalar(0,255,255), 3, 2);
         cv::imshow("flow", flowImage);
@@ -96,6 +141,6 @@ int main(int argc, char *argv[]) {
         cv::waitKey(1);
     }
 
-    std::cout << "Complete." << std::endl;
+    std::cout << "Completed " << count << " frames" << std::endl;
 
 }
