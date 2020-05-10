@@ -1,5 +1,5 @@
 # find_package(GIFT)
-find_package(OpenCV 3 REQUIRED)
+find_package(OpenCV REQUIRED)
 
 add_executable(MonocularTracking main.cpp)
 

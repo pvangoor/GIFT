@@ -6,7 +6,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
 include_directories("${PROJECT_BINARY_DIR}")
 
 # Include libraries from outside project
-find_package(OpenCV 3 REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.3 REQUIRED)
 
 set(ADDITIONAL_INCLUDE_DIRS
