@@ -18,13 +18,14 @@
 #include "Configure.h"
 #include "vector"
 #include <stdexcept>
+#include "ftype.h"
 
 using namespace GIFT;
 
 CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
     YAML::Node config = YAML::LoadFile(fileName);
 
-    Eigen::Matrix3d K;
+    Eigen::Matrix3T K;
     if (config["K"]) {
         K = convertYamlToMatrix(config["K"]);
     } else if (config["camera_matrix"]) {
