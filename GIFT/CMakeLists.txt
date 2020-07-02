@@ -22,6 +22,7 @@ set(GIFT_SOURCE_FILES
     src/StereoFeatureTracker.cpp
     src/EgoMotion.cpp
     src/Landmark.cpp
+    src/ImagePyramid.cpp
 )
 
 set(GIFT_HEADER_FILES
@@ -30,6 +31,7 @@ set(GIFT_HEADER_FILES
     include/StereoFeatureTracker.h
     include/Landmark.h
     include/EgoMotion.h
+    include/ImagePyramid.h
 )
 
 # optional dependency: yaml-cpp
