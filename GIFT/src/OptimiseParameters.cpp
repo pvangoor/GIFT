@@ -16,10 +16,13 @@
 */
 
 #include "OptimiseParameters.h"
+#include "ParameterGroup.h"
 
 using namespace cv;
 
-void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, const cv::Mat& image);
+void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, const Mat& image);
+Mat patchJacobian(const ImagePatch& patch);
+Mat paramResidual(const ParameterGroup& params, const ImagePatch& patch, const Mat& image);
 
 void optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const ImagePyramid& pyramid) {
     const int numLevels = patch.patch.levels.size();
@@ -28,6 +31,15 @@ void optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const
     }
 }
 
-void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, const cv::Mat& image) {
-    // Optimise the transformation parameters using the inverse compositional algorithm.
+void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, const Mat& image) {
+    // Use the Inverse compositional algorithm to optimise params at the given level.
+    Mat jacobian = - patchJacobian(patch) * params.actionJacobian(patch.point);
+    Mat stepOperator = (jacobian.t() * jacobian).inv() * jacobian.t();
+
+    for (int iteration = 0; iteration < 30; ++iteration) {
+        Mat residualVector = paramResidual(params, patch, image);
+        Mat stepVector = stepOperator * residualVector;
+        params.applyStepLeft(stepVector);
+        if (norm(stepVector) < 1e-6) break;
+    }
 }
