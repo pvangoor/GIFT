@@ -44,7 +44,7 @@ ImageWithGradientPyramid::ImageWithGradientPyramid(const cv::Mat& image, const i
     }
 }
 
-PyramidPatch extractPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr) {
+PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr) {
     int numLevels = pyr.levels.size();
     PyramidPatch patch;
     patch.basePoint = point;
@@ -57,10 +57,17 @@ PyramidPatch extractPatch(const cv::Point2f& point, const cv::Size& sze, const I
     return patch;
 }
 
-vector<PyramidPatch> extractPatches(const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels) {
+vector<PyramidPatch> extractPyramidPatches(const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels) {
     ImageWithGradientPyramid pyr(image, numLevels);
-    auto patchLambda = [pyr, sze](const cv::Point2f& point) { return extractPatch(point, sze, pyr); };
+    auto patchLambda = [pyr, sze](const cv::Point2f& point) { return extractPyramidPatch(point, sze, pyr); };
     vector<PyramidPatch> patches;
     transform(points.begin(), points.end(), patches.begin(), patchLambda);
     return patches;
+}
+
+ImagePatch getPatchAtLevel(const PyramidPatch& pyrPatch, const int lv) {
+    ImagePatch patch;
+    patch.patch = pyrPatch.patch.levels[lv];
+    patch.point = pyrPatch.basePoint * pow(2,-lv);
+    return patch;
 }
