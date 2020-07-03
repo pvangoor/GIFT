@@ -24,6 +24,7 @@ set(GIFT_SOURCE_FILES
     src/Landmark.cpp
     src/ImagePyramid.cpp
     src/OptimiseParameters.cpp
+    src/ParameterGroup.cpp
 )
 
 set(GIFT_HEADER_FILES
@@ -34,6 +35,7 @@ set(GIFT_HEADER_FILES
     include/EgoMotion.h
     include/ImagePyramid.h
     include/OptimiseParameters.h
+    include/ParameterGroup.h
 )
 
 # optional dependency: yaml-cpp
