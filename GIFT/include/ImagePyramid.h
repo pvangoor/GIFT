@@ -41,3 +41,11 @@ struct ImageWithGradientPyramid {
     ImageWithGradientPyramid(){};
     ImageWithGradientPyramid(const cv::Mat& image, const int& numLevels);
 };
+
+struct PyramidPatch {
+    ImageWithGradientPyramid patch;
+    cv::Point2f basePoint;
+};
+
+PyramidPatch extractPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr);
+vector<PyramidPatch> extractPatches(const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels);

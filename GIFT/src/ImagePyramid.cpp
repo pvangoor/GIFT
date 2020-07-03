@@ -16,7 +16,8 @@
 */
 
 #include "ImagePyramid.h"
-#include "opencv2/imgproc/imgproc.hpp"  
+#include "opencv2/imgproc/imgproc.hpp"
+#include <algorithm>
 
 ImagePyramid::ImagePyramid(const cv::Mat& image, const int& numLevels) {
     assert(numLevels > 0);
@@ -41,4 +42,25 @@ ImageWithGradientPyramid::ImageWithGradientPyramid(const cv::Mat& image, const i
         cv::pyrDown(levels[i-1].image, temp);
         levels[i] = ImageWithGradient(temp);
     }
+}
+
+PyramidPatch extractPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr) {
+    int numLevels = pyr.levels.size();
+    PyramidPatch patch;
+    patch.basePoint = point;
+    patch.patch.levels.resize(numLevels);
+    for (int lv=0; lv<numLevels; ++lv) {
+        cv::getRectSubPix(pyr.levels[lv].image, sze, point, patch.patch.levels[lv].image, cv::BORDER_CONSTANT);
+        cv::getRectSubPix(pyr.levels[lv].gradientX, sze, point, patch.patch.levels[lv].gradientX, cv::BORDER_CONSTANT);
+        cv::getRectSubPix(pyr.levels[lv].gradientY, sze, point, patch.patch.levels[lv].gradientY, cv::BORDER_CONSTANT);
+    }
+    return patch;
+}
+
+vector<PyramidPatch> extractPatches(const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels) {
+    ImageWithGradientPyramid pyr(image, numLevels);
+    auto patchLambda = [pyr, sze](const cv::Point2f& point) { return extractPatch(point, sze, pyr); };
+    vector<PyramidPatch> patches;
+    transform(points.begin(), points.end(), patches.begin(), patchLambda);
+    return patches;
 }
