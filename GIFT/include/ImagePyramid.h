@@ -19,8 +19,12 @@
 
 #include <vector>
 #include "opencv2/core/core.hpp"
+#include "eigen3/Eigen/Core"
+#include "ftype.h"
 
 using namespace std;
+using namespace Eigen;
+using namespace cv;
 
 struct ImagePyramid {
     vector<cv::Mat> levels;
@@ -43,15 +47,22 @@ struct ImageWithGradientPyramid {
 };
 
 struct PyramidPatch {
-    ImageWithGradientPyramid patch;
-    cv::Point2f basePoint;
+    vector<VectorXT> vecImage;
+    vector<Matrix<ftype, Dynamic, 2>> vecDifferential;
+    Vector2T baseCentre;
+    int rows;
+    int cols;
 };
 
 struct ImagePatch {
-    ImageWithGradient patch;
-    cv::Point2f point;
+    VectorXT vecImage;
+    Matrix<ftype, Dynamic, 2> vecDifferential;
+    Vector2T centre;
+    int rows;
+    int cols;
 };
 
 PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr);
 vector<PyramidPatch> extractPyramidPatches(const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels);
 ImagePatch getPatchAtLevel(const PyramidPatch& pyrPatch, const int lv);
+VectorXT vectoriseImage(const Mat& image);

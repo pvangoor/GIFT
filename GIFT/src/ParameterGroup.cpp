@@ -17,21 +17,25 @@
 
 #include "ParameterGroup.h"
 
-using namespace cv;
-
-cv::Mat Affine2Group::actionJacobian(const cv::Point2f& point) const {
-    float jacData[2][6] = { {point.x, point.y, 0, 0, 1, 0}, {0, 0, point.x, point.y, 1, 0} };
-    Mat jac = - Mat(2, 6, CV_32FC1, &jacData);
-    return jac;
+Matrix<ftype, 2, Dynamic> Affine2Group::actionJacobian(const Vector2T& point) const {
+    Matrix<ftype, 2, Dynamic> jac;
+    jac << point.x(), point.y(), 0, 0, 1, 0, 
+           0, 0, point.x(), point.y(), 0, 1;
+    return - jac;
 }
 
-void Affine2Group::applyStepLeft(const cv::Mat& step) {
+void Affine2Group::applyStepLeft(const VectorXT& step) {
     // Put the step in matrix form, exponentiate, and apply the result.
 }
 
 Affine2Group Affine2Group::Identity() {
     Affine2Group identityElement;
-    identityElement.transformation = Mat2f::eye(2,2);
-    identityElement.translation = Point2f(0,0);
+    identityElement.transformation = Matrix2T::Identity();
+    identityElement.translation = Vector2T::Zero();
     return identityElement;
+}
+
+Vector2T Affine2Group::applyAction(const Vector2T& point) const {
+    Vector2T transformedPoint = this->transformation * point + this->translation;
+    return transformedPoint;
 }
