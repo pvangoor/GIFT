@@ -17,6 +17,7 @@
 
 #include "OptimiseParameters.h"
 #include "ParameterGroup.h"
+#include "eigen3/Eigen/Dense"
 
 using namespace Eigen;
 using namespace cv;

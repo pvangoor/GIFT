@@ -19,7 +19,7 @@
 #include "eigen3/unsupported/Eigen/MatrixFunctions"
 
 Matrix<ftype, 2, Dynamic> Affine2Group::actionJacobian(const Vector2T& point) const {
-    Matrix<ftype, 2, Dynamic> jac;
+    Matrix<ftype, 2, Dynamic> jac(2, this->dim());
     jac << point.x(), point.y(), 0, 0, 1, 0, 
            0, 0, point.x(), point.y(), 0, 1;
     return - jac;
