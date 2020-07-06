@@ -17,7 +17,14 @@
 
 #include "gtest/gtest.h"
 #include "OptimiseParameters.h"
+#include "opencv2/highgui/highgui.hpp"
 
 TEST(OptimiseParametersTest, nothing) {
+    cv::String dataDir = cv::String(TEST_DATA_DIR);
+    cv::Mat img0 = cv::imread(dataDir + cv::String("img0.png"));
+
+    cv::imshow("test", img0);
+    cv::waitKey(0);
+
     EXPECT_TRUE(true);
 }
