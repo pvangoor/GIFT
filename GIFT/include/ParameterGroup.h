@@ -24,8 +24,8 @@ class ParameterGroup {
 public:
     virtual int dim() const = 0;
     virtual Matrix<ftype, 2, Dynamic> actionJacobian(const Vector2T& point) const = 0;
-    virtual void applyStepLeft(const VectorXT& step) = 0;
-    virtual Vector2T applyAction(const Vector2T& point) const = 0;
+    virtual void applyStepOnRight(const VectorXT& step) = 0;
+    virtual Vector2T applyLeftAction(const Vector2T& point) const = 0;
     virtual void changeLevel(const int& newLevel) = 0;
     int level = 0;
 };
@@ -38,8 +38,8 @@ public:
     Vector2T translation;
 
     Matrix<ftype, 2, Dynamic> actionJacobian(const Vector2T& point) const;
-    Vector2T applyAction(const Vector2T& point) const;
-    void applyStepLeft(const VectorXT& step);
+    Vector2T applyLeftAction(const Vector2T& point) const;
+    void applyStepOnRight(const VectorXT& step);
     void changeLevel(const int& newLevel);
 
     static Affine2Group Identity();

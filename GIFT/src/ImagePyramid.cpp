@@ -32,6 +32,8 @@ ImageWithGradient::ImageWithGradient(const cv::Mat& image) {
     this->image = image;
     cv::Sobel(image, this->gradientX, CV_32F, 1, 0, -1, 1.0, 0.0, cv::BORDER_REPLICATE);
     cv::Sobel(image, this->gradientY, CV_32F, 0, 1, -1, 1.0, 0.0, cv::BORDER_REPLICATE);
+    this->gradientX = this->gradientX / 32.0;
+    this->gradientY = this->gradientY / 32.0;
 }
 
 ImageWithGradientPyramid::ImageWithGradientPyramid(const cv::Mat& image, const int& numLevels) {

@@ -38,14 +38,14 @@ void optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const
 
 void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, const Mat& image) {
     // Use the Inverse compositional algorithm to optimise params at the given level.
-    MatrixXT jacobian = - patch.vecDifferential * params.actionJacobian(patch.centre);
+    MatrixXT jacobian = patch.vecDifferential * params.actionJacobian(patch.centre);
     MatrixXT stepOperator = (jacobian.transpose() * jacobian).inverse() * jacobian.transpose();
 
     for (int iteration = 0; iteration < 30; ++iteration) {
         MatrixXT residualVector = paramResidual(params, patch, image);
         MatrixXT stepVector = stepOperator * residualVector;
         if (stepVector.norm() < 1e-3) break;
-        params.applyStepLeft(stepVector);
+        params.applyStepOnRight(stepVector);
     }
 }
 
@@ -69,9 +69,9 @@ VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, co
     for (int y=0; y<patch.rows; ++y) {
         for (int x=0; x<patch.cols; ++x) {
             const Vector2T point = Vector2T(x,y) - offset;
-            const Vector2T transformedPoint = params.applyAction(point);
+            const Vector2T transformedPoint = params.applyLeftAction(point);
             const float subPixelValue = getSubPixel(image, patch.centre+transformedPoint);
-            residualVector(x+y*patch.rows) = patch.vecImage(x+y*patch.rows) - subPixelValue;
+            residualVector(x+y*patch.rows) = subPixelValue - patch.vecImage(x+y*patch.rows);
         }
     }
     return residualVector;
@@ -82,7 +82,11 @@ float getSubPixel(const Mat& image, const Vector2T& point) {
     const int y0 = (int)point.y();
     const float dx = point.x() - x0;
     const float dy = point.y() - y0;
-    const float value = dx*dy*image.at<uchar>(y0,x0) + dx*(1.0-dy)*image.at<uchar>(y0+1,x0)
-                        + (1.0-dx)*dy*image.at<uchar>(y0,x0+1) + (1.0-dx)*(1.0-dy)*image.at<uchar>(y0+1,x0+1);
+    const uchar im00 = image.at<uchar>(y0,  x0  );
+    const uchar im01 = image.at<uchar>(y0+1,x0  );
+    const uchar im10 = image.at<uchar>(y0  ,x0+1);
+    const uchar im11 = image.at<uchar>(y0+1,x0+1);
+
+    const float value = dx*dy*im11 + dx*(1.0-dy)*im10 + (1.0-dx)*dy*im01 + (1.0-dx)*(1.0-dy)*im00;
     return value;
 }

@@ -43,7 +43,7 @@ TEST_F(OptimiseParametersTest, AcceptsMinimum) {
     ImageWithGradientPyramid pyr0 = ImageWithGradientPyramid(img0, numLevels);
     ImagePyramid pyr1 = ImagePyramid(img0, numLevels);
 
-    Point2f basePoint = Point2f(250,350);
+    Point2f basePoint = Point2f(350,300);
     PyramidPatch patch = extractPyramidPatch(basePoint, Size(21,21), pyr0);
 
     Affine2Group params = Affine2Group::Identity();
@@ -61,13 +61,13 @@ TEST_F(OptimiseParametersTest, ConvergeSmallTranslationOnBase) {
     ImageWithGradientPyramid pyr0 = ImageWithGradientPyramid(img0, numLevels);
     ImagePyramid pyr1 = ImagePyramid(img0, numLevels);
 
-    Point2f basePoint = Point2f(250,350);
+    Point2f basePoint = Point2f(350,300);
     PyramidPatch patch = extractPyramidPatch(basePoint, Size(21,21), pyr0);
 
     Affine2Group params = Affine2Group::Identity();
 
     // Create a slight offset (mistake)
-    params.translation.x() = 1;
+    params.translation.x() = -2.5;
 
 
     optimiseParameters(params, patch, pyr1);
@@ -84,7 +84,7 @@ TEST_F(OptimiseParametersTest, AcceptsMinimumInLevels) {
     ImageWithGradientPyramid pyr0 = ImageWithGradientPyramid(img0, numLevels);
     ImagePyramid pyr1 = ImagePyramid(img0, numLevels);
 
-    Point2f basePoint = Point2f(250,350);
+    Point2f basePoint = Point2f(350,300);
     PyramidPatch patch = extractPyramidPatch(basePoint, Size(21,21), pyr0);
 
     Affine2Group params = Affine2Group::Identity();

@@ -25,15 +25,15 @@ Matrix<ftype, 2, Dynamic> Affine2Group::actionJacobian(const Vector2T& point) co
     return - jac;
 }
 
-void Affine2Group::applyStepLeft(const VectorXT& step) {
+void Affine2Group::applyStepOnRight(const VectorXT& step) {
     // Put the step in matrix form, exponentiate, and apply the result.
     Matrix3T stepMat = Matrix3T::Identity();
     stepMat(0,0) = step(0); stepMat(0,1) = step(1); stepMat(0,2) = step(4);
     stepMat(1,0) = step(2); stepMat(1,1) = step(3); stepMat(1,2) = step(5);
      
     stepMat = stepMat.exp();
-    this->transformation = stepMat.block<2,2>(0,0) * this->transformation;
-    this->translation = stepMat.block<2,2>(0,0) * this->translation + stepMat.block<2,1>(0,2);
+    this->translation = this->translation + this->transformation * stepMat.block<2,1>(0,2);
+    this->transformation = this->transformation * stepMat.block<2,2>(0,0);
 }
 
 Affine2Group Affine2Group::Identity() {
@@ -43,7 +43,7 @@ Affine2Group Affine2Group::Identity() {
     return identityElement;
 }
 
-Vector2T Affine2Group::applyAction(const Vector2T& point) const {
+Vector2T Affine2Group::applyLeftAction(const Vector2T& point) const {
     Vector2T transformedPoint = this->transformation * point + this->translation;
     return transformedPoint;
 }
