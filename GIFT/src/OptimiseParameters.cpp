@@ -30,8 +30,10 @@ float getSubPixel(const Mat& image, const Vector2T& point);
 void optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const ImagePyramid& pyramid) {
     const int numLevels = patch.vecImage.size();
     for (int lv=numLevels-1; lv>=0; --lv) {
+        params.changeLevel(lv);
         optimiseParametersAtLevel(params, getPatchAtLevel(patch, lv), pyramid.levels[lv]);
     }
+    params.changeLevel(0);
 }
 
 void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, const Mat& image) {
@@ -42,14 +44,14 @@ void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, 
     for (int iteration = 0; iteration < 30; ++iteration) {
         MatrixXT residualVector = paramResidual(params, patch, image);
         MatrixXT stepVector = stepOperator * residualVector;
+        if (stepVector.norm() < 1e-3) break;
         params.applyStepLeft(stepVector);
-        if (stepVector.norm() < 1e-6) break;
     }
 }
 
 MatrixXT patchActionJacobian(const ParameterGroup& params, const ImagePatch& patch) {
     // Vectorise the patch row by row
-    const Vector2T offset = 0.5 * Vector2T(patch.cols, patch.rows);
+    const Vector2T offset = 0.5 * Vector2T(patch.cols-1, patch.rows-1);
     MatrixXT jacobian(2*patch.rows*patch.cols, params.dim());
     for (int y=0; y<patch.rows; ++y) {
         for (int x=0; x<patch.cols; ++x) {
@@ -62,7 +64,7 @@ MatrixXT patchActionJacobian(const ParameterGroup& params, const ImagePatch& pat
 }
 
 VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, const Mat& image) {
-    const Vector2T offset = 0.5 * Vector2T(patch.rows, patch.cols);
+    const Vector2T offset = 0.5 * Vector2T(patch.rows-1, patch.cols-1);
     VectorXT residualVector = VectorXT(patch.rows*patch.cols);
     for (int y=0; y<patch.rows; ++y) {
         for (int x=0; x<patch.cols; ++x) {
