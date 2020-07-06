@@ -15,21 +15,29 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "opencv2/core/core.hpp"
+#include "eigen3/Eigen/Core"
+#include "ftype.h"
+
+using namespace Eigen;
 
 class ParameterGroup {
 public:
-    virtual cv::Mat actionJacobian(const cv::Point2f& point) const = 0;
-    virtual void applyStepLeft(const cv::Mat& step) = 0;
+    virtual int dim() const = 0;
+    virtual Matrix<ftype, 2, Dynamic> actionJacobian(const Vector2T& point) const = 0;
+    virtual void applyStepLeft(const VectorXT& step) = 0;
+    virtual Vector2T applyAction(const Vector2T& point) const = 0;
 };
 
 class Affine2Group : public ParameterGroup {
 public:
-    cv::Mat2f transformation;
-    cv::Point2f translation;
+    int dim() const {return 6;}
 
-    cv::Mat actionJacobian(const cv::Point2f& point) const;
-    void applyStepLeft(const cv::Mat& step);
+    Matrix2T transformation;
+    Vector2T translation;
+
+    Matrix<ftype, 2, Dynamic> actionJacobian(const Vector2T& point) const;
+    Vector2T applyAction(const Vector2T& point) const;
+    void applyStepLeft(const VectorXT& step);
 
     static Affine2Group Identity();
 };
