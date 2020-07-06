@@ -29,25 +29,39 @@ protected:
 
         img1 = imread(dataDir + String("img1.png"));
         cvtColor(img1, img1, COLOR_BGR2GRAY);
+
+        Point2f basePoint = Point2f(350,300);
+        int numLevels = 4;
+
+        img0GradientPyrBase = ImageWithGradientPyramid(img0, 1);
+        img0ImagePyrBase = ImagePyramid(img0, 1);
+        img0PatchBase = extractPyramidPatch(basePoint, Size(21,21), img0GradientPyrBase);
         
+
+        img0GradientPyrLevels = ImageWithGradientPyramid(img0, numLevels);
+        img0ImagePyrLevels = ImagePyramid(img0, numLevels);
+        img0PatchLevels = extractPyramidPatch(basePoint, Size(21,21), img0GradientPyrLevels);
     }
     
 public:
     String dataDir = String(TEST_DATA_DIR);
     Mat img0, img1;
-    
+    ImageWithGradientPyramid img0GradientPyrBase, img0GradientPyrLevels;
+    ImagePyramid img0ImagePyrBase, img0ImagePyrLevels;
+    PyramidPatch img0PatchBase, img0PatchLevels;
 };
 
-TEST_F(OptimiseParametersTest, AcceptsMinimum) {
-    int numLevels = 1;
-    ImageWithGradientPyramid pyr0 = ImageWithGradientPyramid(img0, numLevels);
-    ImagePyramid pyr1 = ImagePyramid(img0, numLevels);
+TEST_F(OptimiseParametersTest, TranslationAcceptsMinimum) {
+    TranslationGroup params = TranslationGroup::Identity();
+    optimiseParameters(params, img0PatchBase, img0ImagePyrBase);
 
-    Point2f basePoint = Point2f(350,300);
-    PyramidPatch patch = extractPyramidPatch(basePoint, Size(21,21), pyr0);
+    ftype tsError = (params.translation).norm();
+    EXPECT_LE(tsError, 1e-3);
+}
 
+TEST_F(OptimiseParametersTest, AffineAcceptsMinimum) {
     Affine2Group params = Affine2Group::Identity();
-    optimiseParameters(params, patch, pyr1);
+    optimiseParameters(params, img0PatchBase, img0ImagePyrBase);
 
     ftype tfError = (params.transformation-Matrix2T::Identity()).norm();
     ftype tsError = (params.translation).norm();
@@ -56,43 +70,73 @@ TEST_F(OptimiseParametersTest, AcceptsMinimum) {
     EXPECT_LE(tsError, 1e-3);
 }
 
-TEST_F(OptimiseParametersTest, ConvergeSmallTranslationOnBase) {
-    int numLevels = 1;
-    ImageWithGradientPyramid pyr0 = ImageWithGradientPyramid(img0, numLevels);
-    ImagePyramid pyr1 = ImagePyramid(img0, numLevels);
+TEST_F(OptimiseParametersTest, TranslationConvergeSmallErrorOnBase) {
+    for (int testIter=0; testIter<10; ++testIter) {
+        TranslationGroup params;
+        params.translation = Vector2T::Random()*3.0;
 
-    Point2f basePoint = Point2f(350,300);
-    PyramidPatch patch = extractPyramidPatch(basePoint, Size(21,21), pyr0);
+        optimiseParameters(params, img0PatchBase, img0ImagePyrBase);
 
-    Affine2Group params = Affine2Group::Identity();
+        ftype tsError = (params.translation).norm();
+        EXPECT_LE(tsError, 1e-2);
+    }
+}
 
-    // Create a slight offset (mistake)
-    params.translation.x() = -2.5;
+TEST_F(OptimiseParametersTest, AffineConvergeSmallErrorOnBase) {
+    for (int testIter=0; testIter<10; ++testIter) {
+        Affine2Group params = Affine2Group::Identity();
+        params.translation = Vector2T::Random()*3.0;
 
+        optimiseParameters(params, img0PatchBase, img0ImagePyrBase);
 
-    optimiseParameters(params, patch, pyr1);
+        ftype tfError = (params.transformation-Matrix2T::Identity()).norm();
+        ftype tsError = (params.translation).norm();
 
-    ftype tfError = (params.transformation-Matrix2T::Identity()).norm();
+        EXPECT_LE(tfError, 1e-2);
+        EXPECT_LE(tsError, 1e-2);
+    }
+}
+
+TEST_F(OptimiseParametersTest, TranslationAcceptsMinimumInLevels) {
+    TranslationGroup params = TranslationGroup::Identity();
+    optimiseParameters(params, img0PatchLevels, img0ImagePyrLevels);
+
     ftype tsError = (params.translation).norm();
-
-    EXPECT_LE(tfError, 1e-3);
     EXPECT_LE(tsError, 1e-3);
 }
 
-TEST_F(OptimiseParametersTest, AcceptsMinimumInLevels) {
-    int numLevels = 3;
-    ImageWithGradientPyramid pyr0 = ImageWithGradientPyramid(img0, numLevels);
-    ImagePyramid pyr1 = ImagePyramid(img0, numLevels);
-
-    Point2f basePoint = Point2f(350,300);
-    PyramidPatch patch = extractPyramidPatch(basePoint, Size(21,21), pyr0);
-
+TEST_F(OptimiseParametersTest, AffineAcceptsMinimumInLevels) {
     Affine2Group params = Affine2Group::Identity();
-    optimiseParameters(params, patch, pyr1);
+    optimiseParameters(params, img0PatchLevels, img0ImagePyrLevels);
 
     ftype tfError = (params.transformation-Matrix2T::Identity()).norm();
     ftype tsError = (params.translation).norm();
+    EXPECT_LE(tfError, 1e-2);
+    EXPECT_LE(tsError, 1e-2);
+}
 
-    EXPECT_LE(tfError, 1e-3);
-    EXPECT_LE(tsError, 1e-3);
+TEST_F(OptimiseParametersTest, TranslationConvergeErrorInLevels) {
+    for (int testIter=0; testIter<10; ++testIter) {
+        TranslationGroup params;
+        params.translation = Vector2T::Random()*30.0;
+
+        optimiseParameters(params, img0PatchLevels, img0ImagePyrLevels);
+
+        ftype tsError = (params.translation).norm();
+        EXPECT_LE(tsError, 1e-2);
+    }
+}
+
+TEST_F(OptimiseParametersTest, AffineConvergeErrorInLevels) {
+    for (int testIter=0; testIter<10; ++testIter) {
+        Affine2Group params = Affine2Group::Identity();
+        params.translation = Vector2T::Random()*30.0;
+
+        optimiseParameters(params, img0PatchLevels, img0ImagePyrLevels);
+
+        ftype tfError = (params.transformation-Matrix2T::Identity()).norm();
+        ftype tsError = (params.translation).norm();
+        EXPECT_LE(tfError, 1e-2);
+        EXPECT_LE(tsError, 1e-2);
+    }
 }

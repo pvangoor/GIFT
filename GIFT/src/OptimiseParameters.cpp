@@ -38,26 +38,27 @@ void optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const
 
 void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, const Mat& image) {
     // Use the Inverse compositional algorithm to optimise params at the given level.
-    MatrixXT jacobian = patch.vecDifferential * params.actionJacobian(patch.centre);
+    MatrixXT jacobian = patchActionJacobian(params, patch);
     MatrixXT stepOperator = (jacobian.transpose() * jacobian).inverse() * jacobian.transpose();
 
-    for (int iteration = 0; iteration < 30; ++iteration) {
+    for (int iteration = 0; iteration < 50; ++iteration) {
         MatrixXT residualVector = paramResidual(params, patch, image);
-        MatrixXT stepVector = stepOperator * residualVector;
+        MatrixXT stepVector = - stepOperator * residualVector;
         if (stepVector.norm() < 1e-3) break;
         params.applyStepOnRight(stepVector);
     }
 }
 
 MatrixXT patchActionJacobian(const ParameterGroup& params, const ImagePatch& patch) {
-    // Vectorise the patch row by row
+    // The patch is vectorised row by row.
     const Vector2T offset = 0.5 * Vector2T(patch.cols-1, patch.rows-1);
-    MatrixXT jacobian(2*patch.rows*patch.cols, params.dim());
+    MatrixXT jacobian(patch.rows*patch.cols, params.dim());
     for (int y=0; y<patch.rows; ++y) {
         for (int x=0; x<patch.cols; ++x) {
             const Vector2T point = Vector2T(x,y) - offset;
             int rowIdx = (x+y*patch.rows);
-            jacobian.block(rowIdx, 0, 2, params.dim()) = params.actionJacobian(point);
+
+            jacobian.block(rowIdx, 0, 1, params.dim()) = patch.vecDifferential.block<1,2>(rowIdx,0) * params.actionJacobian(point);
         }
     }
     return jacobian;
