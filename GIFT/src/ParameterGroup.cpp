@@ -22,7 +22,7 @@ Matrix<ftype, 2, Dynamic> Affine2Group::actionJacobian(const Vector2T& point) co
     Matrix<ftype, 2, Dynamic> jac(2, this->dim());
     jac << point.x(), point.y(), 0, 0, 1, 0, 
            0, 0, point.x(), point.y(), 0, 1;
-    return - jac;
+    return jac;
 }
 
 void Affine2Group::applyStepOnRight(const VectorXT& step) {
@@ -51,5 +51,30 @@ Vector2T Affine2Group::applyLeftAction(const Vector2T& point) const {
 void Affine2Group::changeLevel(const int& newLevel) {
     const int levelDiff = newLevel - level;
     this->level = newLevel;
-    this->translation = pow(2, levelDiff) * this->translation;
+    this->translation = pow(2, -levelDiff) * this->translation;
+}
+
+
+Matrix<ftype, 2, Dynamic> TranslationGroup::actionJacobian(const Vector2T& point) const {
+    return Matrix2T::Identity();
+}
+
+Vector2T TranslationGroup::applyLeftAction(const Vector2T& point) const {
+    return point + translation;
+}
+
+void TranslationGroup::applyStepOnRight(const VectorXT& step) {
+    this->translation += step;
+}
+
+void TranslationGroup::changeLevel(const int& newLevel) {
+    const int levelDiff = newLevel - level;
+    this->level = newLevel;
+    this->translation = pow(2, -levelDiff) * this->translation;
+}
+
+TranslationGroup TranslationGroup::Identity() {
+    TranslationGroup newElem;
+    newElem.translation.setZero();
+    return newElem;
 }

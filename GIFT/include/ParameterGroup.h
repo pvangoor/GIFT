@@ -44,3 +44,17 @@ public:
 
     static Affine2Group Identity();
 };
+
+class TranslationGroup : public ParameterGroup {
+public:
+    int dim() const {return 2;}
+
+    Vector2T translation;
+
+    Matrix<ftype, 2, Dynamic> actionJacobian(const Vector2T& point) const;
+    Vector2T applyLeftAction(const Vector2T& point) const;
+    void applyStepOnRight(const VectorXT& step);
+    void changeLevel(const int& newLevel);
+
+    static TranslationGroup Identity();
+};
