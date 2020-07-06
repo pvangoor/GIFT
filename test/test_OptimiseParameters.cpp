@@ -18,12 +18,23 @@
 #include "gtest/gtest.h"
 #include "OptimiseParameters.h"
 #include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc.hpp"
+#include "ParameterGroup.h"
 
 TEST(OptimiseParametersTest, nothing) {
     cv::String dataDir = cv::String(TEST_DATA_DIR);
     cv::Mat img0 = cv::imread(dataDir + cv::String("img0.png"));
+    cv::cvtColor(img0, img0, cv::COLOR_BGR2GRAY);
+    ImageWithGradientPyramid pyr0 = ImageWithGradientPyramid(img0, 3);
+    ImagePyramid pyr1 = ImagePyramid(img0, 3);
 
-    cv::imshow("test", img0);
+    Point2f basePoint = Point2f(250,350);
+    PyramidPatch patch = extractPyramidPatch(basePoint, Size(21,21), pyr0);
+
+    Affine2Group params = Affine2Group::Identity();
+    optimiseParameters(params, patch, pyr1);
+
+    cv::imshow("test", pyr0.levels[2].image);
     cv::waitKey(0);
 
     EXPECT_TRUE(true);

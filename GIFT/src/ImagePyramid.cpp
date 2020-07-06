@@ -30,7 +30,8 @@ ImagePyramid::ImagePyramid(const cv::Mat& image, const int& numLevels) {
 
 ImageWithGradient::ImageWithGradient(const cv::Mat& image) {
     this->image = image;
-    cv::spatialGradient(image, this->gradientX, this->gradientY);
+    cv::Sobel(image, this->gradientX, CV_32F, 1, 0, -1, 1.0, 0.0, cv::BORDER_REPLICATE);
+    cv::Sobel(image, this->gradientY, CV_32F, 0, 1, -1, 1.0, 0.0, cv::BORDER_REPLICATE);
 }
 
 ImageWithGradientPyramid::ImageWithGradientPyramid(const cv::Mat& image, const int& numLevels) {
@@ -53,13 +54,15 @@ PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, 
     patch.rows = sze.height; patch.cols = sze.width;
     for (int lv=0; lv<numLevels; ++lv) {
         Mat tempI, tempX, tempY;
-        getRectSubPix(pyr.levels[lv].image, sze, point, tempI, cv::BORDER_CONSTANT);
-        getRectSubPix(pyr.levels[lv].gradientX, sze, point, tempX, cv::BORDER_CONSTANT);
-        getRectSubPix(pyr.levels[lv].gradientY, sze, point, tempY, cv::BORDER_CONSTANT);
+        getRectSubPix(pyr.levels[lv].image, sze, point, tempI);
+        getRectSubPix(pyr.levels[lv].gradientX, sze, point, tempX);
+        getRectSubPix(pyr.levels[lv].gradientY, sze, point, tempY);
         
         patch.vecImage[lv] = vectoriseImage(tempI);
-        patch.vecDifferential[lv].col(0) = vectoriseImage(tempX);
-        patch.vecDifferential[lv].col(1) = vectoriseImage(tempY);
+        Matrix<ftype, Dynamic, 2> temp(sze.area(),2);
+        temp.block(0,0,sze.area(),1) = vectoriseImage(tempX);
+        temp.block(0,1,sze.area(),1) = vectoriseImage(tempY);
+        patch.vecDifferential[lv] = temp;
     }
     return patch;
 }
