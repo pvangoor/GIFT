@@ -1,6 +1,9 @@
 enable_testing()
 find_package(GTest REQUIRED)
 
+# Link the tests with the test data
+add_compile_definitions(TEST_DATA_DIR="${TEST_DATA_DIR}/")
+
 add_executable(test_EgoMotion test_EgoMotion.cpp)
 add_executable(test_ImagePyramid test_ImagePyramid.cpp)
 add_executable(test_OptimiseParameters test_OptimiseParameters.cpp)
