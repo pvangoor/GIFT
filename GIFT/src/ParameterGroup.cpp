@@ -47,3 +47,9 @@ Vector2T Affine2Group::applyAction(const Vector2T& point) const {
     Vector2T transformedPoint = this->transformation * point + this->translation;
     return transformedPoint;
 }
+
+void Affine2Group::changeLevel(const int& newLevel) {
+    const int levelDiff = newLevel - level;
+    this->level = newLevel;
+    this->translation = pow(2, levelDiff) * this->translation;
+}

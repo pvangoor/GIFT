@@ -54,9 +54,9 @@ PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, 
     patch.rows = sze.height; patch.cols = sze.width;
     for (int lv=0; lv<numLevels; ++lv) {
         Mat tempI, tempX, tempY;
-        getRectSubPix(pyr.levels[lv].image, sze, point, tempI);
-        getRectSubPix(pyr.levels[lv].gradientX, sze, point, tempX);
-        getRectSubPix(pyr.levels[lv].gradientY, sze, point, tempY);
+        getRectSubPix(pyr.levels[lv].image,     sze, point*pow(2,-lv), tempI);
+        getRectSubPix(pyr.levels[lv].gradientX, sze, point*pow(2,-lv), tempX);
+        getRectSubPix(pyr.levels[lv].gradientY, sze, point*pow(2,-lv), tempY);
         
         patch.vecImage[lv] = vectoriseImage(tempI);
         Matrix<ftype, Dynamic, 2> temp(sze.area(),2);
