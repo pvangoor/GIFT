@@ -56,9 +56,9 @@ PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, 
     patch.rows = sze.height; patch.cols = sze.width;
     for (int lv=0; lv<numLevels; ++lv) {
         Mat tempI, tempX, tempY;
-        getRectSubPix(pyr.levels[lv].image,     sze, point*pow(2,-lv), tempI);
-        getRectSubPix(pyr.levels[lv].gradientX, sze, point*pow(2,-lv), tempX);
-        getRectSubPix(pyr.levels[lv].gradientY, sze, point*pow(2,-lv), tempY);
+        getRectSubPix(pyr.levels[lv].image,     sze, point*pow(2,-lv), tempI, CV_32F);
+        getRectSubPix(pyr.levels[lv].gradientX, sze, point*pow(2,-lv), tempX, CV_32F);
+        getRectSubPix(pyr.levels[lv].gradientY, sze, point*pow(2,-lv), tempY, CV_32F);
         
         patch.vecImage[lv] = vectoriseImage(tempI);
         Matrix<ftype, Dynamic, 2> temp(sze.area(),2);
@@ -72,7 +72,7 @@ PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, 
 vector<PyramidPatch> extractPyramidPatches(const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels) {
     ImageWithGradientPyramid pyr(image, numLevels);
     auto patchLambda = [pyr, sze](const cv::Point2f& point) { return extractPyramidPatch(point, sze, pyr); };
-    vector<PyramidPatch> patches;
+    vector<PyramidPatch> patches(points.size());
     transform(points.begin(), points.end(), patches.begin(), patchLambda);
     return patches;
 }

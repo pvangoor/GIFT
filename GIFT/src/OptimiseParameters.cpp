@@ -25,7 +25,19 @@ using namespace cv;
 void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, const Mat& image);
 MatrixXT patchActionJacobian(const ParameterGroup& params, const ImagePatch& patch);
 VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, const Mat& image);
-float getSubPixel(const Mat& image, const Vector2T& point);
+
+void optimiseParameters(vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const Mat& image) {
+    if (patches.size() == 0) return;
+    optimiseParameters(params, patches, ImagePyramid(image, patches[0].vecImage.size()));
+}
+
+void optimiseParameters(vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const ImagePyramid& pyramid) {
+    assert(patches.size() == params.size());
+    for (int i=0; i<params.size();++i) {
+        optimiseParameters(params[i], patches[i], pyramid);
+    }
+}
+
 
 void optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const ImagePyramid& pyramid) {
     const int numLevels = patch.vecImage.size();
@@ -38,8 +50,8 @@ void optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const
 
 void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, const Mat& image) {
     // Use the Inverse compositional algorithm to optimise params at the given level.
-    MatrixXT jacobian = patchActionJacobian(params, patch);
-    MatrixXT stepOperator = (jacobian.transpose() * jacobian).inverse() * jacobian.transpose();
+    const MatrixXT jacobian = patchActionJacobian(params, patch);
+    const MatrixXT stepOperator = (jacobian.transpose() * jacobian).inverse() * jacobian.transpose();
 
     for (int iteration = 0; iteration < 50; ++iteration) {
         MatrixXT residualVector = paramResidual(params, patch, image);
@@ -54,12 +66,12 @@ MatrixXT patchActionJacobian(const ParameterGroup& params, const ImagePatch& pat
     const Vector2T offset = 0.5 * Vector2T(patch.cols-1, patch.rows-1);
     MatrixXT jacobian(patch.rows*patch.cols, params.dim());
     for (int y=0; y<patch.rows; ++y) {
-        for (int x=0; x<patch.cols; ++x) {
-            const Vector2T point = Vector2T(x,y) - offset;
-            int rowIdx = (x+y*patch.rows);
+    for (int x=0; x<patch.cols; ++x) {
+        const Vector2T point = Vector2T(x,y) - offset;
+        int rowIdx = (x+y*patch.rows);
 
-            jacobian.block(rowIdx, 0, 1, params.dim()) = patch.vecDifferential.block<1,2>(rowIdx,0) * params.actionJacobian(point);
-        }
+        jacobian.block(rowIdx, 0, 1, params.dim()) = patch.vecDifferential.block<1,2>(rowIdx,0) * params.actionJacobian(point);
+    }
     }
     return jacobian;
 }
@@ -79,10 +91,15 @@ VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, co
 }
 
 float getSubPixel(const Mat& image, const Vector2T& point) {
-    const int x0 = (int)point.x();
-    const int y0 = (int)point.y();
-    const float dx = point.x() - x0;
-    const float dy = point.y() - y0;
+    // Replicate the border outside the image
+    // const int x0 = clamp((int)point.x(), 0, image.cols-2);
+    // const int y0 = clamp((int)point.y(), 0, image.rows-2);
+    int x0 = (int)point.x();
+    int y0 = (int)point.y();
+    const float dx = (x0 >= 0 && x0 < image.cols-1) ? (point.x() - x0) : 0.0;
+    const float dy = (y0 >= 0 && y0 < image.rows-1) ? (point.y() - y0) : 0.0;
+    x0 = clamp(x0, 0, image.cols-1);
+    y0 = clamp(y0, 0, image.rows-1);
     const uchar im00 = image.at<uchar>(y0,  x0  );
     const uchar im01 = image.at<uchar>(y0+1,x0  );
     const uchar im10 = image.at<uchar>(y0  ,x0+1);
