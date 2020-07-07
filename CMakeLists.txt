@@ -3,9 +3,6 @@ project(GIFT
 VERSION 0.2.0)
 set(CMAKE_CXX_STANDARD 17)
 
-# turn on optimisation
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
-
 # enable neon vectorizatin for RPi4
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mfpu=neon -mfloat-abi=hard")
 

@@ -31,16 +31,19 @@ protected:
         cvtColor(img1, img1, COLOR_BGR2GRAY);
 
         Point2f basePoint = Point2f(350,300);
+        Point2f edgePoint = Point2f(350,478);
         int numLevels = 4;
 
         img0GradientPyrBase = ImageWithGradientPyramid(img0, 1);
         img0ImagePyrBase = ImagePyramid(img0, 1);
         img0PatchBase = extractPyramidPatch(basePoint, Size(21,21), img0GradientPyrBase);
+        img0PatchEdgeBase = extractPyramidPatch(edgePoint, Size(10,10), img0GradientPyrBase);
         
 
         img0GradientPyrLevels = ImageWithGradientPyramid(img0, numLevels);
         img0ImagePyrLevels = ImagePyramid(img0, numLevels);
         img0PatchLevels = extractPyramidPatch(basePoint, Size(21,21), img0GradientPyrLevels);
+        img0PatchEdgeLevels = extractPyramidPatch(edgePoint, Size(21,21), img0GradientPyrBase);
     }
     
 public:
@@ -48,10 +51,39 @@ public:
     Mat img0, img1;
     ImageWithGradientPyramid img0GradientPyrBase, img0GradientPyrLevels;
     ImagePyramid img0ImagePyrBase, img0ImagePyrLevels;
-    PyramidPatch img0PatchBase, img0PatchLevels;
+    PyramidPatch img0PatchBase, img0PatchLevels, img0PatchEdgeBase, img0PatchEdgeLevels;
 };
 
-TEST_F(OptimiseParametersTest, TranslationAcceptsMinimum) {
+TEST_F(OptimiseParametersTest, GetSubPixel) {
+    // Check integer values match up
+    for (int testIter=0; testIter<100; ++testIter) {
+        Vector2i point = Vector2i::Random();
+        point.x() = clamp(point.x(), 0, img0.cols-1);
+        point.y() = clamp(point.y(), 0, img0.rows-1);
+        Vector2T pointT(point.x(), point.y());
+        
+        float value = getSubPixel(img0, pointT);
+
+        int trueValue = img0.at<uchar>(Point2i(point.x(), point.y()));
+
+        EXPECT_FLOAT_EQ(value, trueValue);
+    }
+
+    // Check the extrapolation matches the patch
+    // cout << img0PatchEdgeBase.vecImage[0] << endl;
+    const Vector2T offset = 0.5 * Vector2T(img0PatchEdgeBase.rows-1, img0PatchEdgeBase.cols-1);
+    for (int y=0;y<img0PatchEdgeBase.rows;++y) {
+    for (int x=0;x<img0PatchEdgeBase.cols;++x) {
+        Vector2T point = Vector2T(x,y) + img0PatchEdgeBase.baseCentre - offset;
+        float value = getSubPixel(img0, point);
+        int rowIdx = y*img0PatchEdgeBase.rows + x;
+        EXPECT_FLOAT_EQ(value, img0PatchEdgeBase.vecImage[0](rowIdx));
+    }
+    }
+
+}
+
+TEST_F(OptimiseParametersTest, TranslationAcceptsMinimumOnBase) {
     TranslationGroup params = TranslationGroup::Identity();
     optimiseParameters(params, img0PatchBase, img0ImagePyrBase);
 
@@ -59,7 +91,7 @@ TEST_F(OptimiseParametersTest, TranslationAcceptsMinimum) {
     EXPECT_LE(tsError, 1e-3);
 }
 
-TEST_F(OptimiseParametersTest, AffineAcceptsMinimum) {
+TEST_F(OptimiseParametersTest, AffineAcceptsMinimumOnBase) {
     Affine2Group params = Affine2Group::Identity();
     optimiseParameters(params, img0PatchBase, img0ImagePyrBase);
 
@@ -139,4 +171,27 @@ TEST_F(OptimiseParametersTest, AffineConvergeErrorInLevels) {
         EXPECT_LE(tfError, 1e-2);
         EXPECT_LE(tsError, 1e-2);
     }
+}
+
+TEST_F(OptimiseParametersTest, TranslationAtEdge) {
+    TranslationGroup params = TranslationGroup::Identity();
+    params.translation.x() = 2;
+    optimiseParameters(params, img0PatchEdgeBase, img0ImagePyrBase);
+
+    ftype tsError = (params.translation).norm();
+    EXPECT_LE(tsError, 1e-3);
+}
+
+TEST_F(OptimiseParametersTest, ManyPoints) {
+    vector<Point2f> points;
+    goodFeaturesToTrack(img0, points, 50, 0.05, 10);
+
+    vector<PyramidPatch> patches = extractPyramidPatches(points, img0, Size(21,21), 3);
+    ImagePyramid pyr1(img1, 3);
+    vector<Affine2Group> params(patches.size());
+    for (int i=0; i<params.size();++i) {
+        params[i] = Affine2Group::Identity();
+        optimiseParameters(params[i], patches[i], pyr1);
+    }
+
 }
