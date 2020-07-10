@@ -52,11 +52,17 @@ void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, 
     // Use the Inverse compositional algorithm to optimise params at the given level.
     const MatrixXT jacobian = patchActionJacobian(params, patch);
     const MatrixXT stepOperator = (jacobian.transpose() * jacobian).inverse() * jacobian.transpose();
+    VectorXT previousStepDirection = VectorXT::Zero(params.dim());
 
     for (int iteration = 0; iteration < 50; ++iteration) {
         MatrixXT residualVector = paramResidual(params, patch, image);
         MatrixXT stepVector = - stepOperator * residualVector;
         if (stepVector.norm() < 1e-3) break;
+
+        VectorXT stepDirection = stepVector.normalized();
+        if (stepDirection.dot(previousStepDirection) < -0.5) stepVector = stepVector / 2.0;
+        previousStepDirection = stepDirection;
+
         params.applyStepOnRight(stepVector);
     }
 }
@@ -80,12 +86,12 @@ VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, co
     const Vector2T offset = 0.5 * Vector2T(patch.rows-1, patch.cols-1);
     VectorXT residualVector = VectorXT(patch.rows*patch.cols);
     for (int y=0; y<patch.rows; ++y) {
-        for (int x=0; x<patch.cols; ++x) {
-            const Vector2T point = Vector2T(x,y) - offset;
-            const Vector2T transformedPoint = params.applyLeftAction(point);
-            const float subPixelValue = getSubPixel(image, patch.centre+transformedPoint);
-            residualVector(x+y*patch.rows) = subPixelValue - patch.vecImage(x+y*patch.rows);
-        }
+    for (int x=0; x<patch.cols; ++x) {
+        const Vector2T point = Vector2T(x,y) - offset;
+        const Vector2T transformedPoint = params.applyLeftAction(point);
+        const float subPixelValue = getSubPixel(image, patch.centre+transformedPoint);
+        residualVector(x+y*patch.rows) = subPixelValue - patch.vecImage(x+y*patch.rows);
+    }
     }
     return residualVector;
 }
