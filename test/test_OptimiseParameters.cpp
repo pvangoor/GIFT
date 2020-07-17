@@ -194,4 +194,7 @@ TEST_F(OptimiseParametersTest, ManyPoints) {
         optimiseParameters(params[i], patches[i], pyr1);
     }
 
+    // Note this is slower than openCV methods, but they actually only implement translational tracking.
+    // OpenCV does not consider (affine) warping of the patch.
+
 }
