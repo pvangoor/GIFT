@@ -25,6 +25,7 @@ set(GIFT_SOURCE_FILES
     src/ImagePyramid.cpp
     src/OptimiseParameters.cpp
     src/ParameterGroup.cpp
+    src/GIFeatureTracker.cpp
 )
 
 set(GIFT_HEADER_FILES
@@ -36,6 +37,7 @@ set(GIFT_HEADER_FILES
     include/ImagePyramid.h
     include/OptimiseParameters.h
     include/ParameterGroup.h
+    include/GIFeatureTracker.h
 )
 
 # optional dependency: yaml-cpp
