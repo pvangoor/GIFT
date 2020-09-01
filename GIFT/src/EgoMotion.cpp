@@ -67,7 +67,7 @@ EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks, const ftype& dt) {
     vector<pair<Vector3T, Vector3T>> sphereFlows;
     for (const auto& lm: landmarks) {
         if (lm.lifetime < 2) continue;
-        sphereFlows.emplace_back(make_pair(lm.sphereCoordinates(),lm.opticalFlowSphere/dt));
+        sphereFlows.emplace_back(make_pair(lm.sphereCoordinates(),lm.opticalFlowSphere()/dt));
     }
 
     Vector3T linVel(0,0,1);
@@ -87,7 +87,7 @@ EgoMotion::EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3T& in
     vector<pair<Vector3T, Vector3T>> sphereFlows;
     for (const auto& lm: landmarks) {
         if (lm.lifetime < 2) continue;
-        sphereFlows.emplace_back(make_pair(lm.sphereCoordinates(),lm.opticalFlowSphere/dt));
+        sphereFlows.emplace_back(make_pair(lm.sphereCoordinates(),lm.opticalFlowSphere()/dt));
     }
 
     Vector3T linVel = initLinVel;
@@ -106,7 +106,7 @@ EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks, const Vector3T& ini
     vector<pair<Vector3T, Vector3T>> sphereFlows;
     for (const auto& lm: landmarks) {
         if (lm.lifetime < 2) continue;
-        sphereFlows.emplace_back(make_pair(lm.sphereCoordinates(),lm.opticalFlowSphere/dt));
+        sphereFlows.emplace_back(make_pair(lm.sphereCoordinates(),lm.opticalFlowSphere()/dt));
     }
     Vector3T linVel = initLinVel;
     Vector3T angVel = initAngVel;
@@ -250,7 +250,7 @@ vector<pair<Vector3T, Vector3T>> EgoMotion::estimateFlows(const vector<GIFT::Lan
         const Vector3T etaVel = Proj3(eta) * this->linearVelocity;
 
         ftype invDepth = 0;
-        if (etaVel.norm() > 0) invDepth = -etaVel.dot(lm.opticalFlowSphere + this->angularVelocity.cross(eta)) / etaVel.squaredNorm();
+        if (etaVel.norm() > 0) invDepth = -etaVel.dot(lm.opticalFlowSphere() + this->angularVelocity.cross(eta)) / etaVel.squaredNorm();
 
         Vector3T flow = -this->angularVelocity.cross(eta) + invDepth * etaVel;
         estFlows.emplace_back(make_pair(eta, flow));

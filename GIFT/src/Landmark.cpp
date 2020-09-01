@@ -28,7 +28,7 @@ Landmark::Landmark(const Point2f& newCamCoords, const Point2f& newCamCoordsNorm,
 
     this->opticalFlowRaw.setZero();
     this->opticalFlowNorm.setZero();
-    this->opticalFlowSphere.setZero();
+    this->opticalFlowSphere().setZero();
 
     this->keypoint.pt = this->camCoordinates;
 
@@ -47,7 +47,7 @@ void Landmark::update(const cv::Point2f& newCamCoords, const cv::Point2f& newCam
 
     Vector3T bearing = Vector3T(newCamCoordsNorm.x, newCamCoordsNorm.y, 1).normalized();
 
-    this->opticalFlowSphere = bearing.z() * (Matrix3T::Identity() - bearing*bearing.transpose()) * Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
+    this->opticalFlowSphere() = bearing.z() * (Matrix3T::Identity() - bearing*bearing.transpose()) * Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
 
     this->keypoint.pt = this->camCoordinates;
 
@@ -58,5 +58,11 @@ void Landmark::update(const cv::Point2f& newCamCoords, const cv::Point2f& newCam
 Eigen::Vector3T Landmark::sphereCoordinates() const {
     Eigen::Vector3T result;
     result << camCoordinatesNorm.x, camCoordinatesNorm.y, 1.0;
-    return result;
+    return result.normalized();
+}
+
+Eigen::Vector3T Landmark::opticalFlowSphere() const {
+    const Vector3T bearing = sphereCoordinates();
+    const Vector3T sphereFlow = bearing.z() * (Matrix3T::Identity() - bearing*bearing.transpose()) * Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
+    return sphereFlow;
 }
