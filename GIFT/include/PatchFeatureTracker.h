@@ -17,36 +17,30 @@
 
 #pragma once
 
-#include <vector>
-
-#include "Landmark.h"
-#include "CameraParameters.h"
-#include "opencv2/core.hpp"
-
-using namespace Eigen;
-using namespace std;
-using namespace cv;
+#include "GIFeatureTracker.h"
+#include "ImagePyramid.h"
+#include "ParameterGroup.h"
 
 namespace GIFT {
 
-class GIFeatureTracker {
+class PatchFeatureTracker : public GIFeatureTracker {
 protected:
-    int currentNumber = 0;
-    CameraParameters camera;
-    Mat mask;
+    // Transform parameters and patches
+    struct InternalPatchFeature {
+        ImagePatch patch;
+        TranslationGroup parameters;
+    };
+    vector<InternalPatchFeature> features;
 
 public:
     // Initialisation and configuration
-    GIFeatureTracker() = default;
-    GIFeatureTracker(const CameraParameters& cameraParams);
-    GIFeatureTracker(const CameraParameters& cameraParams, const Mat& mask);
-    virtual void setCameraParameters(const CameraParameters & cameraParameters);
-    virtual void setMask(const Mat & mask);
+    PatchFeatureTracker(const CameraParameters& cameraParams);
+    PatchFeatureTracker(const CameraParameters& cameraParams, const Mat& mask);
 
     // Core
-    virtual void detectFeatures(const Mat &image) = 0;
-    virtual void trackFeatures(const Mat &image) = 0;
-    virtual vector<Landmark> outputLandmarks() const = 0;
+    virtual void detectFeatures(const Mat &image) override {};
+    virtual void trackFeatures(const Mat &image) override {};
+    [[nodiscard]] virtual vector<Landmark> outputLandmarks() const override {return {}; };
 };
 }
 

@@ -38,6 +38,7 @@ set(GIFT_HEADER_FILES
     include/OptimiseParameters.h
     include/ParameterGroup.h
     include/GIFeatureTracker.h
+    include/PatchFeatureTracker.h
 )
 
 # optional dependency: yaml-cpp
