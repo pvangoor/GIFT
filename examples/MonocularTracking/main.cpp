@@ -15,14 +15,14 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "FeatureTracker.h"
+#include "PointFeatureTracker.h"
 #include "Configure.h"
 
 #include "opencv2/highgui/highgui.hpp"
 
 int main(int argc, char *argv[]) {
 
-    GIFT::FeatureTracker ft(GIFT::readCameraConfig(cv::String(argv[1])));
+    GIFT::PointFeatureTracker ft(GIFT::readCameraConfig(cv::String(argv[1])));
 
     cv::VideoCapture cap;
     cap.open(cv::String(argv[2]));

@@ -15,7 +15,7 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <FeatureTracker.h>
+#include <PointFeatureTracker.h>
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/stereo/stereo.hpp"
 #include "opencv2/core/eigen.hpp"
@@ -27,7 +27,7 @@
 
 using namespace GIFT;
 
-void FeatureTracker::processImage(const Mat &image) {
+void PointFeatureTracker::processImage(const Mat &image) {
     this->trackLandmarks(image);
     image.copyTo(this->previousImage);
 
@@ -39,7 +39,7 @@ void FeatureTracker::processImage(const Mat &image) {
     this->addNewLandmarks(newLandmarks);
 }
 
-vector<Landmark> FeatureTracker::createNewLandmarks(const Mat &image, const vector<Point2f>& newFeatures) {
+vector<Landmark> PointFeatureTracker::createNewLandmarks(const Mat &image, const vector<Point2f>& newFeatures) {
     vector<Landmark> newLandmarks;
     if (newFeatures.empty()) return newLandmarks;
 
@@ -63,7 +63,7 @@ vector<Landmark> FeatureTracker::createNewLandmarks(const Mat &image, const vect
     return newLandmarks;
 }
 
-void FeatureTracker::trackLandmarks(const Mat &image) {
+void PointFeatureTracker::trackLandmarks(const Mat &image) {
     if (landmarks.empty()) return;
 
     vector<Point2f> oldPoints;
@@ -100,11 +100,11 @@ void FeatureTracker::trackLandmarks(const Mat &image) {
     }
 }
 
-void FeatureTracker::setCameraConfiguration(const CameraParameters &configuration) {
+void PointFeatureTracker::setCameraConfiguration(const CameraParameters &configuration) {
     camera = configuration;
 }
 
-vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image) const {
+vector<Point2f> PointFeatureTracker::detectNewFeatures(const Mat &image) const {
     Mat imageGrey;
     cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
 
@@ -115,7 +115,7 @@ vector<Point2f> FeatureTracker::detectNewFeatures(const Mat &image) const {
     return newFeatures;
 }
 
-vector<Point2f> FeatureTracker::removeDuplicateFeatures(const vector<Point2f> &proposedFeatures) const {
+vector<Point2f> PointFeatureTracker::removeDuplicateFeatures(const vector<Point2f> &proposedFeatures) const {
     vector<Point2f> newFeatures;
     for (const auto & proposedFeature : proposedFeatures) {
         bool useFlag = true;
@@ -133,7 +133,7 @@ vector<Point2f> FeatureTracker::removeDuplicateFeatures(const vector<Point2f> &p
     return newFeatures;
 }
 
-void FeatureTracker::addNewLandmarks(vector<Landmark> newLandmarks) {
+void PointFeatureTracker::addNewLandmarks(vector<Landmark> newLandmarks) {
     for (auto & lm : newLandmarks) {
         if (landmarks.size() >= maxFeatures) break;
 
@@ -142,7 +142,7 @@ void FeatureTracker::addNewLandmarks(vector<Landmark> newLandmarks) {
     }
 }
 
-void FeatureTracker::setMask(const Mat & mask, int cameraNumber) {
+void PointFeatureTracker::setMask(const Mat & mask, int cameraNumber) {
     imageMask = mask;
 }
 
@@ -156,7 +156,7 @@ Eigen::Matrix3T GIFT::skew_matrix(const Eigen::Vector3T& t){
     return t_hat;
 }
 
-Mat FeatureTracker::drawFeatureImage(const Scalar& color, const int pointSize, const int thickness) const {
+Mat PointFeatureTracker::drawFeatureImage(const Scalar& color, const int pointSize, const int thickness) const {
         cv::Mat featureImage;
         this->previousImage.copyTo(featureImage);
         for (const auto &lm : this->landmarks) {
@@ -165,7 +165,7 @@ Mat FeatureTracker::drawFeatureImage(const Scalar& color, const int pointSize, c
         return featureImage;
 }
 
-Mat FeatureTracker::drawFlowImage(const Scalar& featureColor, const Scalar& flowColor, const int pointSize, const int thickness) const {
+Mat PointFeatureTracker::drawFlowImage(const Scalar& featureColor, const Scalar& flowColor, const int pointSize, const int thickness) const {
     Mat flowImage = drawFeatureImage(featureColor, pointSize, thickness);
     for (const auto &lm : this->landmarks) {
             Point2f p1 = lm.camCoordinates;
@@ -175,7 +175,7 @@ Mat FeatureTracker::drawFlowImage(const Scalar& featureColor, const Scalar& flow
     return flowImage;
 }
 
-Mat FeatureTracker::drawFlow(const Scalar& featureColor, const Scalar& flowColor, const int pointSize, const int thickness) const {
+Mat PointFeatureTracker::drawFlow(const Scalar& featureColor, const Scalar& flowColor, const int pointSize, const int thickness) const {
     Mat flow(this->previousImage.size(), CV_8UC3);
     flow.setTo(0);
     
@@ -190,7 +190,7 @@ Mat FeatureTracker::drawFlow(const Scalar& featureColor, const Scalar& flowColor
 
 
 /*
-void FeatureTracker::computeLandmarkPositions() {
+void PointFeatureTracker::computeLandmarkPositions() {
     if (mode == TrackerMode::MONO) return;
     for (auto & lm : landmarks) {
         if (mode == TrackerMode::STEREO) {
@@ -199,7 +199,7 @@ void FeatureTracker::computeLandmarkPositions() {
     }
 }
 
-Vector3T FeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& rightKp) const {
+Vector3T PointFeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& rightKp) const {
     assert(leftKp.x > rightKp.x);
     Vector3T position;
     position << leftKp.x, leftKp.y, 1;
@@ -210,7 +210,7 @@ Vector3T FeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& right
     return position;
 }
 
-Vector3T FeatureTracker::solveMultiView(const vector<Point2f> imageCoordinatesNorm) const {
+Vector3T PointFeatureTracker::solveMultiView(const vector<Point2f> imageCoordinatesNorm) const {
     int camNum = cameras.size();
     assert(imageCoordinatesNorm.size() == cameras.size());
     assert(camNum >= 2);
@@ -230,7 +230,7 @@ Vector3T FeatureTracker::solveMultiView(const vector<Point2f> imageCoordinatesNo
     return position;
 }
 
-vector<vector<Point2f>> FeatureTracker::detectNewStereoFeatures(const cv::Mat &imageLeft, const cv::Mat &imageRight) const {
+vector<vector<Point2f>> PointFeatureTracker::detectNewStereoFeatures(const cv::Mat &imageLeft, const cv::Mat &imageRight) const {
     vector<vector<Point2f>> newFeatures(2);
 
     // Obtain left features

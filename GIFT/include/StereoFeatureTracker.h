@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "FeatureTracker.h"
+#include "PointFeatureTracker.h"
 #include "StereoLandmark.h"
 
 
@@ -32,8 +32,8 @@ enum class StereoCam {Left, Right};
 class StereoFeatureTracker {
 
 protected:
-    FeatureTracker trackerLeft;
-    FeatureTracker trackerRight;
+    PointFeatureTracker trackerLeft;
+    PointFeatureTracker trackerRight;
     vector<StereoLandmark> stereoLandmarks;
 
 public:

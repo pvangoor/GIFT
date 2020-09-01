@@ -18,7 +18,7 @@ ${OpenCV_INCLUDE_DIRS})
 ####################
 
 set(GIFT_SOURCE_FILES
-    src/FeatureTracker.cpp
+    src/PointFeatureTracker.cpp
     src/StereoFeatureTracker.cpp
     src/EgoMotion.cpp
     src/Landmark.cpp
@@ -29,7 +29,7 @@ set(GIFT_SOURCE_FILES
 
 set(GIFT_HEADER_FILES
     include/CameraParameters.h
-    include/FeatureTracker.h
+    include/PointFeatureTracker.h
     include/StereoFeatureTracker.h
     include/Landmark.h
     include/EgoMotion.h

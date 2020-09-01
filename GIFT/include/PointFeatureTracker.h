@@ -35,7 +35,7 @@ namespace GIFT {
 
 Eigen::Matrix3T skew_matrix(const Eigen::Vector3T& t);
 
-class FeatureTracker {
+class PointFeatureTracker {
 protected:
     CameraParameters camera;
 
@@ -57,7 +57,7 @@ public:
 
 public:
     // Initialisation and configuration
-    FeatureTracker(const CameraParameters &configuration = CameraParameters()) { camera = configuration; };
+    PointFeatureTracker(const CameraParameters &configuration = CameraParameters()) { camera = configuration; };
     void setCameraConfiguration(const CameraParameters &configuration);
 
     // Core
