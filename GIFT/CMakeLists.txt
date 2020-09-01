@@ -1,3 +1,6 @@
+project(GIFT)
+cmake_minimum_required(VERSION 3.0)
+
 # Set up output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
@@ -7,11 +10,11 @@ include_directories("${PROJECT_BINARY_DIR}")
 
 # Include libraries from outside project
 find_package(OpenCV REQUIRED)
-find_package(Eigen3 3.3 REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 set(ADDITIONAL_INCLUDE_DIRS
-${EIGEN_INCLUDE_DIRS}
-# ${EIGEN_INCLUDE_DIR}/unsupported
+${EIGEN3_INCLUDE_DIRS}
+${EIGEN3_INCLUDE_DIRS}/unsupported
 ${OpenCV_INCLUDE_DIRS})
 
 # Find project files

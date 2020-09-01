@@ -1,3 +1,5 @@
 .vscode/*
 build/*
 callgrind*
+GIFT/build/*
+GIFT/.vscode/*
