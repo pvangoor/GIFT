@@ -1,4 +1,3 @@
-enable_testing()
 find_package(GTest REQUIRED)
 
 # Link the tests with the test data
