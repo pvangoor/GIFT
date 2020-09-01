@@ -32,8 +32,6 @@ struct Landmark {
     cv::Point2f camCoordinates;
     cv::Point2f camCoordinatesNorm;
 
-    Eigen::Vector3T sphereCoordinates;
-
     Eigen::Vector2T opticalFlowRaw;
     Eigen::Vector2T opticalFlowNorm;
     Eigen::Vector3T opticalFlowSphere;
@@ -47,6 +45,7 @@ struct Landmark {
     Landmark() {};
     Landmark(const cv::Point2f& newCamCoords, const cv::Point2f& newCamCoordsNorm, int idNumber, const colorVec& col = {0,0,0});
     void update(const cv::Point2f& newCamCoords, const cv::Point2f& newCamCoordsNorm, const colorVec& col = {0,0,0});
+    Eigen::Vector3T sphereCoordinates() const;
 
 };
 

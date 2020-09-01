@@ -25,8 +25,6 @@ using namespace Eigen;
 Landmark::Landmark(const Point2f& newCamCoords, const Point2f& newCamCoordsNorm, int idNumber, const colorVec& col) {
     this->camCoordinates = newCamCoords;
     this->camCoordinatesNorm = newCamCoordsNorm;
-    this->sphereCoordinates << newCamCoordsNorm.x, newCamCoordsNorm.y, 1;
-    this->sphereCoordinates.normalize();
 
     this->opticalFlowRaw.setZero();
     this->opticalFlowNorm.setZero();
@@ -49,11 +47,16 @@ void Landmark::update(const cv::Point2f& newCamCoords, const cv::Point2f& newCam
 
     Vector3T bearing = Vector3T(newCamCoordsNorm.x, newCamCoordsNorm.y, 1).normalized();
 
-    this->sphereCoordinates = bearing;
     this->opticalFlowSphere = bearing.z() * (Matrix3T::Identity() - bearing*bearing.transpose()) * Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
 
     this->keypoint.pt = this->camCoordinates;
 
     this->pointColor = col;
     ++lifetime;
+}
+
+Eigen::Vector3T Landmark::sphereCoordinates() const {
+    Eigen::Vector3T result;
+    result << camCoordinatesNorm.x, camCoordinatesNorm.y, 1.0;
+    return result;
 }
