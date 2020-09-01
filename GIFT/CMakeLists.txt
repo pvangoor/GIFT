@@ -50,6 +50,11 @@ add_library(GIFT
     ${GIFT_HEADER_FILES}
 )
 
+# Set the floating point type
+if (${GIFT_USE_SINGLE_FLOAT})
+    target_compile_definitions(GIFT PUBLIC USE_SINGLE_FLOAT)
+endif()
+
 # Build local library
 #####################
 target_include_directories(GIFT PUBLIC

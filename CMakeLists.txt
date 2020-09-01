@@ -1,16 +1,17 @@
 cmake_minimum_required(VERSION 3.0)
 project(GIFT
 VERSION 0.2.0)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
-# turn on optimisation
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+# Use O2 level optimisation by default
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
+    "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+    message("Using the default build type: ${CMAKE_BUILD_TYPE}")
+endif(NOT CMAKE_BUILD_TYPE)
 
-# enable neon vectorizatin for RPi4
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mfpu=neon -mfloat-abi=hard")
-
-# use single precision floating point
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SINGLE_FLOAT")
+# Select floating point precision
+option(GIFT_USE_SINGLE_FLOAT "Toggle ON/OFF to use double/single precision floats." OFF)
 
 add_subdirectory(GIFT)
 
