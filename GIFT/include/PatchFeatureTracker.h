@@ -23,6 +23,7 @@
 #include "OptimiseParameters.h"
 
 #include "opencv2/imgproc.hpp"
+#include "opencv2/calib3d.hpp"
 
 namespace GIFT {
 
@@ -36,7 +37,13 @@ protected:
         PG parameters;
         int id = -1;
         int lifetime = 0;
+        Point2f camCoordinates() const {
+            const Vector2T result = parameters.applyLeftAction(patch.baseCentre);
+            return Point2f(result.x(), result.y());
+        }
     };
+
+    // Feature storage
     vector<InternalPatchFeature> features;
 
     // Settings
@@ -53,9 +60,18 @@ public:
 
     // Core
     virtual void detectFeatures(const Mat &image) override {
-        vector<Point2f> points;
-        goodFeaturesToTrack(image, points, maximumFeatures, minimumRelativeQuality, minimumFeatureDistance);
-        vector<PyramidPatch> patches = extractPyramidPatches(points, image, patchSize, pyramidLevels);
+        // Detect new points
+        vector<Point2f> newPoints;
+        goodFeaturesToTrack(image, newPoints, maximumFeatures, minimumRelativeQuality, minimumFeatureDistance);
+        
+        // Remove new points that are too close to existing features
+        vector<Point2f> oldPoints(features.size());
+        transform(features.begin(), features.end(), oldPoints.begin(), [](const InternalPatchFeature& f) {return f.camCoordinates();});
+        removePointsTooClose(newPoints, oldPoints, minimumFeatureDistance);
+        const int numPointsToAdd = maximumFeatures - oldPoints.size();
+        newPoints.resize(max(numPointsToAdd, 0));
+
+        vector<PyramidPatch> patches = extractPyramidPatches(newPoints, image, patchSize, pyramidLevels);
 
         auto featureLambda = [this](const PyramidPatch& patch) { 
             InternalPatchFeature feature;
@@ -81,7 +97,6 @@ public:
     };
 
     [[nodiscard]] virtual vector<Landmark> outputLandmarks() const override {
-        // TODO: Convert all the patch features to landmarks
         vector<Landmark> landmarks(features.size());
         transform(features.begin(), features.end(), landmarks.begin(), [this](const InternalPatchFeature& f){
             return this->featureToLandmark(f);
@@ -91,12 +106,27 @@ public:
 
     [[nodiscard]] Landmark featureToLandmark(const InternalPatchFeature& feature) const {
         Landmark lm;
-        const Vector2T normalCamCoords = feature.parameters.applyLeftAction(feature.patch.baseCentre);
-        lm.camCoordinatesNorm = Point2f(normalCamCoords.x(), normalCamCoords.y());
+        lm.camCoordinates = feature.camCoordinates();
+        // undistortPoints(lm.camCoordinates, lm.camCoordinatesNorm, camera.K, camera.distortionParams);
         lm.idNumber = feature.id;
         lm.lifetime = feature.lifetime;
         lm.pointColor.fill(feature.patch.at(feature.patch.rows/2, feature.patch.cols/2));
         return lm;
+        // TODO: Some parts of the landmark are missing. Is this a problem?
+    }
+
+    static void removePointsTooClose(vector<Point2f> newPoints, const vector<Point2f>& oldPoints, const double& minDist) {
+        const double minDistSq = minDist*minDist;
+        for (int i=newPoints.size()-1; i>=0; --i) {
+            Point2f& newPoint = newPoints[i];
+            for (const Point2f& point : oldPoints) {
+                const double distSq = (point.x - newPoint.x)*(point.x - newPoint.x) + (point.y - newPoint.y)*(point.y - newPoint.y);
+                if (distSq < minDistSq) {
+                    newPoints.erase(newPoints.begin()+i);
+                    break;
+                }
+            }
+        }
     }
 };
 }
