@@ -22,6 +22,12 @@
 using namespace Eigen;
 using namespace cv;
 
+int clamp(const int x, const int a, const int b) {
+    if (x < a) return a;
+    if (x > b) return b;
+    return x;
+}
+
 void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, const Mat& image);
 MatrixXT patchActionJacobian(const ParameterGroup& params, const ImagePatch& patch);
 VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, const Mat& image);

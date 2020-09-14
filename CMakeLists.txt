@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(GIFT
 VERSION 0.2.0)
-set(CMAKE_CXX_STANDARD 20)
+set(CXX_STANDARD 20)
 
 # Use O2 level optimisation by default
 if(NOT CMAKE_BUILD_TYPE)
