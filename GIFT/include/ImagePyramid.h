@@ -52,6 +52,7 @@ struct PyramidPatch {
     Vector2T baseCentre;
     int rows;
     int cols;
+    ftype at(int row, int col, int lv=0) const;
 };
 
 struct ImagePatch {
@@ -60,6 +61,7 @@ struct ImagePatch {
     Vector2T centre;
     int rows;
     int cols;
+    ftype at(int row, int col) const;
 };
 
 PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr);

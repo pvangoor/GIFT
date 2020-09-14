@@ -23,8 +23,8 @@
 int main(int argc, char *argv[]) {
 
     GIFT::CameraParameters cameraParams = GIFT::readCameraConfig(cv::String(argv[1]));
-    // GIFT::PatchFeatureTracker ft(cameraParams);
-    GIFT::PatchFeatureTracker ft();
+    GIFT::PatchFeatureTracker ft(cameraParams);
+    // GIFT::PatchFeatureTracker<TranslationGroup> ft();
 
     cv::VideoCapture cap;
     cap.open(cv::String(argv[2]));

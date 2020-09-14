@@ -47,6 +47,19 @@ ImageWithGradientPyramid::ImageWithGradientPyramid(const cv::Mat& image, const i
     }
 }
 
+ftype ImagePatch::at(int row, int col) const {
+    assert(row < rows);
+    assert(col < cols);
+    return vecImage(col + row * cols);
+}
+
+ftype PyramidPatch::at(int row, int col, int lv) const {
+    assert(lv < vecImage.size());
+    assert(row < rows);
+    assert(col < cols);
+    return vecImage[lv](col + row * cols);
+}
+
 PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr) {
     int numLevels = pyr.levels.size();
     PyramidPatch patch;
