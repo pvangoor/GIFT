@@ -35,10 +35,23 @@ public:
     GIFT::PatchFeatureTracker<> pft;
 };
 
-TEST_F(PFTTest, DetectAndTrack) {
+TEST_F(PFTTest, DetectAndTrackLogic) {
     pft.detectFeatures(img0);
+    vector<GIFT::Landmark> landmarks0 = pft.outputLandmarks();
 
     pft.trackFeatures(img1);
-    EXPECT_TRUE(true);
+    vector<GIFT::Landmark> landmarks1 = pft.outputLandmarks();
+
+    // Check basic logic
+    ASSERT_EQ(landmarks0.size(), landmarks1.size());
+    for (int i = 0; i < landmarks0.size(); ++i) {
+        const GIFT::Landmark& lmi0 = landmarks0[i];
+        const GIFT::Landmark& lmi1 = landmarks0[i];
+
+        EXPECT_EQ(lmi0.idNumber, lmi1.idNumber);
+        EXPECT_EQ(lmi0.lifetime, 0);
+        EXPECT_EQ(lmi1.lifetime, 1);
+    }
+
 
 }
