@@ -46,7 +46,7 @@ TEST_F(PFTTest, DetectAndTrackLogic) {
     ASSERT_EQ(landmarks0.size(), landmarks1.size());
     for (int i = 0; i < landmarks0.size(); ++i) {
         const GIFT::Landmark& lmi0 = landmarks0[i];
-        const GIFT::Landmark& lmi1 = landmarks0[i];
+        const GIFT::Landmark& lmi1 = landmarks1[i];
 
         EXPECT_EQ(lmi0.idNumber, lmi1.idNumber);
         EXPECT_EQ(lmi0.lifetime, 0);
