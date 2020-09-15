@@ -15,6 +15,8 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 #include "eigen3/Eigen/Core"
 #include "ftype.h"
 

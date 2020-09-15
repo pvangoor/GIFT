@@ -25,7 +25,7 @@
 int main(int argc, char *argv[]) {
 
     GIFT::CameraParameters cameraParams = GIFT::readCameraConfig(cv::String(argv[1]));
-    GIFT::PatchFeatureTracker<> ft(cameraParams);
+    GIFT::PatchFeatureTracker<TranslationGroup> ft(cameraParams);
 
     cv::VideoCapture cap;
     cap.open(cv::String(argv[2]));
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
         cv::Mat featureImage = GIFT::drawFeatureImage(image, landmarks);
 
         cv::imshow("debug", featureImage);
-        int k = cv::waitKey(1);
+        int k = cv::waitKey(0);
         std::cout << "Read Image " << ++counter << std::endl;
         std::cout << "Number of features is  " << landmarks.size() << std::endl;
         if (k == 's') cv::imwrite("FeatureImage.png", featureImage);
