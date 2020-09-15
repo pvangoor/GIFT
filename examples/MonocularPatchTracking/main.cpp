@@ -17,29 +17,34 @@
 
 #include "PatchFeatureTracker.h"
 #include "Configure.h"
+#include "Visualisation.h"
 
 #include "opencv2/highgui/highgui.hpp"
+#include <iostream>
 
 int main(int argc, char *argv[]) {
 
     GIFT::CameraParameters cameraParams = GIFT::readCameraConfig(cv::String(argv[1]));
     GIFT::PatchFeatureTracker<> ft(cameraParams);
-    // GIFT::PatchFeatureTracker<TranslationGroup> ft();
 
     cv::VideoCapture cap;
     cap.open(cv::String(argv[2]));
     cv::Mat image;
-    while (cap.read(image)) {;
+    int counter = 0;
+    while (cap.read(image)) {
+        ft.trackFeatures(image);
+        ft.detectFeatures(image);
 
-        // ft.processImage(image);
-        // std::vector<GIFT::Landmark> landmarks = ft.outputLandmarks();
+        std::vector<GIFT::Landmark> landmarks = ft.outputLandmarks();
 
-        // cv::Mat featureImage = ft.drawFeatureImage(Scalar(0,0,255), 5, 3);
+        cv::Mat featureImage = GIFT::drawFeatureImage(image, landmarks);
 
-        // cv::imshow("debug", featureImage);
-        // int k = cv::waitKey(1);
-        // if (k == 's') cv::imwrite("FeatureImage.png", featureImage);
-        // if (k == 27) break;
+        cv::imshow("debug", featureImage);
+        int k = cv::waitKey(1);
+        std::cout << "Read Image " << ++counter << std::endl;
+        std::cout << "Number of features is  " << landmarks.size() << std::endl;
+        if (k == 's') cv::imwrite("FeatureImage.png", featureImage);
+        if (k == 27) break;
 
     }
 

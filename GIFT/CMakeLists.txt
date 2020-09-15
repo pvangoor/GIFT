@@ -26,6 +26,7 @@ set(GIFT_SOURCE_FILES
     src/OptimiseParameters.cpp
     src/ParameterGroup.cpp
     src/GIFeatureTracker.cpp
+    src/Visualisation.cpp
 )
 
 set(GIFT_HEADER_FILES
@@ -39,6 +40,7 @@ set(GIFT_HEADER_FILES
     include/ParameterGroup.h
     include/GIFeatureTracker.h
     include/PatchFeatureTracker.h
+    include/Visualisation.h
 )
 
 # optional dependency: yaml-cpp

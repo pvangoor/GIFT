@@ -47,8 +47,8 @@ protected:
     vector<InternalPatchFeature> features;
 
     // Settings
-    int maximumFeatures = 50;
-    double minimumFeatureDistance = 10;
+    int maximumFeatures = 20;
+    double minimumFeatureDistance = 20;
     double minimumRelativeQuality = 0.05;
     int pyramidLevels = 3;
     Size patchSize = Size(21,21);
@@ -62,7 +62,8 @@ public:
     virtual void detectFeatures(const Mat &image) override {
         // Detect new points
         vector<Point2f> newPoints;
-        goodFeaturesToTrack(image, newPoints, maximumFeatures, minimumRelativeQuality, minimumFeatureDistance);
+        Mat gray; cvtColor(image, gray, COLOR_RGB2GRAY);
+        goodFeaturesToTrack(gray, newPoints, maximumFeatures, minimumRelativeQuality, minimumFeatureDistance);
         
         // Remove new points that are too close to existing features
         vector<Point2f> oldPoints(features.size());
@@ -71,20 +72,22 @@ public:
         const int numPointsToAdd = maximumFeatures - oldPoints.size();
         newPoints.resize(max(numPointsToAdd, 0));
 
-        vector<PyramidPatch> patches = extractPyramidPatches(newPoints, image, patchSize, pyramidLevels);
-
-        auto featureLambda = [this](const PyramidPatch& patch) { 
+        // Convert the new points to patch features
+        vector<PyramidPatch> newPatches = extractPyramidPatches(newPoints, image, patchSize, pyramidLevels);
+        auto newFeatureLambda = [this](const PyramidPatch& patch) { 
             InternalPatchFeature feature;
             feature.patch = patch;
             feature.parameters = PG::Identity();
             feature.id = ++this->currentNumber;
             return feature;
         };
+        vector<InternalPatchFeature> newFeatures(newPatches.size());
+        transform(newPatches.begin(), newPatches.end(), newFeatures.begin(), newFeatureLambda);
 
-        features.resize(patches.size());
-        transform(patches.begin(), patches.end(), features.begin(), featureLambda);
-        // TODO: This resets the features every time you call it. What would be better?
-        // Probably it should refresh the existing features and add new features up to a maximum number.
+        // Append
+        features.insert(features.end(), newFeatures.begin(), newFeatures.end());
+
+        // TODO: This only adds new features. Ideally, we also refresh existing features.
     };
 
     virtual void trackFeatures(const Mat &image) override {
