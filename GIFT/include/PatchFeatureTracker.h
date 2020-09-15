@@ -55,6 +55,7 @@ protected:
 
 public:
     // Initialisation and configuration
+    PatchFeatureTracker() = default;
     PatchFeatureTracker(const CameraParameters& cameraParams) : GIFeatureTracker(cameraParams) {};
     PatchFeatureTracker(const CameraParameters& cameraParams, const Mat& mask) : GIFeatureTracker(cameraParams, mask) {};
 
@@ -62,7 +63,8 @@ public:
     virtual void detectFeatures(const Mat &image) override {
         // Detect new points
         vector<Point2f> newPoints;
-        Mat gray; cvtColor(image, gray, COLOR_RGB2GRAY);
+        Mat gray = image;
+        if (gray.channels() > 1) cvtColor(image, gray, COLOR_RGB2GRAY);
         goodFeaturesToTrack(gray, newPoints, maximumFeatures, minimumRelativeQuality, minimumFeatureDistance);
         
         // Remove new points that are too close to existing features

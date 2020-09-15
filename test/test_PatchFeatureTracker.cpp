@@ -21,64 +21,24 @@
 #include "opencv2/imgproc.hpp"
 #include "ParameterGroup.h"
 
-class OptimiseParametersTest : public ::testing::Test {
+#include <fstream>
+
+class PFTTest : public ::testing::Test {
 protected:
-    OptimiseParametersTest() {
-        img0 = imread(dataDir + String("img0.png"));
-        cvtColor(img0, img0, COLOR_BGR2GRAY);
-
-        img1 = imread(dataDir + String("img1.png"));
-        cvtColor(img1, img1, COLOR_BGR2GRAY);
-
-        const Point2f basePoint = Point2f(485,155);
-        const Point2f edgePoint = Point2f(350,478);
-        int numLevels = 4;
-
-        img0GradientPyrBase = ImageWithGradientPyramid(img0, 1);
-        img0ImagePyrBase = ImagePyramid(img0, 1);
-        img0PatchBase = extractPyramidPatch(basePoint, Size(21,21), img0GradientPyrBase);
-        img0PatchEdgeBase = extractPyramidPatch(edgePoint, Size(10,10), img0GradientPyrBase);
-        
-
-        img0GradientPyrLevels = ImageWithGradientPyramid(img0, numLevels);
-        img0ImagePyrLevels = ImagePyramid(img0, numLevels);
-        img0PatchLevels = extractPyramidPatch(basePoint, Size(21,21), img0GradientPyrLevels);
-        img0PatchEdgeLevels = extractPyramidPatch(edgePoint, Size(21,21), img0GradientPyrBase);
+    PFTTest() {
+        img0 = imread(String(TEST_DATA_DIR) + String("img0.png"));
+        img1 = imread(String(TEST_DATA_DIR) + String("img1.png"));
     }
     
 public:
-    String dataDir = String(TEST_DATA_DIR);
     Mat img0, img1;
-    ImageWithGradientPyramid img0GradientPyrBase, img0GradientPyrLevels;
-    ImagePyramid img0ImagePyrBase, img0ImagePyrLevels;
-    PyramidPatch img0PatchBase, img0PatchLevels, img0PatchEdgeBase, img0PatchEdgeLevels;
+    GIFT::PatchFeatureTracker<> pft;
 };
 
-TEST_F(OptimiseParametersTest, GetSubPixel) {
-    // Check integer values match up
-    for (int testIter=0; testIter<100; ++testIter) {
-        Vector2i point = Vector2i::Random();
-        point.x() = clamp(point.x(), 0, img0.cols-1);
-        point.y() = clamp(point.y(), 0, img0.rows-1);
-        Vector2T pointT(point.x(), point.y());
-        
-        float value = getSubPixel(img0, pointT);
+TEST_F(PFTTest, DetectAndTrack) {
+    pft.detectFeatures(img0);
 
-        int trueValue = img0.at<uchar>(Point2i(point.x(), point.y()));
-
-        EXPECT_FLOAT_EQ(value, trueValue);
-    }
-
-    // Check the extrapolation matches the patch
-    // cout << img0PatchEdgeBase.vecImage[0] << endl;
-    const Vector2T offset = 0.5 * Vector2T(img0PatchEdgeBase.rows-1, img0PatchEdgeBase.cols-1);
-    for (int y=0;y<img0PatchEdgeBase.rows;++y) {
-    for (int x=0;x<img0PatchEdgeBase.cols;++x) {
-        Vector2T point = Vector2T(x,y) + img0PatchEdgeBase.baseCentre - offset;
-        float value = getSubPixel(img0, point);
-        int rowIdx = y*img0PatchEdgeBase.rows + x;
-        EXPECT_FLOAT_EQ(value, img0PatchEdgeBase.vecImage[0](rowIdx));
-    }
-    }
+    pft.trackFeatures(img1);
+    EXPECT_TRUE(true);
 
 }
