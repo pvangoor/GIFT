@@ -30,8 +30,8 @@ protected:
         img1 = imread(dataDir + String("img1.png"));
         cvtColor(img1, img1, COLOR_BGR2GRAY);
 
-        Point2f basePoint = Point2f(350,300);
-        Point2f edgePoint = Point2f(350,478);
+        const Point2f basePoint = Point2f(485,155);
+        const Point2f edgePoint = Point2f(350,478);
         int numLevels = 4;
 
         img0GradientPyrBase = ImageWithGradientPyramid(img0, 1);
