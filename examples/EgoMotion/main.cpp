@@ -25,7 +25,7 @@
 #include "opencv2/features2d/features2d.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
-#include "FeatureTracker.h"
+#include "PointFeatureTracker.h"
 #include "Configure.h"
 #include "EgoMotion.h"
 #include <getopt.h>
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
 
     // Set up a monocular feature tracker
     GIFT::CameraParameters cam0 = GIFT::readCameraConfig(camConfigFile);
-    GIFT::FeatureTracker ft = GIFT::FeatureTracker(cam0);
+    GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(cam0);
     ft.maxFeatures = 250;
     ft.featureDist = 20;
 

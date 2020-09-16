@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(GIFT
 VERSION 0.2.0)
-set(CMAKE_CXX_STANDARD 20)
+set(CXX_STANDARD 20)
 
 # Use O2 level optimisation by default
 if(NOT CMAKE_BUILD_TYPE)
@@ -33,7 +33,11 @@ if(BUILD_EXAMPLES)
 endif()
 
 option( BUILD_TESTS "Build Tests" ON)
+set(TEST_DATA_DIR "test/data/")
 if(BUILD_TESTS)
+    enable_testing()
     message("Building the tests...")
+    get_filename_component(TEST_DATA_DIR ${TEST_DATA_DIR} ABSOLUTE)
+    message("Expecting test data in ${TEST_DATA_DIR}/")
     add_subdirectory(test)
 endif()

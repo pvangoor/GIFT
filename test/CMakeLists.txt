@@ -1,13 +1,22 @@
-enable_testing()
 find_package(GTest REQUIRED)
 
-add_executable(test_EgoMotion test_EgoMotion.cpp)
+# Link the tests with the test data
+add_compile_definitions(TEST_DATA_DIR="${TEST_DATA_DIR}/")
 
-target_include_directories(test_EgoMotion PUBLIC ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(test_EgoMotion
-GTest::GTest
-GTest::Main
-GIFT
+set(TESTS_LIST
+    test_EgoMotion
+    test_ImagePyramid
+    test_OptimiseParameters
+    test_PatchFeatureTracker
 )
 
-add_test(test_EgoMotion test_EgoMotion)
+foreach(TEST_NAME ${TESTS_LIST})
+    add_executable(${TEST_NAME} "${TEST_NAME}.cpp")
+    target_include_directories(${TEST_NAME} PUBLIC ${OpenCV_INCLUDE_DIRS})
+    target_link_libraries(${TEST_NAME}
+        GTest::GTest
+        GTest::Main
+        GIFT
+    )
+    add_test("${TEST_NAME}" TEST_NAME)
+endforeach()

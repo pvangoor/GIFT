@@ -9,6 +9,8 @@
 #define Vector2T Vector2f
 #define Vector3T Vector3f
 #define Vector4T Vector4f
+#define VectorXT VectorXf
+#define Matrix2T Matrix2f
 #define Matrix3T Matrix3f
 #define Matrix4T Matrix4f
 #define MatrixXT MatrixXf
@@ -20,6 +22,8 @@
 #define Vector2T Vector2d
 #define Vector3T Vector3d
 #define Vector4T Vector4d
+#define VectorXT VectorXd
+#define Matrix2T Matrix2d
 #define Matrix3T Matrix3d
 #define Matrix4T Matrix4d
 #define MatrixXT MatrixXd
