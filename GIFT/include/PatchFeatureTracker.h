@@ -43,17 +43,19 @@ protected:
         }
     };
 
-    // Feature storage
-    vector<InternalPatchFeature> features;
-
-    // Settings
-    int maximumFeatures = 20;
-    double minimumFeatureDistance = 20;
-    double minimumRelativeQuality = 0.05;
-    int pyramidLevels = 3;
-    Size patchSize = Size(21,21);
+    vector<InternalPatchFeature> features; // Feature storage
 
 public:
+    // Settings
+    struct Settings {
+        int maximumFeatures = 20;
+        double minimumFeatureDistance = 20;
+        double minimumRelativeQuality = 0.05;
+        int pyramidLevels = 3;
+        Size patchSize = Size(21,21);
+    };
+    Settings settings;
+
     // Initialisation and configuration
     PatchFeatureTracker() = default;
     PatchFeatureTracker(const CameraParameters& cameraParams) : GIFeatureTracker(cameraParams) {};
@@ -65,17 +67,18 @@ public:
         vector<Point2f> newPoints;
         Mat gray = image;
         if (gray.channels() > 1) cvtColor(image, gray, COLOR_RGB2GRAY);
-        goodFeaturesToTrack(gray, newPoints, maximumFeatures, minimumRelativeQuality, minimumFeatureDistance);
+        goodFeaturesToTrack(gray, newPoints, settings.maximumFeatures,
+            settings.minimumRelativeQuality, settings.minimumFeatureDistance);
         
         // Remove new points that are too close to existing features
         vector<Point2f> oldPoints(features.size());
         transform(features.begin(), features.end(), oldPoints.begin(), [](const InternalPatchFeature& f) {return f.camCoordinates();});
-        removePointsTooClose(newPoints, oldPoints, minimumFeatureDistance);
-        const int numPointsToAdd = maximumFeatures - oldPoints.size();
+        removePointsTooClose(newPoints, oldPoints, settings.minimumFeatureDistance);
+        const int numPointsToAdd = settings.maximumFeatures - oldPoints.size();
         newPoints.resize(max(numPointsToAdd, 0));
 
         // Convert the new points to patch features
-        vector<PyramidPatch> newPatches = extractPyramidPatches(newPoints, gray, patchSize, pyramidLevels);
+        vector<PyramidPatch> newPatches = extractPyramidPatches(newPoints, gray, settings.patchSize, settings.pyramidLevels);
         auto newFeatureLambda = [this](const PyramidPatch& patch) { 
             InternalPatchFeature feature;
             feature.patch = patch;
@@ -94,7 +97,7 @@ public:
 
     virtual void trackFeatures(const Mat &image) override {
         Mat gray = image; if (gray.channels() > 1) cvtColor(image, gray, COLOR_RGB2GRAY);
-        ImagePyramid newPyr(gray, pyramidLevels);
+        ImagePyramid newPyr(gray, settings.pyramidLevels);
         for_each(features.begin(), features.end(), [&newPyr](InternalPatchFeature& feature) {
             optimiseParameters(feature.parameters, feature.patch, newPyr);
             ++feature.lifetime;

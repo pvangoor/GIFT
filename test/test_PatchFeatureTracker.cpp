@@ -38,10 +38,19 @@ public:
 };
 
 TEST_F(PFTTest, DetectAndTrackLogic) {
+    pft.settings.maximumFeatures = 20;
+    pft.settings.minimumFeatureDistance = 20;
+    pft.settings.minimumRelativeQuality = 0.01;
+    pft.settings.patchSize = Size(9,9);
+    pft.settings.pyramidLevels = 4;
+
     pft.detectFeatures(img0);
     vector<GIFT::Landmark> landmarks0 = pft.outputLandmarks();
 
-    pft.trackFeatures(img1);
+    const Mat translationMat = (Mat_<double>(2,3) << 1, 0, 10, 0, 1, 10);
+    Mat shiftedImg0; warpAffine(img0, shiftedImg0, translationMat, img0.size());
+
+    pft.trackFeatures(shiftedImg0);
     vector<GIFT::Landmark> landmarks1 = pft.outputLandmarks();
 
     // Check basic logic
