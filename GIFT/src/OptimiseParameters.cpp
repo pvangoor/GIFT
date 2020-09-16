@@ -94,8 +94,8 @@ VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, co
     for (int y=0; y<patch.rows; ++y) {
     for (int x=0; x<patch.cols; ++x) {
         const Vector2T point = Vector2T(x,y) - offset;
-        const Vector2T transformedPoint = params.applyLeftAction(point);
-        const float subPixelValue = getSubPixel(image, patch.centre+transformedPoint);
+        const Vector2T transformedPoint = patch.centre + params.applyLeftAction(point);
+        const float subPixelValue = getSubPixel(image, transformedPoint);
         residualVector(x+y*patch.rows) = subPixelValue - patch.vecImage(x+y*patch.rows);
     }
     }

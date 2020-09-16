@@ -21,6 +21,8 @@
 #include "opencv2/imgproc.hpp"
 #include "ParameterGroup.h"
 
+#include "Visualisation.h"
+
 #include <fstream>
 
 class PFTTest : public ::testing::Test {
@@ -52,6 +54,10 @@ TEST_F(PFTTest, DetectAndTrackLogic) {
         EXPECT_EQ(lmi0.lifetime, 0);
         EXPECT_EQ(lmi1.lifetime, 1);
     }
+
+    Mat flowImage = GIFT::drawFlowImage(img0, landmarks0, landmarks1);
+    imshow("Flow", flowImage);
+    waitKey(0);
 
 
 }

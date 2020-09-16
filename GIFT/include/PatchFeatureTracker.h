@@ -75,7 +75,7 @@ public:
         newPoints.resize(max(numPointsToAdd, 0));
 
         // Convert the new points to patch features
-        vector<PyramidPatch> newPatches = extractPyramidPatches(newPoints, image, patchSize, pyramidLevels);
+        vector<PyramidPatch> newPatches = extractPyramidPatches(newPoints, gray, patchSize, pyramidLevels);
         auto newFeatureLambda = [this](const PyramidPatch& patch) { 
             InternalPatchFeature feature;
             feature.patch = patch;
@@ -93,7 +93,8 @@ public:
     };
 
     virtual void trackFeatures(const Mat &image) override {
-        ImagePyramid newPyr(image, pyramidLevels);
+        Mat gray = image; if (gray.channels() > 1) cvtColor(image, gray, COLOR_RGB2GRAY);
+        ImagePyramid newPyr(gray, pyramidLevels);
         for_each(features.begin(), features.end(), [&newPyr](InternalPatchFeature& feature) {
             optimiseParameters(feature.parameters, feature.patch, newPyr);
             ++feature.lifetime;
