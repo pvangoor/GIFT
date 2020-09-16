@@ -47,7 +47,8 @@ TEST_F(PFTTest, DetectAndTrackLogic) {
     pft.detectFeatures(img0);
     vector<GIFT::Landmark> landmarks0 = pft.outputLandmarks();
 
-    const Mat translationMat = (Mat_<double>(2,3) << 1, 0, 10, 0, 1, 10);
+    Point2f translationVec = Point2f(20,10);
+    const Mat translationMat = (Mat_<double>(2,3) << 1, 0, translationVec.x, 0, 1, translationVec.y);
     Mat shiftedImg0; warpAffine(img0, shiftedImg0, translationMat, img0.size());
 
     pft.trackFeatures(shiftedImg0);
@@ -64,9 +65,17 @@ TEST_F(PFTTest, DetectAndTrackLogic) {
         EXPECT_EQ(lmi1.lifetime, 1);
     }
 
-    Mat flowImage = GIFT::drawFlowImage(img0, landmarks0, landmarks1);
-    imshow("Flow", flowImage);
-    waitKey(0);
+    // Check tracking success
+    for (int i = 0; i < landmarks0.size(); ++i) {
+        const GIFT::Landmark& lmi0 = landmarks0[i];
+        const GIFT::Landmark& lmi1 = landmarks1[i];
 
+        Point2f coordinateError = (lmi0.camCoordinates+translationVec - lmi1.camCoordinates);
+        float coordinateErrorNorm = pow(coordinateError.dot(coordinateError), 0.5);
+        EXPECT_LE(coordinateErrorNorm, 0.1);
+    }
 
+    // Mat flowImage = GIFT::drawFlowImage(img0, landmarks0, landmarks1);
+    // imshow("Flow", flowImage);
+    // waitKey(0);
 }
