@@ -36,14 +36,7 @@ CameraParameters GIFT::readCameraConfig(const std::string& fileName) {
     cv::Mat cvK;
     cv::eigen2cv(K, cvK);
 
-    Eigen::Matrix4T pose;
-    if (config["pose"]) {
-        pose = convertYamlToMatrix(config["pose"]);
-    } else {
-        pose.setIdentity();
-    }
-
-    CameraParameters cam = CameraParameters(cvK, pose);
+    CameraParameters cam = CameraParameters(cvK);
 
     if (config["distortionParams"]) {
         std::vector<ftype> distortionParams;
