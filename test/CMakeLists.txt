@@ -19,5 +19,5 @@ foreach(TEST_NAME ${TESTS_LIST})
         GTest::Main
         GIFT
     )
-    add_test("${TEST_NAME}" TEST_NAME)
+    add_test("${TEST_NAME}" ${TEST_NAME})
 endforeach()
