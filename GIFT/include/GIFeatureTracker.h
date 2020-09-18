@@ -32,7 +32,7 @@ namespace GIFT {
 class GIFeatureTracker {
   protected:
     int currentNumber = 0;
-    CameraParameters camera;
+    shared_ptr<CameraParameters> cameraPtr;
     Mat mask;
 
   public:

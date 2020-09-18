@@ -23,10 +23,11 @@ GIFeatureTracker::GIFeatureTracker(const CameraParameters& cameraParams, const M
     this->setCameraParameters(cameraParams);
     this->setMask(mask);
 }
+
 GIFeatureTracker::GIFeatureTracker(const CameraParameters& cameraParams) { this->setCameraParameters(cameraParams); }
 
 void GIFeatureTracker::setCameraParameters(const CameraParameters& cameraParameters) {
-    this->camera = cameraParameters;
+    cameraPtr = make_shared<CameraParameters>(cameraParameters);
 }
 
 void GIFeatureTracker::setMask(const Mat& mask) { this->mask = mask; }
