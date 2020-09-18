@@ -30,6 +30,7 @@ protected:
     // Transform parameters and patches
     struct InternalKPFeature {
         KeyPoint kp;
+        Mat descriptor;
         int id = -1;
         int lifetime = 0;
         Point2f camCoordinates() const {
@@ -38,15 +39,17 @@ protected:
     };
 
     vector<InternalKPFeature> features; // Feature storage
+    Ptr<ORB> ORBDetector = ORB::create();
+    Ptr<BFMatcher> matcher = BFMatcher::create(NORM_HAMMING);
 
 public:
     // Settings
     struct Settings {
         int maximumFeatures = 20;
-        // double minimumFeatureDistance = 20;
+        double minimumFeatureDistance = 20;
         // double minimumRelativeQuality = 0.05;
     };
-    Settings settings;
+    Settings settings; // TODO expand these settings to actually change the detector
 
     // Initialisation and configuration
     KeyPointFeatureTracker() = default;
@@ -61,6 +64,8 @@ public:
     [[nodiscard]] virtual vector<Landmark> outputLandmarks() const override;
 
     [[nodiscard]] Landmark featureToLandmark(const InternalKPFeature& feature) const;
+
+    void removePointsTooClose(vector<InternalKPFeature>& newKeypoints) const;
 };
 
 } // namespace GIFT
