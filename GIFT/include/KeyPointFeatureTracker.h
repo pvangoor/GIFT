@@ -27,12 +27,12 @@ namespace GIFT {
 
 class KeyPointFeatureTracker : public GIFeatureTracker {
 protected:
-    // Transform parameters and patches
     struct InternalKPFeature {
         KeyPoint kp;
         Mat descriptor;
         int id = -1;
         int lifetime = 0;
+        double descriptorDist = 0;
         Point2f camCoordinates() const {
             return kp.pt;
         }
@@ -47,7 +47,6 @@ public:
     struct Settings {
         int maximumFeatures = 20;
         double minimumFeatureDistance = 20;
-        // double minimumRelativeQuality = 0.05;
     };
     Settings settings; // TODO expand these settings to actually change the detector
 
@@ -65,7 +64,8 @@ public:
 
     [[nodiscard]] Landmark featureToLandmark(const InternalKPFeature& feature) const;
 
-    void removePointsTooClose(vector<InternalKPFeature>& newKeypoints) const;
+    void removePointsTooCloseToFeatures(vector<InternalKPFeature>& newKeypoints) const;
+    static void filterForBestPoints(vector<InternalKPFeature>& proposedFeatures, const int& maxFeatures, const double& minDist);
 };
 
 } // namespace GIFT

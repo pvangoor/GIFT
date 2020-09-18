@@ -41,9 +41,8 @@ void GIFT::KeyPointFeatureTracker::detectFeatures(const Mat &image) {
     }
 
     // Remove points and set up id numbers
-    removePointsTooClose(newFeatures);
-    const int pointsToAdd = settings.maximumFeatures - features.size();
-    newFeatures.resize(max(0,pointsToAdd));
+    removePointsTooCloseToFeatures(newFeatures);
+    filterForBestPoints(newFeatures, settings.maximumFeatures - features.size(), settings.minimumFeatureDistance);
     for_each(newFeatures.begin(), newFeatures.end(), [this](InternalKPFeature& f) {f.id = ++this->currentNumber; });
 
     // Add the features to the current feature list
@@ -67,6 +66,7 @@ void GIFT::KeyPointFeatureTracker::trackFeatures(const Mat &image) {
         InternalKPFeature& feature = features[match.queryIdx];
         ++feature.lifetime;
         feature.kp = newKeypoints[match.trainIdx];
+        feature.descriptorDist = match.distance;
     }
 
 }
@@ -90,7 +90,7 @@ GIFT::Landmark GIFT::KeyPointFeatureTracker::featureToLandmark(const InternalKPF
     // TODO: Some parts of the landmark are missing. Is this a problem?
 }
 
-void GIFT::KeyPointFeatureTracker::removePointsTooClose(vector<InternalKPFeature>& newFeatures) const {
+void GIFT::KeyPointFeatureTracker::removePointsTooCloseToFeatures(vector<InternalKPFeature>& newFeatures) const {
     const double minDistSq = settings.minimumFeatureDistance*settings.minimumFeatureDistance;
     for (int i=newFeatures.size()-1; i>=0; --i) {
         const Point2f& newPoint = newFeatures[i].kp.pt;
@@ -103,4 +103,30 @@ void GIFT::KeyPointFeatureTracker::removePointsTooClose(vector<InternalKPFeature
             }
         }
     }
+}
+
+void GIFT::KeyPointFeatureTracker::filterForBestPoints(vector<InternalKPFeature>& proposedFeatures, const int& maxFeatures, const double& minDist) {
+    // Use only the features with the highest responses, while ignoring features too close together
+    
+    // First sort by response
+    auto responseLambda = [](const InternalKPFeature& f1, const InternalKPFeature& f2) {
+        return f1.kp.response < f2.kp.response;
+    };
+    sort(proposedFeatures.begin(), proposedFeatures.end(), responseLambda);
+
+    // Keep a maximum number of features that are not too close together
+    const double minDistSq = minDist * minDist;
+    vector<InternalKPFeature> filteredFeatures;
+    for (const InternalKPFeature& feature : proposedFeatures) {
+        // Check feature is not too close to any filtered features
+        if (any_of(filteredFeatures.begin(), filteredFeatures.end(), [&](const InternalKPFeature& ff){
+            double distSq = (ff.kp.pt.x-feature.kp.pt.x)*(ff.kp.pt.x-feature.kp.pt.x) + (ff.kp.pt.y-feature.kp.pt.y)*(ff.kp.pt.y-feature.kp.pt.y);
+            return distSq < minDistSq;
+        })) continue; 
+
+        filteredFeatures.emplace_back(feature);
+        if (filteredFeatures.size() >= maxFeatures) break;
+    }
+
+    proposedFeatures = filteredFeatures;
 }

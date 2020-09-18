@@ -37,7 +37,8 @@ public:
 };
 
 TEST_F(PFTTest, DetectAndTrack) {
-    kpt.settings.maximumFeatures = 50;
+    kpt.settings.maximumFeatures = 100;
+    kpt.settings.minimumFeatureDistance = 10;
 
     kpt.detectFeatures(img0);
     vector<GIFT::Landmark> landmarks0 = kpt.outputLandmarks();
@@ -67,7 +68,7 @@ TEST_F(PFTTest, DetectAndTrack) {
 
         Point2f coordinateError = (lmi0.camCoordinates+translationVec - lmi1.camCoordinates);
         float coordinateErrorNorm = pow(coordinateError.dot(coordinateError), 0.5);
-        EXPECT_LE(coordinateErrorNorm, 0.1);
+        EXPECT_LE(coordinateErrorNorm, 1.0);
     }
 
     Mat flowImage = GIFT::drawFlowImage(img0, shiftedImg0, landmarks0, landmarks1);
