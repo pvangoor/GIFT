@@ -16,14 +16,15 @@
 */
 
 #include "Landmark.h"
+#include "CameraParameters.h"
 
 using namespace GIFT;
 using namespace cv;
 using namespace Eigen;
 
-Landmark::Landmark(const Point2f& newCamCoords, const Point2f& newCamCoordsNorm, int idNumber, const colorVec& col) {
+Landmark::Landmark(const Point2f& newCamCoords, const CamParamConstPtr& cameraPtr, int idNumber, const colorVec& col) {
     this->camCoordinates = newCamCoords;
-    this->camCoordinatesNorm = newCamCoordsNorm;
+    this->cameraPtr = cameraPtr;
 
     this->opticalFlowRaw.setZero();
     this->opticalFlowNorm.setZero();
@@ -35,13 +36,13 @@ Landmark::Landmark(const Point2f& newCamCoords, const Point2f& newCamCoordsNorm,
     lifetime = 1;
 }
 
-void Landmark::update(const cv::Point2f& newCamCoords, const cv::Point2f& newCamCoordsNorm, const colorVec& col) {
+void Landmark::update(const cv::Point2f& newCamCoords, const colorVec& col) {
     this->opticalFlowRaw << newCamCoords.x - this->camCoordinates.x, newCamCoords.y - this->camCoordinates.y;
-    this->opticalFlowNorm << newCamCoordsNorm.x - this->camCoordinatesNorm.x,
-        newCamCoordsNorm.y - this->camCoordinatesNorm.y;
+    cv::Point2f newCamCoordsNorm = cameraPtr->undistortPoint(newCamCoords);
+    this->opticalFlowNorm << newCamCoordsNorm.x - this->camCoordinatesNorm().x,
+        newCamCoordsNorm.y - this->camCoordinatesNorm().y;
 
     this->camCoordinates = newCamCoords;
-    this->camCoordinatesNorm = newCamCoordsNorm;
 
     Vector3T bearing = Vector3T(newCamCoordsNorm.x, newCamCoordsNorm.y, 1).normalized();
 
@@ -54,9 +55,11 @@ void Landmark::update(const cv::Point2f& newCamCoords, const cv::Point2f& newCam
 
 Eigen::Vector3T Landmark::sphereCoordinates() const {
     Eigen::Vector3T result;
-    result << camCoordinatesNorm.x, camCoordinatesNorm.y, 1.0;
+    result << camCoordinatesNorm().x, camCoordinatesNorm().y, 1.0;
     return result.normalized();
 }
+
+cv::Point2f Landmark::camCoordinatesNorm() const { return cameraPtr->undistortPoint(camCoordinates); }
 
 Eigen::Vector3T Landmark::opticalFlowSphere() const {
     const Vector3T bearing = sphereCoordinates();

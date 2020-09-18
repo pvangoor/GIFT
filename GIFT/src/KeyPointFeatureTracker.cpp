@@ -81,7 +81,7 @@ vector<GIFT::Landmark> GIFT::KeyPointFeatureTracker::outputLandmarks() const {
 GIFT::Landmark GIFT::KeyPointFeatureTracker::featureToLandmark(const InternalKPFeature& feature) const {
     GIFT::Landmark lm;
     lm.camCoordinates = feature.camCoordinates();
-    // undistortPoints(lm.camCoordinates, lm.camCoordinatesNorm, camera.K, camera.distortionParams);
+    lm.cameraPtr = cameraPtr;
     lm.idNumber = feature.id;
     lm.lifetime = feature.lifetime;
     // lm.pointColor.fill();

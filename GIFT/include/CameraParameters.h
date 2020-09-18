@@ -44,5 +44,9 @@ struct CameraParameters {
         fs["distortion_coefficients"] >> dist;
         this->distortionParams = dist;
     };
+
+    cv::Point2f undistortPoint(const cv::Point2f& point) const {
+        return cv::Point2f(0, 0); // TODO
+    }
 };
 } // namespace GIFT

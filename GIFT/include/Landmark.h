@@ -22,15 +22,20 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/features2d/features2d.hpp"
 #include <array>
+#include <memory>
 #include <vector>
 
 using colorVec = std::array<uchar, 3>;
 
 namespace GIFT {
 
+struct CameraParameters;
+using CamParamConstPtr = std::shared_ptr<const CameraParameters>;
+
 struct Landmark {
     cv::Point2f camCoordinates;
-    cv::Point2f camCoordinatesNorm;
+
+    std::shared_ptr<const CameraParameters> cameraPtr;
 
     Eigen::Vector2T opticalFlowRaw;
     Eigen::Vector2T opticalFlowNorm;
@@ -40,9 +45,11 @@ struct Landmark {
     int lifetime = 0;
 
     Landmark(){};
-    Landmark(const cv::Point2f& newCamCoords, const cv::Point2f& newCamCoordsNorm, int idNumber,
+    Landmark(const cv::Point2f& newCamCoords, const CamParamConstPtr& cameraPtr, int idNumber,
         const colorVec& col = {0, 0, 0});
-    void update(const cv::Point2f& newCamCoords, const cv::Point2f& newCamCoordsNorm, const colorVec& col = {0, 0, 0});
+    void update(const cv::Point2f& newCamCoords, const colorVec& col = {0, 0, 0});
+
+    cv::Point2f camCoordinatesNorm() const;
     Eigen::Vector3T sphereCoordinates() const;
     Eigen::Vector3T opticalFlowSphere() const;
 };

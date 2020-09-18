@@ -120,7 +120,7 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
     [[nodiscard]] Landmark featureToLandmark(const InternalPatchFeature& feature) const {
         Landmark lm;
         lm.camCoordinates = feature.camCoordinates();
-        // undistortPoints(lm.camCoordinates, lm.camCoordinatesNorm, camera.K, camera.distortionParams);
+        lm.cameraPtr = cameraPtr;
         lm.idNumber = feature.id;
         lm.lifetime = feature.lifetime;
         lm.pointColor.fill(feature.patch.at(feature.patch.rows / 2, feature.patch.cols / 2));

@@ -24,6 +24,7 @@
 #include "ftype.h"
 #include "opencv2/core/core.hpp"
 #include "opencv2/features2d/features2d.hpp"
+#include <memory>
 #include <vector>
 
 using namespace Eigen;
@@ -36,7 +37,7 @@ Eigen::Matrix3T skew_matrix(const Eigen::Vector3T& t);
 
 class PointFeatureTracker {
   protected:
-    CameraParameters camera;
+    shared_ptr<CameraParameters> cameraPtr;
 
     // Variables used in the tracking algorithms
     int currentNumber = 0;
@@ -56,8 +57,13 @@ class PointFeatureTracker {
 
   public:
     // Initialisation and configuration
-    PointFeatureTracker(const CameraParameters& configuration = CameraParameters()) { camera = configuration; };
-    void setCameraConfiguration(const CameraParameters& configuration);
+    PointFeatureTracker(const CameraParameters& configuration = CameraParameters()) {
+        cameraPtr = make_shared<CameraParameters>(configuration);
+    };
+
+    void setCameraConfiguration(const CameraParameters& configuration) {
+        cameraPtr = make_shared<CameraParameters>(configuration);
+    }
 
     // Core
     void processImage(const Mat& image);
