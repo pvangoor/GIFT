@@ -38,7 +38,7 @@ protected:
         int id = -1;
         int lifetime = 0;
         Point2f camCoordinates() const {
-            const Vector2T result = parameters.applyLeftAction(patch.baseCentre);
+            const Vector2T result = patch.baseCentre + parameters.applyLeftAction(Vector2T(0,0));
             return Point2f(result.x(), result.y());
         }
     };

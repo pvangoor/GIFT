@@ -39,7 +39,7 @@ public:
 };
 
 TEST_F(PFTTest, DetectAndTrackTranslation) {
-    pftTrans.settings.maximumFeatures = 20;
+    pftTrans.settings.maximumFeatures = 50;
     pftTrans.settings.minimumFeatureDistance = 20;
     pftTrans.settings.minimumRelativeQuality = 0.01;
     pftTrans.settings.patchSize = Size(9,9);
@@ -76,18 +76,18 @@ TEST_F(PFTTest, DetectAndTrackTranslation) {
         EXPECT_LE(coordinateErrorNorm, 0.1);
     }
 
-    // Mat flowImage = GIFT::drawFlowImage(img0, landmarks0, landmarks1);
-    // imshow("Flow", flowImage);
-    // waitKey(0);
+    Mat flowImage = GIFT::drawFlowImage(img0, shiftedImg0, landmarks0, landmarks1);
+    imshow("Flow", flowImage);
+    waitKey(0);
 }
 
 
 TEST_F(PFTTest, DetectAndTrackAffine) {
-    pftAffine.settings.maximumFeatures = 10;
+    pftAffine.settings.maximumFeatures = 50;
     pftAffine.settings.minimumFeatureDistance = 20;
     pftAffine.settings.minimumRelativeQuality = 0.01;
     pftAffine.settings.patchSize = Size(15,15);
-    pftAffine.settings.pyramidLevels = 5;
+    pftAffine.settings.pyramidLevels = 4;
 
     pftAffine.detectFeatures(img0);
     vector<GIFT::Landmark> landmarks0 = pftAffine.outputLandmarks();
@@ -120,7 +120,7 @@ TEST_F(PFTTest, DetectAndTrackAffine) {
         EXPECT_LE(coordinateErrorNorm, 0.1);
     }
 
-    // Mat flowImage = GIFT::drawFlowImage(img0, landmarks0, landmarks1);
-    // imshow("Flow", flowImage);
-    // waitKey(0);
+    Mat flowImage = GIFT::drawFlowImage(img0, shiftedImg0, landmarks0, landmarks1);
+    imshow("Flow", flowImage);
+    waitKey(0);
 }
