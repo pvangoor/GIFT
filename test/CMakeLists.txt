@@ -8,6 +8,7 @@ set(TESTS_LIST
     test_ImagePyramid
     test_OptimiseParameters
     test_PatchFeatureTracker
+    test_KeyPointFeatureTracker
 )
 
 foreach(TEST_NAME ${TESTS_LIST})

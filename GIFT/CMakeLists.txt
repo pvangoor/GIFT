@@ -26,6 +26,7 @@ set(GIFT_SOURCE_FILES
     src/OptimiseParameters.cpp
     src/ParameterGroup.cpp
     src/GIFeatureTracker.cpp
+    src/KeyPointFeatureTracker.cpp
     src/Visualisation.cpp
 )
 
@@ -40,6 +41,7 @@ set(GIFT_HEADER_FILES
     include/ParameterGroup.h
     include/GIFeatureTracker.h
     include/PatchFeatureTracker.h
+    include/KeyPointFeatureTracker.h
     include/Visualisation.h
 )
 
