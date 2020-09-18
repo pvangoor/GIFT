@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -17,15 +17,14 @@
 
 #pragma once
 
-#include "ftype.h"
-#include "Landmark.h"
-#include "EgoMotion.h"
 #include "CameraParameters.h"
+#include "EgoMotion.h"
+#include "Landmark.h"
 #include "eigen3/Eigen/Dense"
-#include <vector>
+#include "ftype.h"
 #include "opencv2/core/core.hpp"
 #include "opencv2/features2d/features2d.hpp"
-
+#include <vector>
 
 using namespace Eigen;
 using namespace std;
@@ -36,7 +35,7 @@ namespace GIFT {
 Eigen::Matrix3T skew_matrix(const Eigen::Vector3T& t);
 
 class PointFeatureTracker {
-protected:
+  protected:
     CameraParameters camera;
 
     // Variables used in the tracking algorithms
@@ -45,7 +44,7 @@ protected:
     vector<Landmark> landmarks;
     Mat imageMask;
 
-public:
+  public:
     int maxFeatures = 500;
     ftype featureDist = 20;
     ftype minHarrisQuality = 0.1;
@@ -55,34 +54,37 @@ public:
     // ftype stereoBaseline = 0.1;
     // ftype stereoThreshold = 1;
 
-public:
+  public:
     // Initialisation and configuration
-    PointFeatureTracker(const CameraParameters &configuration = CameraParameters()) { camera = configuration; };
-    void setCameraConfiguration(const CameraParameters &configuration);
+    PointFeatureTracker(const CameraParameters& configuration = CameraParameters()) { camera = configuration; };
+    void setCameraConfiguration(const CameraParameters& configuration);
 
     // Core
-    void processImage(const Mat &image);
+    void processImage(const Mat& image);
     vector<Landmark> outputLandmarks() const { return landmarks; };
 
     // Visualisation
-    Mat drawFeatureImage(const Scalar& color = Scalar(0,0,255), const int pointSize = 2, const int thickness = 1) const;
-    Mat drawFlowImage(const Scalar& featureColor = Scalar(0,0,255), const Scalar& flowColor = Scalar(0,255,255), const int pointSize = 2, const int thickness = 1) const;
-    Mat drawFlow(const Scalar& featureColor = Scalar(0,0,255), const Scalar& flowColor = Scalar(0,255,255), const int pointSize = 2, const int thickness = 1) const;
+    Mat drawFeatureImage(
+        const Scalar& color = Scalar(0, 0, 255), const int pointSize = 2, const int thickness = 1) const;
+    Mat drawFlowImage(const Scalar& featureColor = Scalar(0, 0, 255), const Scalar& flowColor = Scalar(0, 255, 255),
+        const int pointSize = 2, const int thickness = 1) const;
+    Mat drawFlow(const Scalar& featureColor = Scalar(0, 0, 255), const Scalar& flowColor = Scalar(0, 255, 255),
+        const int pointSize = 2, const int thickness = 1) const;
 
     // Masking
-    void setMask(const Mat & mask, int cameraNumber=0);
+    void setMask(const Mat& mask, int cameraNumber = 0);
 
     // EgoMotion
-    EgoMotion computeEgoMotion(int minLifetime=1) const;
+    EgoMotion computeEgoMotion(int minLifetime = 1) const;
 
-protected:
-    vector<Point2f> detectNewFeatures(const Mat &image) const;
-    vector<Point2f> removeDuplicateFeatures(const vector<Point2f> &proposedFeatures) const;
-    vector<Landmark> createNewLandmarks(const Mat &image, const vector<Point2f>& newFeatures);
+  protected:
+    vector<Point2f> detectNewFeatures(const Mat& image) const;
+    vector<Point2f> removeDuplicateFeatures(const vector<Point2f>& proposedFeatures) const;
+    vector<Landmark> createNewLandmarks(const Mat& image, const vector<Point2f>& newFeatures);
 
-    void trackLandmarks(const Mat &image);
+    void trackLandmarks(const Mat& image);
     void addNewLandmarks(vector<Landmark> newLandmarks);
     void computeLandmarkPositions();
 };
 
-}
+} // namespace GIFT

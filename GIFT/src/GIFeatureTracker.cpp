@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -16,23 +16,17 @@
 */
 #include "GIFeatureTracker.h"
 
-
 using namespace GIFT;
-
 
 // Initialisation and configuration
 GIFeatureTracker::GIFeatureTracker(const CameraParameters& cameraParams, const Mat& mask) {
     this->setCameraParameters(cameraParams);
     this->setMask(mask);
 }
-GIFeatureTracker::GIFeatureTracker(const CameraParameters& cameraParams) {
-    this->setCameraParameters(cameraParams);
-}
+GIFeatureTracker::GIFeatureTracker(const CameraParameters& cameraParams) { this->setCameraParameters(cameraParams); }
 
-void GIFeatureTracker::setCameraParameters(const CameraParameters & cameraParameters) {
+void GIFeatureTracker::setCameraParameters(const CameraParameters& cameraParameters) {
     this->camera = cameraParameters;
 }
 
-void GIFeatureTracker::setMask(const Mat & mask) {
-    this->mask = mask;
-}
+void GIFeatureTracker::setMask(const Mat& mask) { this->mask = mask; }

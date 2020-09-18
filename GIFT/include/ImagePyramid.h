@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -17,10 +17,10 @@
 
 #pragma once
 
-#include <vector>
-#include "opencv2/core/core.hpp"
 #include "eigen3/Eigen/Core"
 #include "ftype.h"
+#include "opencv2/core/core.hpp"
+#include <vector>
 
 using namespace std;
 using namespace Eigen;
@@ -52,7 +52,7 @@ struct PyramidPatch {
     Vector2T baseCentre;
     int rows;
     int cols;
-    ftype at(int row, int col, int lv=0) const;
+    ftype at(int row, int col, int lv = 0) const;
 };
 
 struct ImagePatch {
@@ -65,6 +65,7 @@ struct ImagePatch {
 };
 
 PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr);
-vector<PyramidPatch> extractPyramidPatches(const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels);
+vector<PyramidPatch> extractPyramidPatches(
+    const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels);
 ImagePatch getPatchAtLevel(const PyramidPatch& pyrPatch, const int lv);
 VectorXT vectoriseImage(const Mat& image);

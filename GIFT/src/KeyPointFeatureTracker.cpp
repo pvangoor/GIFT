@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -17,8 +17,7 @@
 
 #include "KeyPointFeatureTracker.h"
 
-
-void GIFT::KeyPointFeatureTracker::detectFeatures(const Mat &image) {
+void GIFT::KeyPointFeatureTracker::detectFeatures(const Mat& image) {
     // Detect features and compute descriptors
     vector<KeyPoint> newKeypoints;
     Mat newDescriptors;
@@ -31,11 +30,10 @@ void GIFT::KeyPointFeatureTracker::detectFeatures(const Mat &image) {
         result.kp = kp;
         result.lifetime = 0;
         return result;
-    }
-    );
+    });
 
     // Set descriptors
-    for (int i=0; i<newFeatures.size(); ++i){
+    for (int i = 0; i < newFeatures.size(); ++i) {
         InternalKPFeature& feature = newFeatures[i];
         feature.descriptor = newDescriptors.row(i);
     }
@@ -43,21 +41,24 @@ void GIFT::KeyPointFeatureTracker::detectFeatures(const Mat &image) {
     // Remove points and set up id numbers
     removePointsTooCloseToFeatures(newFeatures);
     filterForBestPoints(newFeatures, settings.maximumFeatures - features.size(), settings.minimumFeatureDistance);
-    for_each(newFeatures.begin(), newFeatures.end(), [this](InternalKPFeature& f) {f.id = ++this->currentNumber; });
+    for_each(newFeatures.begin(), newFeatures.end(), [this](InternalKPFeature& f) { f.id = ++this->currentNumber; });
 
     // Add the features to the current feature list
     features.insert(features.end(), newFeatures.begin(), newFeatures.end());
 }
 
-void GIFT::KeyPointFeatureTracker::trackFeatures(const Mat &image) {
+void GIFT::KeyPointFeatureTracker::trackFeatures(const Mat& image) {
     // Detect features and compute descriptors
-    vector<KeyPoint> newKeypoints; Mat newDescriptors;
+    vector<KeyPoint> newKeypoints;
+    Mat newDescriptors;
     ORBDetector->detectAndCompute(image, mask, newKeypoints, newDescriptors);
 
     // Construct current features descriptor matrix
     vector<Mat> descriptorRows(features.size());
-    transform(features.begin(), features.end(), descriptorRows.begin(), [](const InternalKPFeature& f) {return f.descriptor;});
-    Mat descriptors; vconcat(descriptorRows, descriptors);
+    transform(features.begin(), features.end(), descriptorRows.begin(),
+        [](const InternalKPFeature& f) { return f.descriptor; });
+    Mat descriptors;
+    vconcat(descriptorRows, descriptors);
 
     // Match the current features to the detected features
     vector<DMatch> matches;
@@ -68,14 +69,12 @@ void GIFT::KeyPointFeatureTracker::trackFeatures(const Mat &image) {
         feature.kp = newKeypoints[match.trainIdx];
         feature.descriptorDist = match.distance;
     }
-
 }
 
 vector<GIFT::Landmark> GIFT::KeyPointFeatureTracker::outputLandmarks() const {
     vector<Landmark> landmarks(features.size());
-    transform(features.begin(), features.end(), landmarks.begin(), [this](const InternalKPFeature& f){
-        return this->featureToLandmark(f);
-    });
+    transform(features.begin(), features.end(), landmarks.begin(),
+        [this](const InternalKPFeature& f) { return this->featureToLandmark(f); });
     return landmarks;
 }
 
@@ -91,23 +90,25 @@ GIFT::Landmark GIFT::KeyPointFeatureTracker::featureToLandmark(const InternalKPF
 }
 
 void GIFT::KeyPointFeatureTracker::removePointsTooCloseToFeatures(vector<InternalKPFeature>& newFeatures) const {
-    const double minDistSq = settings.minimumFeatureDistance*settings.minimumFeatureDistance;
-    for (int i=newFeatures.size()-1; i>=0; --i) {
+    const double minDistSq = settings.minimumFeatureDistance * settings.minimumFeatureDistance;
+    for (int i = newFeatures.size() - 1; i >= 0; --i) {
         const Point2f& newPoint = newFeatures[i].kp.pt;
         for (const InternalKPFeature& f : features) {
             const Point2f& point = f.kp.pt;
-            const double distSq = (point.x - newPoint.x)*(point.x - newPoint.x) + (point.y - newPoint.y)*(point.y - newPoint.y);
+            const double distSq =
+                (point.x - newPoint.x) * (point.x - newPoint.x) + (point.y - newPoint.y) * (point.y - newPoint.y);
             if (distSq < minDistSq) {
-                newFeatures.erase(newFeatures.begin()+i);
+                newFeatures.erase(newFeatures.begin() + i);
                 break;
             }
         }
     }
 }
 
-void GIFT::KeyPointFeatureTracker::filterForBestPoints(vector<InternalKPFeature>& proposedFeatures, const int& maxFeatures, const double& minDist) {
+void GIFT::KeyPointFeatureTracker::filterForBestPoints(
+    vector<InternalKPFeature>& proposedFeatures, const int& maxFeatures, const double& minDist) {
     // Use only the features with the highest responses, while ignoring features too close together
-    
+
     // First sort by response
     auto responseLambda = [](const InternalKPFeature& f1, const InternalKPFeature& f2) {
         return f1.kp.response < f2.kp.response;
@@ -119,13 +120,16 @@ void GIFT::KeyPointFeatureTracker::filterForBestPoints(vector<InternalKPFeature>
     vector<InternalKPFeature> filteredFeatures;
     for (const InternalKPFeature& feature : proposedFeatures) {
         // Check feature is not too close to any filtered features
-        if (any_of(filteredFeatures.begin(), filteredFeatures.end(), [&](const InternalKPFeature& ff){
-            double distSq = (ff.kp.pt.x-feature.kp.pt.x)*(ff.kp.pt.x-feature.kp.pt.x) + (ff.kp.pt.y-feature.kp.pt.y)*(ff.kp.pt.y-feature.kp.pt.y);
-            return distSq < minDistSq;
-        })) continue; 
+        if (any_of(filteredFeatures.begin(), filteredFeatures.end(), [&](const InternalKPFeature& ff) {
+                double distSq = (ff.kp.pt.x - feature.kp.pt.x) * (ff.kp.pt.x - feature.kp.pt.x) +
+                                (ff.kp.pt.y - feature.kp.pt.y) * (ff.kp.pt.y - feature.kp.pt.y);
+                return distSq < minDistSq;
+            }))
+            continue;
 
         filteredFeatures.emplace_back(feature);
-        if (filteredFeatures.size() >= maxFeatures) break;
+        if (filteredFeatures.size() >= maxFeatures)
+            break;
     }
 
     proposedFeatures = filteredFeatures;

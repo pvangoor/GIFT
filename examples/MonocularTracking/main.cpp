@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -15,30 +15,31 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "PointFeatureTracker.h"
 #include "Configure.h"
+#include "PointFeatureTracker.h"
 
 #include "opencv2/highgui/highgui.hpp"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 
     GIFT::PointFeatureTracker ft(GIFT::readCameraConfig(cv::String(argv[1])));
 
     cv::VideoCapture cap;
     cap.open(cv::String(argv[2]));
     cv::Mat image;
-    while (cap.read(image)) {;
+    while (cap.read(image)) {
+        ;
 
         ft.processImage(image);
         std::vector<GIFT::Landmark> landmarks = ft.outputLandmarks();
 
-        cv::Mat featureImage = ft.drawFeatureImage(Scalar(0,0,255), 5, 3);
+        cv::Mat featureImage = ft.drawFeatureImage(Scalar(0, 0, 255), 5, 3);
 
         cv::imshow("debug", featureImage);
         int k = cv::waitKey(1);
-        if (k == 's') cv::imwrite("FeatureImage.png", featureImage);
-        if (k == 27) break;
-
+        if (k == 's')
+            cv::imwrite("FeatureImage.png", featureImage);
+        if (k == 27)
+            break;
     }
-
 }

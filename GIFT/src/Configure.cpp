@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -16,13 +16,13 @@
 */
 
 #include "Configure.h"
+#include "ftype.h"
 #include "vector"
 #include <stdexcept>
-#include "ftype.h"
 
 using namespace GIFT;
 
-CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
+CameraParameters GIFT::readCameraConfig(const std::string& fileName) {
     YAML::Node config = YAML::LoadFile(fileName);
 
     Eigen::Matrix3T K;
@@ -31,11 +31,11 @@ CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
     } else if (config["camera_matrix"]) {
         K = convertYamlToMatrix(config["camera_matrix"]);
     } else {
-        throw std::invalid_argument( "The intrinsic matrix is not given." );
+        throw std::invalid_argument("The intrinsic matrix is not given.");
     }
     cv::Mat cvK;
     cv::eigen2cv(K, cvK);
-     
+
     Eigen::Matrix4T pose;
     if (config["pose"]) {
         pose = convertYamlToMatrix(config["pose"]);
@@ -47,7 +47,7 @@ CameraParameters GIFT::readCameraConfig(const std::string &fileName) {
 
     if (config["distortionParams"]) {
         std::vector<ftype> distortionParams;
-        for (int i=0; i<config["distortionParams"].size(); ++i) {
+        for (int i = 0; i < config["distortionParams"].size(); ++i) {
             distortionParams.emplace_back(config["distortionParams"][i].as<ftype>());
         }
         cam.distortionParams = distortionParams;
@@ -61,9 +61,9 @@ Eigen::MatrixXT GIFT::convertYamlToMatrix(YAML::Node yaml) {
     int n = yaml["cols"].as<int>();
     Eigen::MatrixXT mat(m, n);
     int k = 0;
-    for (int i=0;i<m;++i) {
-        for (int j=0;j<n;++j) {
-            mat(i,j) = yaml["data"][k].as<ftype>();
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            mat(i, j) = yaml["data"][k].as<ftype>();
             ++k;
         }
     }

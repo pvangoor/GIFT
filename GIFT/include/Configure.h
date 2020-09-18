@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 
 namespace GIFT {
 
-GIFT::CameraParameters readCameraConfig(const std::string &fileName);
+GIFT::CameraParameters readCameraConfig(const std::string& fileName);
 
 // int testFunc() {
 //     return 5;
@@ -31,5 +31,4 @@ GIFT::CameraParameters readCameraConfig(const std::string &fileName);
 
 Eigen::MatrixXT convertYamlToMatrix(YAML::Node yaml);
 
-
-}
+} // namespace GIFT

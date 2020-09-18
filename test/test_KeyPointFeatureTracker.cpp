@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -15,23 +15,23 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "gtest/gtest.h"
 #include "KeyPointFeatureTracker.h"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc.hpp"
+#include "gtest/gtest.h"
 
 #include "Visualisation.h"
 
 #include <fstream>
 
 class PFTTest : public ::testing::Test {
-protected:
+  protected:
     PFTTest() {
         img0 = imread(String(TEST_DATA_DIR) + String("img0.png"));
         img1 = imread(String(TEST_DATA_DIR) + String("img1.png"));
     }
-    
-public:
+
+  public:
     Mat img0, img1;
     GIFT::KeyPointFeatureTracker kpt;
 };
@@ -43,9 +43,10 @@ TEST_F(PFTTest, DetectAndTrack) {
     kpt.detectFeatures(img0);
     vector<GIFT::Landmark> landmarks0 = kpt.outputLandmarks();
 
-    Point2f translationVec = Point2f(20,10);
-    const Mat translationMat = (Mat_<double>(2,3) << 1, 0, translationVec.x, 0, 1, translationVec.y);
-    Mat shiftedImg0; warpAffine(img0, shiftedImg0, translationMat, img0.size());
+    Point2f translationVec = Point2f(20, 10);
+    const Mat translationMat = (Mat_<double>(2, 3) << 1, 0, translationVec.x, 0, 1, translationVec.y);
+    Mat shiftedImg0;
+    warpAffine(img0, shiftedImg0, translationMat, img0.size());
 
     kpt.trackFeatures(shiftedImg0);
     vector<GIFT::Landmark> landmarks1 = kpt.outputLandmarks();
@@ -66,7 +67,7 @@ TEST_F(PFTTest, DetectAndTrack) {
         const GIFT::Landmark& lmi0 = landmarks0[i];
         const GIFT::Landmark& lmi1 = landmarks1[i];
 
-        Point2f coordinateError = (lmi0.camCoordinates+translationVec - lmi1.camCoordinates);
+        Point2f coordinateError = (lmi0.camCoordinates + translationVec - lmi1.camCoordinates);
         float coordinateErrorNorm = pow(coordinateError.dot(coordinateError), 0.5);
         EXPECT_LE(coordinateErrorNorm, 1.0);
     }

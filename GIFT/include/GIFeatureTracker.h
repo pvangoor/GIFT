@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@
 
 #include <vector>
 
-#include "Landmark.h"
 #include "CameraParameters.h"
+#include "Landmark.h"
 #include "opencv2/core.hpp"
 
 using namespace Eigen;
@@ -30,23 +30,22 @@ using namespace cv;
 namespace GIFT {
 
 class GIFeatureTracker {
-protected:
+  protected:
     int currentNumber = 0;
     CameraParameters camera;
     Mat mask;
 
-public:
+  public:
     // Initialisation and configuration
     GIFeatureTracker() = default;
     GIFeatureTracker(const CameraParameters& cameraParams);
     GIFeatureTracker(const CameraParameters& cameraParams, const Mat& mask);
-    virtual void setCameraParameters(const CameraParameters & cameraParameters);
-    virtual void setMask(const Mat & mask);
+    virtual void setCameraParameters(const CameraParameters& cameraParameters);
+    virtual void setMask(const Mat& mask);
 
     // Core
-    virtual void detectFeatures(const Mat &image) = 0;
-    virtual void trackFeatures(const Mat &image) = 0;
+    virtual void detectFeatures(const Mat& image) = 0;
+    virtual void trackFeatures(const Mat& image) = 0;
     virtual vector<Landmark> outputLandmarks() const = 0;
 };
-}
-
+} // namespace GIFT

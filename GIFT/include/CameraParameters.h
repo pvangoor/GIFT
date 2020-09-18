@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include "ftype.h"
 #include "eigen3/Eigen/Dense"
+#include "ftype.h"
 #include "opencv2/core/core.hpp"
 #include "opencv2/core/eigen.hpp"
 #include <vector>
@@ -28,19 +28,20 @@ struct CameraParameters {
     Eigen::Matrix4T pose;
     cv::Mat K; // intrinsic matrix (3x3)
     std::vector<ftype> distortionParams;
-    Eigen::Matrix<ftype, 3,4> P; // Rectified projection matrix
+    Eigen::Matrix<ftype, 3, 4> P; // Rectified projection matrix
 
-    CameraParameters(cv::Mat K = cv::Mat::eye(3,3,CV_64F), Eigen::Matrix4T pose=Eigen::Matrix4T::Identity(), std::vector<ftype> distortionParams={0,0,0,0}) {
+    CameraParameters(cv::Mat K = cv::Mat::eye(3, 3, CV_64F), Eigen::Matrix4T pose = Eigen::Matrix4T::Identity(),
+        std::vector<ftype> distortionParams = {0, 0, 0, 0}) {
         assert(K.rows == 3 && K.cols == 3);
-        
+
         this->K = K;
         this->distortionParams = distortionParams;
         this->pose = pose;
-        
+
         this->P.setZero();
         Eigen::Matrix3T eigenK;
         cv::cv2eigen(K, eigenK);
-        this->P.block<3,3>(0,0) = eigenK;
+        this->P.block<3, 3>(0, 0) = eigenK;
         this->P = this->P * this->pose.inverse();
     };
 
@@ -54,12 +55,12 @@ struct CameraParameters {
         this->distortionParams = dist;
 
         this->pose = Eigen::Matrix4T::Identity();
-        
+
         this->P.setZero();
         Eigen::Matrix3T eigenK;
         cv::cv2eigen(K, eigenK);
-        this->P.block<3,3>(0,0) = eigenK;
+        this->P.block<3, 3>(0, 0) = eigenK;
         this->P = this->P * this->pose.inverse();
     };
 };
-}
+} // namespace GIFT

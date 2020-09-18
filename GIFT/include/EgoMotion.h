@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ using namespace std;
 namespace GIFT {
 
 class EgoMotion {
-public:
+  public:
     Vector3T linearVelocity;
     Vector3T angularVelocity;
     ftype optimisedResidual = INFINITY;
@@ -37,23 +37,27 @@ public:
     static constexpr ftype optimisationThreshold = 1e-8;
     static constexpr int maxIterations = 30;
 
-    
-    EgoMotion(const vector<GIFT::Landmark>& landmarks, const ftype& dt=1);
-    EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3T& initLinVel, const ftype& dt=1);
-    EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3T& initLinVel, const Vector3T& initAngVel, const ftype& dt=1);
+    EgoMotion(const vector<GIFT::Landmark>& landmarks, const ftype& dt = 1);
+    EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3T& initLinVel, const ftype& dt = 1);
+    EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3T& initLinVel, const Vector3T& initAngVel,
+        const ftype& dt = 1);
     EgoMotion(const vector<pair<Vector3T, Vector3T>>& sphereFlows);
     EgoMotion(const vector<pair<Vector3T, Vector3T>>& sphereFlows, const Vector3T& initLinVel);
-    EgoMotion(const vector<pair<Vector3T, Vector3T>>& sphereFlows, const Vector3T& initLinVel, const Vector3T& initAngVel);
+    EgoMotion(
+        const vector<pair<Vector3T, Vector3T>>& sphereFlows, const Vector3T& initLinVel, const Vector3T& initAngVel);
     vector<pair<Vector3T, Vector3T>> estimateFlows(const vector<GIFT::Landmark>& landmarks) const;
     vector<pair<Point2f, Vector2T>> estimateFlowsNorm(const vector<GIFT::Landmark>& landmarks) const;
-    static Vector3T estimateAngularVelocity(const vector<pair<Vector3T, Vector3T>>& sphereFlows, const Vector3T& linVel = Vector3T::Zero());
+    static Vector3T estimateAngularVelocity(
+        const vector<pair<Vector3T, Vector3T>>& sphereFlows, const Vector3T& linVel = Vector3T::Zero());
 
-private:
+  private:
     static Vector3T angularFromLinearVelocity(const vector<pair<Vector3T, Vector3T>>& flows, Vector3T& linVel);
-    static pair<int,ftype> optimize(const vector<pair<Vector3T, Vector3T>>& flows, Vector3T& linVel, Vector3T& angVel);
+    static pair<int, ftype> optimize(const vector<pair<Vector3T, Vector3T>>& flows, Vector3T& linVel, Vector3T& angVel);
     static void optimizationStep(const vector<pair<Vector3T, Vector3T>>& flows, Vector3T& linVel, Vector3T& angVel);
-    static ftype computeResidual(const vector<pair<Vector3T, Vector3T>>& flows, const Vector3T& linVel, const Vector3T& angVel);
-    static bool voteForLinVelInversion(const vector<pair<Vector3T, Vector3T>>& flows, const Vector3T& linVel, const Vector3T& angVel);
+    static ftype computeResidual(
+        const vector<pair<Vector3T, Vector3T>>& flows, const Vector3T& linVel, const Vector3T& angVel);
+    static bool voteForLinVelInversion(
+        const vector<pair<Vector3T, Vector3T>>& flows, const Vector3T& linVel, const Vector3T& angVel);
 };
 
-}
+} // namespace GIFT

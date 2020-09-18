@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 using namespace Eigen;
 
 class ParameterGroup {
-public:
+  public:
     virtual int dim() const = 0;
     virtual Matrix<ftype, 2, Dynamic> actionJacobian(const Vector2T& point) const = 0;
     virtual void applyStepOnRight(const VectorXT& step) = 0;
@@ -33,8 +33,8 @@ public:
 };
 
 class Affine2Group : public ParameterGroup {
-public:
-    int dim() const {return 6;}
+  public:
+    int dim() const { return 6; }
 
     Matrix2T transformation;
     Vector2T translation;
@@ -48,8 +48,8 @@ public:
 };
 
 class TranslationGroup : public ParameterGroup {
-public:
-    int dim() const {return 2;}
+  public:
+    int dim() const { return 2; }
 
     Vector2T translation;
 

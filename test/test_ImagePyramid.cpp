@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -15,13 +15,13 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "gtest/gtest.h"
 #include "ImagePyramid.h"
+#include "gtest/gtest.h"
 
 TEST(ImagePyramidTest, PyrDimensions) {
-    cv::Mat baseImage = cv::Mat::zeros(cv::Size(pow(2,10),pow(2,10)), CV_8UC1);
+    cv::Mat baseImage = cv::Mat::zeros(cv::Size(pow(2, 10), pow(2, 10)), CV_8UC1);
     ImagePyramid pyramid(baseImage, 5);
-    for (int i=0;i<5;++i) {
+    for (int i = 0; i < 5; ++i) {
         EXPECT_EQ(pyramid.levels[i].rows, baseImage.rows / pow(2, i));
         EXPECT_EQ(pyramid.levels[i].cols, baseImage.cols / pow(2, i));
     }

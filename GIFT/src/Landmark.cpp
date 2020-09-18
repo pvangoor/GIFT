@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -21,7 +21,6 @@ using namespace GIFT;
 using namespace cv;
 using namespace Eigen;
 
-
 Landmark::Landmark(const Point2f& newCamCoords, const Point2f& newCamCoordsNorm, int idNumber, const colorVec& col) {
     this->camCoordinates = newCamCoords;
     this->camCoordinatesNorm = newCamCoordsNorm;
@@ -40,14 +39,16 @@ Landmark::Landmark(const Point2f& newCamCoords, const Point2f& newCamCoordsNorm,
 
 void Landmark::update(const cv::Point2f& newCamCoords, const cv::Point2f& newCamCoordsNorm, const colorVec& col) {
     this->opticalFlowRaw << newCamCoords.x - this->camCoordinates.x, newCamCoords.y - this->camCoordinates.y;
-    this->opticalFlowNorm << newCamCoordsNorm.x - this->camCoordinatesNorm.x, newCamCoordsNorm.y - this->camCoordinatesNorm.y;
+    this->opticalFlowNorm << newCamCoordsNorm.x - this->camCoordinatesNorm.x,
+        newCamCoordsNorm.y - this->camCoordinatesNorm.y;
 
     this->camCoordinates = newCamCoords;
     this->camCoordinatesNorm = newCamCoordsNorm;
 
     Vector3T bearing = Vector3T(newCamCoordsNorm.x, newCamCoordsNorm.y, 1).normalized();
 
-    this->opticalFlowSphere() = bearing.z() * (Matrix3T::Identity() - bearing*bearing.transpose()) * Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
+    this->opticalFlowSphere() = bearing.z() * (Matrix3T::Identity() - bearing * bearing.transpose()) *
+                                Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
 
     this->keypoint.pt = this->camCoordinates;
 
@@ -63,6 +64,7 @@ Eigen::Vector3T Landmark::sphereCoordinates() const {
 
 Eigen::Vector3T Landmark::opticalFlowSphere() const {
     const Vector3T bearing = sphereCoordinates();
-    const Vector3T sphereFlow = bearing.z() * (Matrix3T::Identity() - bearing*bearing.transpose()) * Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
+    const Vector3T sphereFlow = bearing.z() * (Matrix3T::Identity() - bearing * bearing.transpose()) *
+                                Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
     return sphereFlow;
 }

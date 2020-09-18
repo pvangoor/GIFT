@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -20,57 +20,60 @@
 #include "PointFeatureTracker.h"
 #include "StereoLandmark.h"
 
-
 using namespace Eigen;
 using namespace std;
 using namespace cv;
 
 namespace GIFT {
 
-enum class StereoCam {Left, Right};
+enum class StereoCam { Left, Right };
 
 class StereoFeatureTracker {
 
-protected:
+  protected:
     PointFeatureTracker trackerLeft;
     PointFeatureTracker trackerRight;
     vector<StereoLandmark> stereoLandmarks;
 
-public:
+  public:
     // Stereo Specific
     ftype stereoBaseline = 0.1;
     ftype stereoThreshold = 1;
 
-public:
+  public:
     // Initialisation
-    StereoFeatureTracker(const CameraParameters &camLeft, const CameraParameters &camRight) {
+    StereoFeatureTracker(const CameraParameters& camLeft, const CameraParameters& camRight) {
         trackerLeft.setCameraConfiguration(camLeft);
         trackerRight.setCameraConfiguration(camRight);
     };
 
     // Configuration
-    void setCameraConfiguration(const CameraParameters &camLeft, const CameraParameters &camRight) {
+    void setCameraConfiguration(const CameraParameters& camLeft, const CameraParameters& camRight) {
         trackerLeft.setCameraConfiguration(camLeft);
         trackerRight.setCameraConfiguration(camRight);
     };
-    void setCameraConfiguration(const CameraParameters &configuration, StereoCam stereoCam = StereoCam::Left) {
-        if (stereoCam == StereoCam::Left) trackerLeft.setCameraConfiguration(configuration);
-        else trackerRight.setCameraConfiguration(configuration);
+    void setCameraConfiguration(const CameraParameters& configuration, StereoCam stereoCam = StereoCam::Left) {
+        if (stereoCam == StereoCam::Left)
+            trackerLeft.setCameraConfiguration(configuration);
+        else
+            trackerRight.setCameraConfiguration(configuration);
     }
-    void setMask(const Mat & mask, StereoCam stereoCam = StereoCam::Left) {
-        if (stereoCam == StereoCam::Left) trackerLeft.setMask(mask);
-        else trackerRight.setMask(mask);
+    void setMask(const Mat& mask, StereoCam stereoCam = StereoCam::Left) {
+        if (stereoCam == StereoCam::Left)
+            trackerLeft.setMask(mask);
+        else
+            trackerRight.setMask(mask);
     }
 
     // Core
-    void processImages(const Mat &imageLeft, const Mat &imageRight);
+    void processImages(const Mat& imageLeft, const Mat& imageRight);
     vector<StereoLandmark> outputStereoLandmarks() const { return stereoLandmarks; };
 
-protected:
+  protected:
     void removeLostStereoLandmarks(const vector<Landmark>& landmarksLeft, const vector<Landmark>& landmarksRight);
     vector<StereoLandmark> createNewStereoLandmarks(const vector<Landmark>& landmarksLeft, const Mat& imageLeft,
-                                                    const vector<Landmark>& landmarksRight, const Mat& imageRight) const;
+        const vector<Landmark>& landmarksRight, const Mat& imageRight) const;
     void addNewStereoLandmarks(const vector<StereoLandmark>& newStereoLandmarks);
 };
 
-}
+} // namespace GIFT

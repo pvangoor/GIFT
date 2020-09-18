@@ -21,29 +21,28 @@
 #include <stdexcept>
 
 #include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
 #include "opencv2/features2d/features2d.hpp"
+#include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
-#include "PointFeatureTracker.h"
 #include "Configure.h"
 #include "EgoMotion.h"
+#include "PointFeatureTracker.h"
 #include <getopt.h>
 #include <sys/time.h>
 
-static double time_seconds()
-{
+static double time_seconds() {
     struct timeval tp;
-    gettimeofday(&tp,NULL);
-    return tp.tv_sec + tp.tv_usec*1.0e-6;
+    gettimeofday(&tp, NULL);
+    return tp.tv_sec + tp.tv_usec * 1.0e-6;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     cv::String camConfigFile;
     cv::String videoFile;
     int c;
     extern int optind;
-    extern char *optarg;
+    extern char* optarg;
     bool show_images = true;
     bool quiet = false;
     bool show_fps = false;
@@ -105,36 +104,35 @@ int main(int argc, char *argv[]) {
         if (++report_count == 100) {
             double now = time_seconds();
             double dt = now - tstart;
-            printf("%.2f fps\n", report_count/dt);
+            printf("%.2f fps\n", report_count / dt);
             tstart = now;
             report_count = 0;
         }
-
 
         if (!show_images) {
             continue;
         }
 
-        cv::Mat flowImage = ft.drawFlowImage(Scalar(0,0,255), Scalar(0,255,255), 3, 2);
+        cv::Mat flowImage = ft.drawFlowImage(Scalar(0, 0, 255), Scalar(0, 255, 255), 3, 2);
         cv::imshow("flow", flowImage);
 
         // Draw the normalised flow and estimates
         constexpr int viewScale = 500;
-        cv::Mat estFlowImage(viewScale*2, viewScale*2, CV_8UC3, Scalar(255,255,255));
+        cv::Mat estFlowImage(viewScale * 2, viewScale * 2, CV_8UC3, Scalar(255, 255, 255));
         for (const auto& flow : estFlows) {
             cv::Point2f p1 = flow.first;
             cv::Point2f p0 = p1 - cv::Point2f(flow.second.x(), flow.second.y());
-            p0 = cv::Point2f(viewScale,viewScale) + p0*viewScale;
-            p1 = cv::Point2f(viewScale,viewScale) + p1*viewScale;
-            cv::line(estFlowImage, p0, p1, cv::Scalar(255,0,0));
+            p0 = cv::Point2f(viewScale, viewScale) + p0 * viewScale;
+            p1 = cv::Point2f(viewScale, viewScale) + p1 * viewScale;
+            cv::line(estFlowImage, p0, p1, cv::Scalar(255, 0, 0));
         }
-        for (const auto &lm : landmarks) {
+        for (const auto& lm : landmarks) {
             cv::Point2f p1 = lm.camCoordinatesNorm;
             cv::Point2f p0 = p1 - cv::Point2f(lm.opticalFlowNorm.x(), lm.opticalFlowNorm.y());
-            p0 = cv::Point2f(viewScale,viewScale) + p0*viewScale;
-            p1 = cv::Point2f(viewScale,viewScale) + p1*viewScale;
-            cv::line(estFlowImage, p0, p1, cv::Scalar(255,0,255));
-            cv::circle(estFlowImage, p0, 2, cv::Scalar(255,0,0));
+            p0 = cv::Point2f(viewScale, viewScale) + p0 * viewScale;
+            p1 = cv::Point2f(viewScale, viewScale) + p1 * viewScale;
+            cv::line(estFlowImage, p0, p1, cv::Scalar(255, 0, 255));
+            cv::circle(estFlowImage, p0, 2, cv::Scalar(255, 0, 0));
         }
         cv::imshow("estimated flow", estFlowImage);
 
@@ -142,5 +140,4 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "Completed " << count << " frames" << std::endl;
-
 }

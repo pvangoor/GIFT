@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -21,7 +21,8 @@
 class ParameterGroup;
 
 void optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const ImagePyramid& pyramid);
-void optimiseParameters(vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const ImagePyramid& pyramid);
+void optimiseParameters(
+    vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const ImagePyramid& pyramid);
 void optimiseParameters(vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const Mat& image);
 float getSubPixel(const Mat& image, const Vector2T& point);
 int clamp(const int x, const int a, const int b);

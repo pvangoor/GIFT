@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 using namespace GIFT;
 
-void StereoFeatureTracker::processImages(const Mat &imageLeft, const Mat &imageRight) {
+void StereoFeatureTracker::processImages(const Mat& imageLeft, const Mat& imageRight) {
     trackerLeft.processImage(imageLeft);
     trackerRight.processImage(imageRight);
 
@@ -28,16 +28,22 @@ void StereoFeatureTracker::processImages(const Mat &imageLeft, const Mat &imageR
     const vector<Landmark> landmarksRight = trackerRight.outputLandmarks();
 
     removeLostStereoLandmarks(landmarksLeft, landmarksRight);
-    vector<StereoLandmark> newStereoLandmarks = createNewStereoLandmarks(landmarksLeft, imageLeft, landmarksRight, imageRight);
+    vector<StereoLandmark> newStereoLandmarks =
+        createNewStereoLandmarks(landmarksLeft, imageLeft, landmarksRight, imageRight);
     addNewStereoLandmarks(newStereoLandmarks);
 }
 
-void StereoFeatureTracker::removeLostStereoLandmarks(const vector<Landmark>& landmarksLeft, const vector<Landmark>& landmarksRight) {
+void StereoFeatureTracker::removeLostStereoLandmarks(
+    const vector<Landmark>& landmarksLeft, const vector<Landmark>& landmarksRight) {
     set<int> idsLeft, idsRight;
-    for (const Landmark& lm : landmarksLeft) idsLeft.emplace(lm.idNumber);
-    for (const Landmark& lm : landmarksRight) idsRight.emplace(lm.idNumber);
+    for (const Landmark& lm : landmarksLeft)
+        idsLeft.emplace(lm.idNumber);
+    for (const Landmark& lm : landmarksRight)
+        idsRight.emplace(lm.idNumber);
 
-    auto checkValidLandmark = [idsLeft, idsRight] (const int idLeft, const int idRight) {return (idsLeft.count(idLeft) * idsRight.count(idRight)); };
+    auto checkValidLandmark = [idsLeft, idsRight](const int idLeft, const int idRight) {
+        return (idsLeft.count(idLeft) * idsRight.count(idRight));
+    };
 
     vector<StereoLandmark>::iterator iter = stereoLandmarks.begin();
     while (iter != stereoLandmarks.end()) {
@@ -49,20 +55,22 @@ void StereoFeatureTracker::removeLostStereoLandmarks(const vector<Landmark>& lan
     }
 }
 
-vector<StereoLandmark> StereoFeatureTracker::createNewStereoLandmarks(const vector<Landmark>& landmarksLeft, const Mat& imageLeft,
-                                                                      const vector<Landmark>& landmarksRight, const Mat& imageRight) const {
+vector<StereoLandmark> StereoFeatureTracker::createNewStereoLandmarks(const vector<Landmark>& landmarksLeft,
+    const Mat& imageLeft, const vector<Landmark>& landmarksRight, const Mat& imageRight) const {
     vector<StereoLandmark> newLandmarks;
     return newLandmarks;
 }
- 
+
 void StereoFeatureTracker::addNewStereoLandmarks(const vector<StereoLandmark>& newStereoLandmarks) {
     set<int> idsLeft, idsRight;
-    for (const StereoLandmark& lm : this->stereoLandmarks){
+    for (const StereoLandmark& lm : this->stereoLandmarks) {
         idsLeft.emplace(lm.landmarkLeft->idNumber);
         idsRight.emplace(lm.landmarkRight->idNumber);
     }
 
-    auto checkValidLandmark = [idsLeft, idsRight] (const int idLeft, const int idRight) {return (idsLeft.count(idLeft) * idsRight.count(idRight)); };
+    auto checkValidLandmark = [idsLeft, idsRight](const int idLeft, const int idRight) {
+        return (idsLeft.count(idLeft) * idsRight.count(idRight));
+    };
 
     for (const StereoLandmark& stereoLM : newStereoLandmarks) {
         if (checkValidLandmark(stereoLM.landmarkLeft->idNumber, stereoLM.landmarkRight->idNumber)) {

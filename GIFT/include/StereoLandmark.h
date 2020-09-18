@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of GIFT.
 
     GIFT is free software: you can redistribute it and/or modify
@@ -17,12 +17,12 @@
 
 #pragma once
 
-#include <vector>
-#include <array>
+#include "Landmark.h"
 #include "eigen3/Eigen/Dense"
 #include "opencv2/core/core.hpp"
 #include "opencv2/features2d/features2d.hpp"
-#include "Landmark.h"
+#include <array>
+#include <vector>
 
 using colorVec = std::array<uchar, 3>;
 
@@ -31,7 +31,7 @@ namespace GIFT {
 struct StereoLandmark {
     GIFT::Landmark* landmarkLeft;
     GIFT::Landmark* landmarkRight;
- 
+
     int idNumberStereo;
     int lifetime = 0;
 
@@ -42,7 +42,6 @@ struct StereoLandmark {
         this->idNumberStereo = idNumberStereo;
     }
     // void update();
-
 };
 
-}
+} // namespace GIFT
