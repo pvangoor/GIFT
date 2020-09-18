@@ -29,8 +29,6 @@ Landmark::Landmark(const Point2f& newCamCoords, const Point2f& newCamCoordsNorm,
     this->opticalFlowNorm.setZero();
     this->opticalFlowSphere().setZero();
 
-    this->keypoint.pt = this->camCoordinates;
-
     this->pointColor = col;
     this->idNumber = idNumber;
 
@@ -49,8 +47,6 @@ void Landmark::update(const cv::Point2f& newCamCoords, const cv::Point2f& newCam
 
     this->opticalFlowSphere() = bearing.z() * (Matrix3T::Identity() - bearing * bearing.transpose()) *
                                 Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
-
-    this->keypoint.pt = this->camCoordinates;
 
     this->pointColor = col;
     ++lifetime;

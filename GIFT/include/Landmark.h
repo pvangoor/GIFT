@@ -35,8 +35,6 @@ struct Landmark {
     Eigen::Vector2T opticalFlowRaw;
     Eigen::Vector2T opticalFlowNorm;
 
-    cv::KeyPoint keypoint;
-
     colorVec pointColor;
     int idNumber;
     int lifetime = 0;
