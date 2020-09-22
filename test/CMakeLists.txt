@@ -4,6 +4,7 @@ find_package(GTest REQUIRED)
 add_compile_definitions(TEST_DATA_DIR="${TEST_DATA_DIR}/")
 
 set(TESTS_LIST
+    test_Camera
     test_EgoMotion
     test_ImagePyramid
     test_OptimiseParameters
