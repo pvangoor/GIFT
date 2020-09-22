@@ -75,11 +75,11 @@ cv::Point2f Camera::undistortPoint(const cv::Point2f& point) const {
 }
 
 cv::Point2f Camera::distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist) {
-    cv::Point2f distortedPoint = cv::Point2f(0, 0);
+    cv::Point2f distortedPoint = normalPoint;
     const ftype r2 = normalPoint.x * normalPoint.x + normalPoint.y * normalPoint.y;
     if (dist.size() >= 2) {
-        distortedPoint.x += normalPoint.x * (1 + dist[0] * r2 + dist[1] * r2 * r2);
-        distortedPoint.y += normalPoint.y * (1 + dist[0] * r2 + dist[1] * r2 * r2);
+        distortedPoint.x += normalPoint.x * (dist[0] * r2 + dist[1] * r2 * r2);
+        distortedPoint.y += normalPoint.y * (dist[0] * r2 + dist[1] * r2 * r2);
     }
     if (dist.size() >= 4) {
         distortedPoint.x +=
@@ -101,8 +101,8 @@ std::vector<ftype> Camera::computeInverseDistortion() const {
     constexpr int maxPoints = 30;
     std::vector<cv::Point2f> distortedPoints;
     std::vector<cv::Point2f> normalPoints;
-    for (int x = 0; x < imageSize.width; x += imageSize.width / maxPoints) {
-        for (int y = 0; y < imageSize.height; x += imageSize.height / maxPoints) {
+    for (int x = 0; x < compSize.width; x += compSize.width / maxPoints) {
+        for (int y = 0; y < compSize.height; y += compSize.height / maxPoints) {
             // Normalise and distort the point
             const cv::Point2f normalPoint((x - cx) / fx, (y - cy) / fy);
             const cv::Point2f distPoint = distortNormalisedPoint(normalPoint, dist);
@@ -120,9 +120,9 @@ std::vector<ftype> Camera::computeInverseDistortion() const {
         const ftype r2 = p.x * p.x + p.y * p.y;
         lmat.block<2, 5>(2 * i, 0) << p.x * r2, p.x * r2 * r2, 2 * p.x * p.y, r2 + 2 * p.x * p.x, p.x * r2 * r2 * r2,
             p.y * r2, p.y * r2 * r2, r2 + 2 * p.y * p.y, 2 * p.x * p.y, p.y * r2 * r2 * r2;
-        rvec.block<2, 1>(2 * i, 0) << normalPoints[i].x, normalPoints[i].y;
+        rvec.block<2, 1>(2 * i, 0) << normalPoints[i].x - p.x, normalPoints[i].y - p.y;
     }
-    const Eigen::Matrix<ftype, 5, 1> invDist = lmat.ldlt().solve(rvec);
+    const Eigen::Matrix<ftype, 5, 1> invDist = lmat.colPivHouseholderQr().solve(rvec);
     std::vector<ftype> invDistVec(invDist.data(), invDist.data() + invDist.rows());
     return invDistVec;
 }
