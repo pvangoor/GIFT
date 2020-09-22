@@ -72,25 +72,33 @@ struct CameraParameters {
     };
 
     cv::Point2f undistortPoint(const cv::Point2f& point) const {
-        return cv::Point2f(0, 0); // TODO
+        const ftype cx = ftype(K.at<double>(0, 2));
+        const ftype cy = ftype(K.at<double>(1, 2));
+        const ftype fx = ftype(K.at<double>(0, 0));
+        const ftype fy = ftype(K.at<double>(1, 1));
+
+        cv::Point2f udPoint = cv::Point2f((point.x - cx) / fx, (point.y - cy) / fy);
+        udPoint = distortNormalisedPoint(udPoint, inverseDistortion);
+
+        return udPoint;
     }
 
-    cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint) const {
+    static cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist) {
         cv::Point2f distortedPoint = cv::Point2f(0, 0);
         const ftype r2 = normalPoint.x * normalPoint.x + normalPoint.y * normalPoint.y;
-        if (distortion.size() >= 2) {
-            distortedPoint.x += normalPoint.x * (1 + distortion[0] * r2 + distortion[1] * r2 * r2);
-            distortedPoint.y += normalPoint.y * (1 + distortion[0] * r2 + distortion[1] * r2 * r2);
+        if (dist.size() >= 2) {
+            distortedPoint.x += normalPoint.x * (1 + dist[0] * r2 + dist[1] * r2 * r2);
+            distortedPoint.y += normalPoint.y * (1 + dist[0] * r2 + dist[1] * r2 * r2);
         }
-        if (distortion.size() >= 4) {
-            distortedPoint.x += 2 * distortion[2] * normalPoint.x * normalPoint.y +
-                                distortion[3] * (r2 + 2 * normalPoint.x * normalPoint.x);
-            distortedPoint.y += 2 * distortion[3] * normalPoint.x * normalPoint.y +
-                                distortion[2] * (r2 + 2 * normalPoint.y * normalPoint.y);
+        if (dist.size() >= 4) {
+            distortedPoint.x +=
+                2 * dist[2] * normalPoint.x * normalPoint.y + dist[3] * (r2 + 2 * normalPoint.x * normalPoint.x);
+            distortedPoint.y +=
+                2 * dist[3] * normalPoint.x * normalPoint.y + dist[2] * (r2 + 2 * normalPoint.y * normalPoint.y);
         }
-        if (distortion.size() >= 5) {
-            distortedPoint.x += normalPoint.x * distortion[4] * r2 * r2 * r2;
-            distortedPoint.y += normalPoint.y * distortion[4] * r2 * r2 * r2;
+        if (dist.size() >= 5) {
+            distortedPoint.x += normalPoint.x * dist[4] * r2 * r2 * r2;
+            distortedPoint.y += normalPoint.y * dist[4] * r2 * r2 * r2;
         }
         return distortedPoint;
     }
@@ -110,7 +118,7 @@ struct CameraParameters {
             for (int y = 0; y < imageSize.height; x += imageSize.height / maxPoints) {
                 // Normalise and distort the point
                 const cv::Point2f normalPoint((x - cx) / fx, (y - cy) / fy);
-                const cv::Point2f distPoint = distortNormalisedPoint(normalPoint);
+                const cv::Point2f distPoint = distortNormalisedPoint(normalPoint, distortion);
 
                 normalPoints.emplace_back(normalPoint);
                 distortedPoints.emplace_back(distPoint);
