@@ -26,11 +26,10 @@
 namespace GIFT {
 class Camera {
   protected:
-    std::vector<ftype> computeInverseDistortion() const;
-    std::vector<ftype> inverseDistortion;
-
     ftype fx, fy, cx, cy; // intrinsic parameters
     std::vector<ftype> dist;
+    std::vector<ftype> invDist;
+    std::vector<ftype> computeInverseDistortion() const;
 
   public:
     cv::Size imageSize;

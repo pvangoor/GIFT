@@ -28,7 +28,7 @@ Camera::Camera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) {
     this->cx = K.at<double>(0, 2);
     this->cy = K.at<double>(1, 2);
     this->dist = dist;
-    this->inverseDistortion = computeInverseDistortion();
+    this->invDist = computeInverseDistortion();
 }
 
 Camera::Camera(const cv::String& cameraConfigFile) {
@@ -64,12 +64,12 @@ Camera::Camera(const cv::String& cameraConfigFile) {
         fs["dist"] >> this->dist;
     }
 
-    this->inverseDistortion = computeInverseDistortion();
+    this->invDist = computeInverseDistortion();
 }
 
 cv::Point2f Camera::undistortPoint(const cv::Point2f& point) const {
     cv::Point2f udPoint = cv::Point2f((point.x - cx) / fx, (point.y - cy) / fy);
-    udPoint = distortNormalisedPoint(udPoint, inverseDistortion);
+    udPoint = distortNormalisedPoint(udPoint, invDist);
 
     return udPoint;
 }
