@@ -18,6 +18,7 @@ ${OpenCV_INCLUDE_DIRS})
 ####################
 
 set(GIFT_SOURCE_FILES
+    src/Camera.cpp
     src/PointFeatureTracker.cpp
     src/StereoFeatureTracker.cpp
     src/EgoMotion.cpp
