@@ -50,9 +50,8 @@ class KeyPointFeatureTracker : public GIFeatureTracker {
 
     // Initialisation and configuration
     KeyPointFeatureTracker() = default;
-    KeyPointFeatureTracker(const CameraParameters& cameraParams) : GIFeatureTracker(cameraParams){};
-    KeyPointFeatureTracker(const CameraParameters& cameraParams, const Mat& mask)
-        : GIFeatureTracker(cameraParams, mask){};
+    KeyPointFeatureTracker(const Camera& cameraParams) : GIFeatureTracker(cameraParams){};
+    KeyPointFeatureTracker(const Camera& cameraParams, const Mat& mask) : GIFeatureTracker(cameraParams, mask){};
 
     // Core
     virtual void detectFeatures(const Mat& image) override;

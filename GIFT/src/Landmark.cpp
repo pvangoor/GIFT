@@ -16,7 +16,7 @@
 */
 
 #include "Landmark.h"
-#include "CameraParameters.h"
+#include "Camera.h"
 
 using namespace GIFT;
 using namespace cv;

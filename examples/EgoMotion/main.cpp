@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     videoFile = argv[1];
 
     // Set up a monocular feature tracker
-    GIFT::CameraParameters cam0 = GIFT::readCameraConfig(camConfigFile);
+    GIFT::Camera cam0 = GIFT::readCameraConfig(camConfigFile);
     GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(cam0);
     ft.maxFeatures = 250;
     ft.featureDist = 20;

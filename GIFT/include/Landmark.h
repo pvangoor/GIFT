@@ -29,13 +29,13 @@ using colorVec = std::array<uchar, 3>;
 
 namespace GIFT {
 
-struct CameraParameters;
-using CamParamConstPtr = std::shared_ptr<const CameraParameters>;
+struct Camera;
+using CamParamConstPtr = std::shared_ptr<const Camera>;
 
 struct Landmark {
     cv::Point2f camCoordinates;
 
-    std::shared_ptr<const CameraParameters> cameraPtr;
+    std::shared_ptr<const Camera> cameraPtr;
 
     Eigen::Vector2T opticalFlowRaw;
     Eigen::Vector2T opticalFlowNorm;

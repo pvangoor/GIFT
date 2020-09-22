@@ -31,7 +31,7 @@ set(GIFT_SOURCE_FILES
 )
 
 set(GIFT_HEADER_FILES
-    include/CameraParameters.h
+    include/Camera.h
     include/PointFeatureTracker.h
     include/StereoFeatureTracker.h
     include/Landmark.h

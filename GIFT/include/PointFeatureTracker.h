@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "CameraParameters.h"
+#include "Camera.h"
 #include "EgoMotion.h"
 #include "Landmark.h"
 #include "eigen3/Eigen/Dense"
@@ -37,7 +37,7 @@ Eigen::Matrix3T skew_matrix(const Eigen::Vector3T& t);
 
 class PointFeatureTracker {
   protected:
-    shared_ptr<CameraParameters> cameraPtr;
+    shared_ptr<Camera> cameraPtr;
 
     // Variables used in the tracking algorithms
     int currentNumber = 0;
@@ -57,13 +57,9 @@ class PointFeatureTracker {
 
   public:
     // Initialisation and configuration
-    PointFeatureTracker(const CameraParameters& configuration = CameraParameters()) {
-        cameraPtr = make_shared<CameraParameters>(configuration);
-    };
+    PointFeatureTracker(const Camera& configuration = Camera()) { cameraPtr = make_shared<Camera>(configuration); };
 
-    void setCameraConfiguration(const CameraParameters& configuration) {
-        cameraPtr = make_shared<CameraParameters>(configuration);
-    }
+    void setCameraConfiguration(const Camera& configuration) { cameraPtr = make_shared<Camera>(configuration); }
 
     // Core
     void processImage(const Mat& image);

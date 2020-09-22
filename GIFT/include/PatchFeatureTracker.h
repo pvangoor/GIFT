@@ -58,8 +58,8 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
 
     // Initialisation and configuration
     PatchFeatureTracker() = default;
-    PatchFeatureTracker(const CameraParameters& cameraParams) : GIFeatureTracker(cameraParams){};
-    PatchFeatureTracker(const CameraParameters& cameraParams, const Mat& mask) : GIFeatureTracker(cameraParams, mask){};
+    PatchFeatureTracker(const Camera& cameraParams) : GIFeatureTracker(cameraParams){};
+    PatchFeatureTracker(const Camera& cameraParams, const Mat& mask) : GIFeatureTracker(cameraParams, mask){};
 
     // Core
     virtual void detectFeatures(const Mat& image) override {
