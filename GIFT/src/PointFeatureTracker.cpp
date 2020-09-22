@@ -46,7 +46,7 @@ vector<Landmark> PointFeatureTracker::createNewLandmarks(const Mat& image, const
         return newLandmarks;
 
     vector<Point2f> newFeaturesNorm;
-    cv::undistortPoints(newFeatures, newFeaturesNorm, cameraPtr->K, cameraPtr->distortion);
+    cv::undistortPoints(newFeatures, newFeaturesNorm, cameraPtr->K(), cameraPtr->distortion());
 
     for (int i = 0; i < newFeatures.size(); ++i) {
 
@@ -79,7 +79,7 @@ void PointFeatureTracker::trackLandmarks(const Mat& image) {
     calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err);
 
     vector<Point2f> pointsNorm;
-    cv::undistortPoints(points, pointsNorm, cameraPtr->K, cameraPtr->distortion);
+    cv::undistortPoints(points, pointsNorm, cameraPtr->K(), cameraPtr->distortion());
 
     for (long int i = points.size() - 1; i >= 0; --i) {
         if (status[i] == 0) {

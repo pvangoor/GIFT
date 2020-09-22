@@ -23,8 +23,11 @@ Camera::Camera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) {
 
     this->imageSize = sze;
     assert(K.rows == 3 && K.cols == 3);
-    this->K = K;
-    this->distortion = dist;
+    this->fx = K.at<double>(0, 0);
+    this->fy = K.at<double>(1, 1);
+    this->cx = K.at<double>(0, 2);
+    this->cy = K.at<double>(1, 2);
+    this->dist = dist;
     this->inverseDistortion = computeInverseDistortion();
 }
 
@@ -40,31 +43,31 @@ Camera::Camera(const cv::String& cameraConfigFile) {
     }
     this->imageSize = cv::Size(tempSize[1], tempSize[0]);
 
+    cv::Mat K;
     if (!fs["camera_matrix"].empty()) {
-        fs["camera_matrix"] >> this->K;
+        fs["camera_matrix"] >> K;
     } else if (!fs["camera"].empty()) {
-        fs["camera"] >> this->K;
+        fs["camera"] >> K;
     } else if (!fs["K"].empty()) {
-        fs["K"] >> this->K;
+        fs["K"] >> K;
     }
+    this->fx = K.at<double>(0, 0);
+    this->fy = K.at<double>(1, 1);
+    this->cx = K.at<double>(0, 2);
+    this->cy = K.at<double>(1, 2);
 
     if (!fs["distortion_coefficients"].empty()) {
-        fs["distortion_coefficients"] >> this->distortion;
+        fs["distortion_coefficients"] >> this->dist;
     } else if (!fs["distortion"].empty()) {
-        fs["distortion"] >> this->distortion;
+        fs["distortion"] >> this->dist;
     } else if (!fs["dist"].empty()) {
-        fs["dist"] >> this->distortion;
+        fs["dist"] >> this->dist;
     }
 
     this->inverseDistortion = computeInverseDistortion();
 }
 
 cv::Point2f Camera::undistortPoint(const cv::Point2f& point) const {
-    const ftype cx = ftype(K.at<double>(0, 2));
-    const ftype cy = ftype(K.at<double>(1, 2));
-    const ftype fx = ftype(K.at<double>(0, 0));
-    const ftype fy = ftype(K.at<double>(1, 1));
-
     cv::Point2f udPoint = cv::Point2f((point.x - cx) / fx, (point.y - cy) / fy);
     udPoint = distortNormalisedPoint(udPoint, inverseDistortion);
 
@@ -92,10 +95,6 @@ cv::Point2f Camera::distortNormalisedPoint(const cv::Point2f& normalPoint, const
 }
 
 std::vector<ftype> Camera::computeInverseDistortion() const {
-    const ftype cx = ftype(K.at<double>(0, 2));
-    const ftype cy = ftype(K.at<double>(1, 2));
-    const ftype fx = ftype(K.at<double>(0, 0));
-    const ftype fy = ftype(K.at<double>(1, 1));
     const cv::Size compSize = imageSize.area() == 0 ? cv::Size(int(round(cx * 2)), int(round(cy * 2))) : imageSize;
 
     // Construct a vector of normalised points
@@ -106,7 +105,7 @@ std::vector<ftype> Camera::computeInverseDistortion() const {
         for (int y = 0; y < imageSize.height; x += imageSize.height / maxPoints) {
             // Normalise and distort the point
             const cv::Point2f normalPoint((x - cx) / fx, (y - cy) / fy);
-            const cv::Point2f distPoint = distortNormalisedPoint(normalPoint, distortion);
+            const cv::Point2f distPoint = distortNormalisedPoint(normalPoint, dist);
 
             normalPoints.emplace_back(normalPoint);
             distortedPoints.emplace_back(distPoint);
@@ -127,5 +126,16 @@ std::vector<ftype> Camera::computeInverseDistortion() const {
     std::vector<ftype> invDistVec(invDist.data(), invDist.data() + invDist.rows());
     return invDistVec;
 }
+
+cv::Mat Camera::K() const {
+    cv::Mat K = cv::Mat::eye(3, 3, CV_64F);
+    K.at<double>(0, 0) = fx;
+    K.at<double>(1, 1) = fy;
+    K.at<double>(0, 2) = cx;
+    K.at<double>(1, 2) = cy;
+    return K;
+}
+
+const std::vector<ftype>& Camera::distortion() const { return dist; }
 
 } // namespace GIFT

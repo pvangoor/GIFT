@@ -36,15 +36,14 @@ Camera GIFT::readCameraConfig(const std::string& fileName) {
     cv::Mat cvK;
     cv::eigen2cv(K, cvK);
 
-    Camera cam = Camera(cv::Size(0, 0), cvK);
-
+    std::vector<ftype> distortionParams;
     if (config["distortionParams"]) {
-        std::vector<ftype> distortionParams;
         for (int i = 0; i < config["distortionParams"].size(); ++i) {
             distortionParams.emplace_back(config["distortionParams"][i].as<ftype>());
         }
-        cam.distortion = distortionParams;
     }
+
+    Camera cam = Camera(cv::Size(0, 0), cvK, distortionParams);
 
     return cam;
 }

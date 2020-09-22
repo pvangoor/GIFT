@@ -29,16 +29,20 @@ class Camera {
     std::vector<ftype> computeInverseDistortion() const;
     std::vector<ftype> inverseDistortion;
 
+    ftype fx, fy, cx, cy; // intrinsic parameters
+    std::vector<ftype> dist;
+
   public:
     cv::Size imageSize;
-    cv::Mat K; // intrinsic matrix (3x3)
-    std::vector<ftype> distortion;
 
     Camera(const cv::String& cameraConfigFile);
     Camera(
         cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F), std::vector<ftype> dist = {0, 0, 0, 0});
 
     // Geometry functions
+    cv::Mat K() const; // intrinsic matrix (3x3)
+    const std::vector<ftype>& distortion() const;
+
     cv::Point2f undistortPoint(const cv::Point2f& point) const;
     static cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist);
 };
