@@ -46,7 +46,7 @@ vector<Landmark> PointFeatureTracker::createNewLandmarks(const Mat& image, const
         return newLandmarks;
 
     vector<Point2f> newFeaturesNorm;
-    cv::undistortPoints(newFeatures, newFeaturesNorm, camera.K, camera.distortionParams);
+    cv::undistortPoints(newFeatures, newFeaturesNorm, cameraPtr->K(), cameraPtr->distortion());
 
     for (int i = 0; i < newFeatures.size(); ++i) {
 
@@ -56,7 +56,7 @@ vector<Landmark> PointFeatureTracker::createNewLandmarks(const Mat& image, const
         colorVec pointColor = {image.at<Vec3b>(newFeatures[i]).val[0], image.at<Vec3b>(newFeatures[i]).val[1],
             image.at<Vec3b>(newFeatures[i]).val[2]};
 
-        Landmark lm(proposedFeature, proposedFeatureNorm, -1, pointColor);
+        Landmark lm(proposedFeature, cameraPtr, -1, pointColor);
 
         newLandmarks.emplace_back(lm);
     }
@@ -79,7 +79,7 @@ void PointFeatureTracker::trackLandmarks(const Mat& image) {
     calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err);
 
     vector<Point2f> pointsNorm;
-    cv::undistortPoints(points, pointsNorm, camera.K, camera.distortionParams);
+    cv::undistortPoints(points, pointsNorm, cameraPtr->K(), cameraPtr->distortion());
 
     for (long int i = points.size() - 1; i >= 0; --i) {
         if (status[i] == 0) {
@@ -96,11 +96,9 @@ void PointFeatureTracker::trackLandmarks(const Mat& image) {
 
         colorVec pointColor = {
             image.at<Vec3b>(points[i]).val[0], image.at<Vec3b>(points[i]).val[1], image.at<Vec3b>(points[i]).val[2]};
-        landmarks[i].update(points[i], pointsNorm[i], pointColor);
+        landmarks[i].update(points[i], pointColor);
     }
 }
-
-void PointFeatureTracker::setCameraConfiguration(const CameraParameters& configuration) { camera = configuration; }
 
 vector<Point2f> PointFeatureTracker::detectNewFeatures(const Mat& image) const {
     Mat imageGrey;
@@ -188,7 +186,7 @@ void PointFeatureTracker::computeLandmarkPositions() {
     if (mode == TrackerMode::MONO) return;
     for (auto & lm : landmarks) {
         if (mode == TrackerMode::STEREO) {
-            lm.position = this->solveStereo(lm.camCoordinatesNorm[0], lm.camCoordinatesNorm[1]);
+            lm.position = this->solveStereo(lm.camCoordinatesNorm()[0], lm.camCoordinatesNorm()[1]);
         }
     }
 }

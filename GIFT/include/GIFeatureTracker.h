@@ -19,7 +19,7 @@
 
 #include <vector>
 
-#include "CameraParameters.h"
+#include "Camera.h"
 #include "Landmark.h"
 #include "opencv2/core.hpp"
 
@@ -32,15 +32,15 @@ namespace GIFT {
 class GIFeatureTracker {
   protected:
     int currentNumber = 0;
-    CameraParameters camera;
+    shared_ptr<Camera> cameraPtr;
     Mat mask;
 
   public:
     // Initialisation and configuration
     GIFeatureTracker() = default;
-    GIFeatureTracker(const CameraParameters& cameraParams);
-    GIFeatureTracker(const CameraParameters& cameraParams, const Mat& mask);
-    virtual void setCameraParameters(const CameraParameters& cameraParameters);
+    GIFeatureTracker(const Camera& cameraParams);
+    GIFeatureTracker(const Camera& cameraParams, const Mat& mask);
+    virtual void setCamera(const Camera& cameraParameters);
     virtual void setMask(const Mat& mask);
 
     // Core

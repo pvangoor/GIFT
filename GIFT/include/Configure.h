@@ -17,13 +17,13 @@
 
 #pragma once
 
-#include "CameraParameters.h"
+#include "Camera.h"
 #include "string"
 #include "yaml-cpp/yaml.h"
 
 namespace GIFT {
 
-GIFT::CameraParameters readCameraConfig(const std::string& fileName);
+GIFT::Camera readCameraConfig(const std::string& fileName);
 
 // int testFunc() {
 //     return 5;

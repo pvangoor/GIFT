@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     videoFile = argv[1];
 
     // Set up a monocular feature tracker
-    GIFT::CameraParameters cam0 = GIFT::readCameraConfig(camConfigFile);
+    GIFT::Camera cam0 = GIFT::readCameraConfig(camConfigFile);
     GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(cam0);
     ft.maxFeatures = 250;
     ft.featureDist = 20;
@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
             cv::line(estFlowImage, p0, p1, cv::Scalar(255, 0, 0));
         }
         for (const auto& lm : landmarks) {
-            cv::Point2f p1 = lm.camCoordinatesNorm;
+            cv::Point2f p1 = lm.camCoordinatesNorm();
             cv::Point2f p0 = p1 - cv::Point2f(lm.opticalFlowNorm.x(), lm.opticalFlowNorm.y());
             p0 = cv::Point2f(viewScale, viewScale) + p0 * viewScale;
             p1 = cv::Point2f(viewScale, viewScale) + p1 * viewScale;

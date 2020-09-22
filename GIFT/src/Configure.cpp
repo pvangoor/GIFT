@@ -22,7 +22,7 @@
 
 using namespace GIFT;
 
-CameraParameters GIFT::readCameraConfig(const std::string& fileName) {
+Camera GIFT::readCameraConfig(const std::string& fileName) {
     YAML::Node config = YAML::LoadFile(fileName);
 
     Eigen::Matrix3T K;
@@ -36,22 +36,14 @@ CameraParameters GIFT::readCameraConfig(const std::string& fileName) {
     cv::Mat cvK;
     cv::eigen2cv(K, cvK);
 
-    Eigen::Matrix4T pose;
-    if (config["pose"]) {
-        pose = convertYamlToMatrix(config["pose"]);
-    } else {
-        pose.setIdentity();
-    }
-
-    CameraParameters cam = CameraParameters(cvK, pose);
-
+    std::vector<ftype> distortionParams;
     if (config["distortionParams"]) {
-        std::vector<ftype> distortionParams;
         for (int i = 0; i < config["distortionParams"].size(); ++i) {
             distortionParams.emplace_back(config["distortionParams"][i].as<ftype>());
         }
-        cam.distortionParams = distortionParams;
     }
+
+    Camera cam = Camera(cv::Size(0, 0), cvK, distortionParams);
 
     return cam;
 }

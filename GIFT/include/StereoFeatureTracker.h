@@ -42,17 +42,17 @@ class StereoFeatureTracker {
 
   public:
     // Initialisation
-    StereoFeatureTracker(const CameraParameters& camLeft, const CameraParameters& camRight) {
+    StereoFeatureTracker(const Camera& camLeft, const Camera& camRight) {
         trackerLeft.setCameraConfiguration(camLeft);
         trackerRight.setCameraConfiguration(camRight);
     };
 
     // Configuration
-    void setCameraConfiguration(const CameraParameters& camLeft, const CameraParameters& camRight) {
+    void setCameraConfiguration(const Camera& camLeft, const Camera& camRight) {
         trackerLeft.setCameraConfiguration(camLeft);
         trackerRight.setCameraConfiguration(camRight);
     };
-    void setCameraConfiguration(const CameraParameters& configuration, StereoCam stereoCam = StereoCam::Left) {
+    void setCameraConfiguration(const Camera& configuration, StereoCam stereoCam = StereoCam::Left) {
         if (stereoCam == StereoCam::Left)
             trackerLeft.setCameraConfiguration(configuration);
         else

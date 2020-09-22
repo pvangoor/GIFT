@@ -20,38 +20,30 @@
 #include "eigen3/Eigen/Dense"
 #include "ftype.h"
 #include "opencv2/core/core.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include <array>
-#include <memory>
+#include "opencv2/core/eigen.hpp"
 #include <vector>
 
-using colorVec = std::array<uchar, 3>;
-
 namespace GIFT {
+class Camera {
+  protected:
+    ftype fx, fy, cx, cy; // intrinsic parameters
+    std::vector<ftype> dist;
+    std::vector<ftype> invDist;
+    std::vector<ftype> computeInverseDistortion() const;
 
-struct Camera;
-using CamParamConstPtr = std::shared_ptr<const Camera>;
+  public:
+    cv::Size imageSize;
 
-struct Landmark {
-    cv::Point2f camCoordinates;
+    Camera(const cv::String& cameraConfigFile);
+    Camera(
+        cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F), std::vector<ftype> dist = {0, 0, 0, 0});
 
-    std::shared_ptr<const Camera> cameraPtr;
+    // Geometry functions
+    cv::Mat K() const; // intrinsic matrix (3x3)
+    const std::vector<ftype>& distortion() const;
 
-    Eigen::Vector2T opticalFlowRaw;
-    Eigen::Vector2T opticalFlowNorm;
-
-    colorVec pointColor;
-    int idNumber;
-    int lifetime = 0;
-
-    Landmark(){};
-    Landmark(const cv::Point2f& newCamCoords, const CamParamConstPtr& cameraPtr, int idNumber,
-        const colorVec& col = {0, 0, 0});
-    void update(const cv::Point2f& newCamCoords, const colorVec& col = {0, 0, 0});
-
-    cv::Point2f camCoordinatesNorm() const;
-    Eigen::Vector3T sphereCoordinates() const;
-    Eigen::Vector3T opticalFlowSphere() const;
+    cv::Point2f undistortPoint(const cv::Point2f& point) const;
+    static cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist);
 };
 
 } // namespace GIFT
