@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "Camera.h"
-#include "Landmark.h"
+#include "Feature.h"
 #include "opencv2/core.hpp"
 
 using namespace Eigen;
@@ -46,6 +46,6 @@ class GIFeatureTracker {
     // Core
     virtual void detectFeatures(const Mat& image) = 0;
     virtual void trackFeatures(const Mat& image) = 0;
-    virtual vector<Landmark> outputLandmarks() const = 0;
+    virtual vector<Feature> outputLandmarks() const = 0;
 };
 } // namespace GIFT

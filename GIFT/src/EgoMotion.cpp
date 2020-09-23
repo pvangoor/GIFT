@@ -64,7 +64,7 @@ EgoMotion::EgoMotion(
     this->numberOfFeatures = sphereFlows.size();
 }
 
-EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks, const ftype& dt) {
+EgoMotion::EgoMotion(const std::vector<Feature>& landmarks, const ftype& dt) {
     vector<pair<Vector3T, Vector3T>> sphereFlows;
     for (const auto& lm : landmarks) {
         if (lm.lifetime < 2)
@@ -84,7 +84,7 @@ EgoMotion::EgoMotion(const std::vector<Landmark>& landmarks, const ftype& dt) {
     this->numberOfFeatures = sphereFlows.size();
 }
 
-EgoMotion::EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3T& initLinVel, const ftype& dt) {
+EgoMotion::EgoMotion(const vector<GIFT::Feature>& landmarks, const Vector3T& initLinVel, const ftype& dt) {
     vector<pair<Vector3T, Vector3T>> sphereFlows;
     for (const auto& lm : landmarks) {
         if (lm.lifetime < 2)
@@ -105,7 +105,7 @@ EgoMotion::EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3T& in
 }
 
 EgoMotion::EgoMotion(
-    const std::vector<Landmark>& landmarks, const Vector3T& initLinVel, const Vector3T& initAngVel, const ftype& dt) {
+    const std::vector<Feature>& landmarks, const Vector3T& initLinVel, const Vector3T& initAngVel, const ftype& dt) {
     vector<pair<Vector3T, Vector3T>> sphereFlows;
     for (const auto& lm : landmarks) {
         if (lm.lifetime < 2)
@@ -228,7 +228,7 @@ void EgoMotion::optimizationStep(
     angVel += -step.block<3, 1>(3, 0);
 }
 
-vector<pair<Point2f, Vector2T>> EgoMotion::estimateFlowsNorm(const vector<GIFT::Landmark>& landmarks) const {
+vector<pair<Point2f, Vector2T>> EgoMotion::estimateFlowsNorm(const vector<GIFT::Feature>& landmarks) const {
     vector<pair<Vector3T, Vector3T>> flowsSphere = estimateFlows(landmarks);
     vector<pair<Point2f, Vector2T>> flowsNorm;
 
@@ -246,7 +246,7 @@ vector<pair<Point2f, Vector2T>> EgoMotion::estimateFlowsNorm(const vector<GIFT::
     return flowsNorm;
 }
 
-vector<pair<Vector3T, Vector3T>> EgoMotion::estimateFlows(const vector<GIFT::Landmark>& landmarks) const {
+vector<pair<Vector3T, Vector3T>> EgoMotion::estimateFlows(const vector<GIFT::Feature>& landmarks) const {
     auto Proj3 = [](const Vector3T& vec) { return Matrix3T::Identity() - vec * vec.transpose() / vec.squaredNorm(); };
 
     vector<pair<Vector3T, Vector3T>> estFlows;

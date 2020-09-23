@@ -19,7 +19,7 @@
 
 #include "Camera.h"
 #include "EgoMotion.h"
-#include "Landmark.h"
+#include "Feature.h"
 #include "eigen3/Eigen/Dense"
 #include "ftype.h"
 #include "opencv2/core/core.hpp"
@@ -42,7 +42,7 @@ class PointFeatureTracker {
     // Variables used in the tracking algorithms
     int currentNumber = 0;
     Mat previousImage;
-    vector<Landmark> landmarks;
+    vector<Feature> landmarks;
     Mat imageMask;
 
   public:
@@ -63,7 +63,7 @@ class PointFeatureTracker {
 
     // Core
     void processImage(const Mat& image);
-    vector<Landmark> outputLandmarks() const { return landmarks; };
+    vector<Feature> outputLandmarks() const { return landmarks; };
 
     // Visualisation
     Mat drawFeatureImage(
@@ -82,10 +82,10 @@ class PointFeatureTracker {
   protected:
     vector<Point2f> detectNewFeatures(const Mat& image) const;
     vector<Point2f> removeDuplicateFeatures(const vector<Point2f>& proposedFeatures) const;
-    vector<Landmark> createNewLandmarks(const Mat& image, const vector<Point2f>& newFeatures);
+    vector<Feature> createNewLandmarks(const Mat& image, const vector<Point2f>& newFeatures);
 
     void trackLandmarks(const Mat& image);
-    void addNewLandmarks(vector<Landmark> newLandmarks);
+    void addNewLandmarks(vector<Feature> newLandmarks);
     void computeLandmarkPositions();
 };
 

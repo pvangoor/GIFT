@@ -32,7 +32,7 @@ namespace GIFT {
 struct Camera;
 using CamParamConstPtr = std::shared_ptr<const Camera>;
 
-struct Landmark {
+struct Feature {
     cv::Point2f camCoordinates;
 
     std::shared_ptr<const Camera> cameraPtr;
@@ -44,8 +44,8 @@ struct Landmark {
     int idNumber;
     int lifetime = 0;
 
-    Landmark(){};
-    Landmark(const cv::Point2f& newCamCoords, const CamParamConstPtr& cameraPtr, int idNumber,
+    Feature(){};
+    Feature(const cv::Point2f& newCamCoords, const CamParamConstPtr& cameraPtr, int idNumber,
         const colorVec& col = {0, 0, 0});
     void update(const cv::Point2f& newCamCoords, const colorVec& col = {0, 0, 0});
 

@@ -110,15 +110,15 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
         // TODO: We need to remove features that are no longer visible.
     };
 
-    [[nodiscard]] virtual vector<Landmark> outputLandmarks() const override {
-        vector<Landmark> landmarks(features.size());
+    [[nodiscard]] virtual vector<Feature> outputLandmarks() const override {
+        vector<Feature> landmarks(features.size());
         transform(features.begin(), features.end(), landmarks.begin(),
             [this](const InternalPatchFeature& f) { return this->featureToLandmark(f); });
         return landmarks;
     };
 
-    [[nodiscard]] Landmark featureToLandmark(const InternalPatchFeature& feature) const {
-        Landmark lm;
+    [[nodiscard]] Feature featureToLandmark(const InternalPatchFeature& feature) const {
+        Feature lm;
         lm.camCoordinates = feature.camCoordinates();
         lm.cameraPtr = cameraPtr;
         lm.idNumber = feature.id;

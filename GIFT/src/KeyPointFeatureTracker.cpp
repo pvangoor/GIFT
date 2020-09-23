@@ -71,15 +71,15 @@ void GIFT::KeyPointFeatureTracker::trackFeatures(const Mat& image) {
     }
 }
 
-vector<GIFT::Landmark> GIFT::KeyPointFeatureTracker::outputLandmarks() const {
-    vector<Landmark> landmarks(features.size());
+vector<GIFT::Feature> GIFT::KeyPointFeatureTracker::outputLandmarks() const {
+    vector<Feature> landmarks(features.size());
     transform(features.begin(), features.end(), landmarks.begin(),
         [this](const InternalKPFeature& f) { return this->featureToLandmark(f); });
     return landmarks;
 }
 
-GIFT::Landmark GIFT::KeyPointFeatureTracker::featureToLandmark(const InternalKPFeature& feature) const {
-    GIFT::Landmark lm;
+GIFT::Feature GIFT::KeyPointFeatureTracker::featureToLandmark(const InternalKPFeature& feature) const {
+    GIFT::Feature lm;
     lm.camCoordinates = feature.camCoordinates();
     lm.cameraPtr = cameraPtr;
     lm.idNumber = feature.id;

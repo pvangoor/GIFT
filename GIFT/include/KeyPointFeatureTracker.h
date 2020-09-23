@@ -58,9 +58,9 @@ class KeyPointFeatureTracker : public GIFeatureTracker {
 
     virtual void trackFeatures(const Mat& image) override;
 
-    [[nodiscard]] virtual vector<Landmark> outputLandmarks() const override;
+    [[nodiscard]] virtual vector<Feature> outputLandmarks() const override;
 
-    [[nodiscard]] Landmark featureToLandmark(const InternalKPFeature& feature) const;
+    [[nodiscard]] Feature featureToLandmark(const InternalKPFeature& feature) const;
 
     void removePointsTooCloseToFeatures(vector<InternalKPFeature>& newKeypoints) const;
     static void filterForBestPoints(

@@ -22,7 +22,7 @@ set(GIFT_SOURCE_FILES
     src/PointFeatureTracker.cpp
     src/StereoFeatureTracker.cpp
     src/EgoMotion.cpp
-    src/Landmark.cpp
+    src/Feature.cpp
     src/ImagePyramid.cpp
     src/OptimiseParameters.cpp
     src/ParameterGroup.cpp
@@ -35,7 +35,7 @@ set(GIFT_HEADER_FILES
     include/Camera.h
     include/PointFeatureTracker.h
     include/StereoFeatureTracker.h
-    include/Landmark.h
+    include/Feature.h
     include/EgoMotion.h
     include/ImagePyramid.h
     include/OptimiseParameters.h

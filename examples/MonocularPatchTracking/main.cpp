@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
         ft.trackFeatures(image);
         ft.detectFeatures(image);
 
-        std::vector<GIFT::Landmark> landmarks = ft.outputLandmarks();
+        std::vector<GIFT::Feature> landmarks = ft.outputLandmarks();
 
         cv::Mat featureImage = GIFT::drawFeatureImage(image, landmarks);
 

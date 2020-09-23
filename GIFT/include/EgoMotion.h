@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "Landmark.h"
+#include "Feature.h"
 #include "eigen3/Eigen/Dense"
 
 using namespace Eigen;
@@ -37,16 +37,16 @@ class EgoMotion {
     static constexpr ftype optimisationThreshold = 1e-8;
     static constexpr int maxIterations = 30;
 
-    EgoMotion(const vector<GIFT::Landmark>& landmarks, const ftype& dt = 1);
-    EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3T& initLinVel, const ftype& dt = 1);
-    EgoMotion(const vector<GIFT::Landmark>& landmarks, const Vector3T& initLinVel, const Vector3T& initAngVel,
+    EgoMotion(const vector<GIFT::Feature>& landmarks, const ftype& dt = 1);
+    EgoMotion(const vector<GIFT::Feature>& landmarks, const Vector3T& initLinVel, const ftype& dt = 1);
+    EgoMotion(const vector<GIFT::Feature>& landmarks, const Vector3T& initLinVel, const Vector3T& initAngVel,
         const ftype& dt = 1);
     EgoMotion(const vector<pair<Vector3T, Vector3T>>& sphereFlows);
     EgoMotion(const vector<pair<Vector3T, Vector3T>>& sphereFlows, const Vector3T& initLinVel);
     EgoMotion(
         const vector<pair<Vector3T, Vector3T>>& sphereFlows, const Vector3T& initLinVel, const Vector3T& initAngVel);
-    vector<pair<Vector3T, Vector3T>> estimateFlows(const vector<GIFT::Landmark>& landmarks) const;
-    vector<pair<Point2f, Vector2T>> estimateFlowsNorm(const vector<GIFT::Landmark>& landmarks) const;
+    vector<pair<Vector3T, Vector3T>> estimateFlows(const vector<GIFT::Feature>& landmarks) const;
+    vector<pair<Point2f, Vector2T>> estimateFlowsNorm(const vector<GIFT::Feature>& landmarks) const;
     static Vector3T estimateAngularVelocity(
         const vector<pair<Vector3T, Vector3T>>& sphereFlows, const Vector3T& linVel = Vector3T::Zero());
 

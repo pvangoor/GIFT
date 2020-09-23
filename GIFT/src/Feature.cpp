@@ -15,14 +15,14 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Landmark.h"
+#include "Feature.h"
 #include "Camera.h"
 
 using namespace GIFT;
 using namespace cv;
 using namespace Eigen;
 
-Landmark::Landmark(const Point2f& newCamCoords, const CamParamConstPtr& cameraPtr, int idNumber, const colorVec& col) {
+Feature::Feature(const Point2f& newCamCoords, const CamParamConstPtr& cameraPtr, int idNumber, const colorVec& col) {
     this->camCoordinates = newCamCoords;
     this->cameraPtr = cameraPtr;
 
@@ -36,7 +36,7 @@ Landmark::Landmark(const Point2f& newCamCoords, const CamParamConstPtr& cameraPt
     lifetime = 1;
 }
 
-void Landmark::update(const cv::Point2f& newCamCoords, const colorVec& col) {
+void Feature::update(const cv::Point2f& newCamCoords, const colorVec& col) {
     this->opticalFlowRaw << newCamCoords.x - this->camCoordinates.x, newCamCoords.y - this->camCoordinates.y;
     cv::Point2f newCamCoordsNorm = cameraPtr->undistortPoint(newCamCoords);
     this->opticalFlowNorm << newCamCoordsNorm.x - this->camCoordinatesNorm().x,
@@ -53,15 +53,15 @@ void Landmark::update(const cv::Point2f& newCamCoords, const colorVec& col) {
     ++lifetime;
 }
 
-Eigen::Vector3T Landmark::sphereCoordinates() const {
+Eigen::Vector3T Feature::sphereCoordinates() const {
     Eigen::Vector3T result;
     result << camCoordinatesNorm().x, camCoordinatesNorm().y, 1.0;
     return result.normalized();
 }
 
-cv::Point2f Landmark::camCoordinatesNorm() const { return cameraPtr->undistortPoint(camCoordinates); }
+cv::Point2f Feature::camCoordinatesNorm() const { return cameraPtr->undistortPoint(camCoordinates); }
 
-Eigen::Vector3T Landmark::opticalFlowSphere() const {
+Eigen::Vector3T Feature::opticalFlowSphere() const {
     const Vector3T bearing = sphereCoordinates();
     const Vector3T sphereFlow = bearing.z() * (Matrix3T::Identity() - bearing * bearing.transpose()) *
                                 Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);

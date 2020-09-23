@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "Landmark.h"
+#include "Feature.h"
 #include "eigen3/Eigen/Dense"
 #include "opencv2/core/core.hpp"
 #include "opencv2/features2d/features2d.hpp"
@@ -29,14 +29,14 @@ using colorVec = std::array<uchar, 3>;
 namespace GIFT {
 
 struct StereoLandmark {
-    GIFT::Landmark* landmarkLeft;
-    GIFT::Landmark* landmarkRight;
+    GIFT::Feature* landmarkLeft;
+    GIFT::Feature* landmarkRight;
 
     int idNumberStereo;
     int lifetime = 0;
 
     StereoLandmark();
-    StereoLandmark(GIFT::Landmark& lmLeft, GIFT::Landmark& lmRight, int idNumberStereo) {
+    StereoLandmark(GIFT::Feature& lmLeft, GIFT::Feature& lmRight, int idNumberStereo) {
         this->landmarkLeft = &lmLeft;
         this->landmarkRight = &lmRight;
         this->idNumberStereo = idNumberStereo;

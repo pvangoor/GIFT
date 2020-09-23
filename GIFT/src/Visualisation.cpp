@@ -6,24 +6,22 @@
 using namespace GIFT;
 
 Mat GIFT::drawFeatureImage(
-    const Mat& baseImage, const vector<Landmark>& landmarks, const int& radius, const Scalar& color) {
+    const Mat& baseImage, const vector<Feature>& landmarks, const int& radius, const Scalar& color) {
     Mat featureImage = baseImage.clone();
 
-    auto drawingLambda = [&](const Landmark& landmark) {
-        circle(featureImage, landmark.camCoordinates, radius, color);
-    };
+    auto drawingLambda = [&](const Feature& landmark) { circle(featureImage, landmark.camCoordinates, radius, color); };
     for_each(landmarks.begin(), landmarks.end(), drawingLambda);
 
     return featureImage;
 }
 
-Mat GIFT::drawFlowImage(const Mat& baseImage, const vector<Landmark>& landmarks0, const vector<Landmark>& landmarks1,
+Mat GIFT::drawFlowImage(const Mat& baseImage, const vector<Feature>& landmarks0, const vector<Feature>& landmarks1,
     const int& radius, const Scalar& circleColor, const int& thickness, const Scalar& lineColor) {
     Mat flowImage = baseImage.clone();
 
-    auto flowDrawingLambda = [&](const Landmark& lm0) {
+    auto flowDrawingLambda = [&](const Feature& lm0) {
         auto lm1it = find_if(
-            landmarks1.begin(), landmarks1.end(), [&lm0](const Landmark& lm1) { return lm1.idNumber == lm0.idNumber; });
+            landmarks1.begin(), landmarks1.end(), [&lm0](const Feature& lm1) { return lm1.idNumber == lm0.idNumber; });
         if (lm1it != landmarks1.end()) {
             circle(flowImage, lm0.camCoordinates, radius, circleColor);
             line(flowImage, lm0.camCoordinates, lm1it->camCoordinates, lineColor, thickness);
@@ -34,8 +32,8 @@ Mat GIFT::drawFlowImage(const Mat& baseImage, const vector<Landmark>& landmarks0
     return flowImage;
 }
 
-Mat GIFT::drawFlowImage(const Mat& image0, const Mat& image1, const vector<Landmark>& landmarks0,
-    const vector<Landmark>& landmarks1, const int& radius, const Scalar& circleColor, const int& thickness,
+Mat GIFT::drawFlowImage(const Mat& image0, const Mat& image1, const vector<Feature>& landmarks0,
+    const vector<Feature>& landmarks1, const int& radius, const Scalar& circleColor, const int& thickness,
     const Scalar& lineColor) {
     // draw the flow image on a red/blue merge of image0 and image1
     Mat gray0 = image0;

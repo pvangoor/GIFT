@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
         // Track the features
         ft.processImage(image);
 
-        std::vector<GIFT::Landmark> landmarks = ft.outputLandmarks();
+        std::vector<GIFT::Feature> landmarks = ft.outputLandmarks();
 
         // Compute EgoMotion
         GIFT::EgoMotion egoMotion(landmarks);

@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "Landmark.h"
+#include "Feature.h"
 #include "opencv2/core.hpp"
 #include <vector>
 
@@ -26,13 +26,13 @@ using namespace cv;
 
 namespace GIFT {
 
-Mat drawFeatureImage(const Mat& baseImage, const vector<Landmark>& landmarks, const int& radius = 3,
+Mat drawFeatureImage(const Mat& baseImage, const vector<Feature>& landmarks, const int& radius = 3,
     const Scalar& color = Scalar(0, 255, 255));
-Mat drawFlowImage(const Mat& baseImage, const vector<Landmark>& landmarks0, const vector<Landmark>& landmarks1,
+Mat drawFlowImage(const Mat& baseImage, const vector<Feature>& landmarks0, const vector<Feature>& landmarks1,
     const int& radius = 3, const Scalar& circleColor = Scalar(0, 255, 255), const int& thickness = 2,
     const Scalar& lineColor = Scalar(255, 0, 255));
-Mat drawFlowImage(const Mat& image0, const Mat& image1, const vector<Landmark>& landmarks0,
-    const vector<Landmark>& landmarks1, const int& radius = 3, const Scalar& circleColor = Scalar(0, 255, 255),
+Mat drawFlowImage(const Mat& image0, const Mat& image1, const vector<Feature>& landmarks0,
+    const vector<Feature>& landmarks1, const int& radius = 3, const Scalar& circleColor = Scalar(0, 255, 255),
     const int& thickness = 2, const Scalar& lineColor = Scalar(0, 255, 0));
 
 } // namespace GIFT

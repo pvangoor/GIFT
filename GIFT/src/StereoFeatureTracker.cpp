@@ -24,8 +24,8 @@ void StereoFeatureTracker::processImages(const Mat& imageLeft, const Mat& imageR
     trackerLeft.processImage(imageLeft);
     trackerRight.processImage(imageRight);
 
-    const vector<Landmark> landmarksLeft = trackerLeft.outputLandmarks();
-    const vector<Landmark> landmarksRight = trackerRight.outputLandmarks();
+    const vector<Feature> landmarksLeft = trackerLeft.outputLandmarks();
+    const vector<Feature> landmarksRight = trackerRight.outputLandmarks();
 
     removeLostStereoLandmarks(landmarksLeft, landmarksRight);
     vector<StereoLandmark> newStereoLandmarks =
@@ -34,11 +34,11 @@ void StereoFeatureTracker::processImages(const Mat& imageLeft, const Mat& imageR
 }
 
 void StereoFeatureTracker::removeLostStereoLandmarks(
-    const vector<Landmark>& landmarksLeft, const vector<Landmark>& landmarksRight) {
+    const vector<Feature>& landmarksLeft, const vector<Feature>& landmarksRight) {
     set<int> idsLeft, idsRight;
-    for (const Landmark& lm : landmarksLeft)
+    for (const Feature& lm : landmarksLeft)
         idsLeft.emplace(lm.idNumber);
-    for (const Landmark& lm : landmarksRight)
+    for (const Feature& lm : landmarksRight)
         idsRight.emplace(lm.idNumber);
 
     auto checkValidLandmark = [idsLeft, idsRight](const int idLeft, const int idRight) {
@@ -55,8 +55,8 @@ void StereoFeatureTracker::removeLostStereoLandmarks(
     }
 }
 
-vector<StereoLandmark> StereoFeatureTracker::createNewStereoLandmarks(const vector<Landmark>& landmarksLeft,
-    const Mat& imageLeft, const vector<Landmark>& landmarksRight, const Mat& imageRight) const {
+vector<StereoLandmark> StereoFeatureTracker::createNewStereoLandmarks(const vector<Feature>& landmarksLeft,
+    const Mat& imageLeft, const vector<Feature>& landmarksRight, const Mat& imageRight) const {
     vector<StereoLandmark> newLandmarks;
     return newLandmarks;
 }

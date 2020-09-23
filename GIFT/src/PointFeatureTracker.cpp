@@ -34,13 +34,13 @@ void PointFeatureTracker::processImage(const Mat& image) {
         return;
 
     vector<Point2f> newFeatures = this->detectNewFeatures(image);
-    vector<Landmark> newLandmarks = this->createNewLandmarks(image, newFeatures);
+    vector<Feature> newLandmarks = this->createNewLandmarks(image, newFeatures);
 
     this->addNewLandmarks(newLandmarks);
 }
 
-vector<Landmark> PointFeatureTracker::createNewLandmarks(const Mat& image, const vector<Point2f>& newFeatures) {
-    vector<Landmark> newLandmarks;
+vector<Feature> PointFeatureTracker::createNewLandmarks(const Mat& image, const vector<Point2f>& newFeatures) {
+    vector<Feature> newLandmarks;
     if (newFeatures.empty())
         return newLandmarks;
 
@@ -55,7 +55,7 @@ vector<Landmark> PointFeatureTracker::createNewLandmarks(const Mat& image, const
         colorVec pointColor = {image.at<Vec3b>(newFeatures[i]).val[0], image.at<Vec3b>(newFeatures[i]).val[1],
             image.at<Vec3b>(newFeatures[i]).val[2]};
 
-        Landmark lm(proposedFeature, cameraPtr, -1, pointColor);
+        Feature lm(proposedFeature, cameraPtr, -1, pointColor);
 
         newLandmarks.emplace_back(lm);
     }
@@ -128,7 +128,7 @@ vector<Point2f> PointFeatureTracker::removeDuplicateFeatures(const vector<Point2
     return newFeatures;
 }
 
-void PointFeatureTracker::addNewLandmarks(vector<Landmark> newLandmarks) {
+void PointFeatureTracker::addNewLandmarks(vector<Feature> newLandmarks) {
     for (auto& lm : newLandmarks) {
         if (landmarks.size() >= maxFeatures)
             break;
