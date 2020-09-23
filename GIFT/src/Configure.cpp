@@ -22,6 +22,8 @@
 
 using namespace GIFT;
 
+cv::Mat convertEigenToCV(const Eigen::MatrixXd& mat);
+
 Camera GIFT::readCameraConfig(const std::string& fileName) {
     YAML::Node config = YAML::LoadFile(fileName);
 
@@ -33,8 +35,7 @@ Camera GIFT::readCameraConfig(const std::string& fileName) {
     } else {
         throw std::invalid_argument("The intrinsic matrix is not given.");
     }
-    cv::Mat cvK;
-    cv::eigen2cv(K, cvK);
+    cv::Mat cvK = convertEigenToCV(K);
 
     std::vector<ftype> distortionParams;
     if (config["distortionParams"]) {
@@ -60,4 +61,14 @@ Eigen::MatrixXT GIFT::convertYamlToMatrix(YAML::Node yaml) {
         }
     }
     return mat;
+}
+
+cv::Mat convertEigenToCV(const Eigen::MatrixXd& mat) {
+    cv::Mat result = cv::Mat(cv::Size(mat.cols(), mat.rows()), CV_64F);
+    for (int i = 0; i < mat.rows(); ++i) {
+        for (int j = 0; j < mat.cols(); ++j) {
+            result.at<double>(i, j) = mat(i, j);
+        }
+    }
+    return result;
 }

@@ -20,7 +20,6 @@
 #include "eigen3/Eigen/Dense"
 #include "ftype.h"
 #include "opencv2/core/core.hpp"
-#include "opencv2/core/eigen.hpp"
 #include <vector>
 
 namespace GIFT {

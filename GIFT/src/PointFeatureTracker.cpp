@@ -18,7 +18,6 @@
 #include "eigen3/Eigen/SVD"
 #include "iostream"
 #include "opencv2/calib3d.hpp"
-#include "opencv2/core/eigen.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/stereo/stereo.hpp"
 #include "opencv2/video/tracking.hpp"
