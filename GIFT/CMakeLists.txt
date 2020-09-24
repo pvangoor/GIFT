@@ -102,7 +102,7 @@ configure_package_config_file(
 # Export '<PROJECT-NAME>Targets.cmake' to build dir (to find package in build dir without install)
 export(TARGETS GIFT FILE "${CMAKE_CURRENT_BINARY_DIR}/${targets_export_name}.cmake")
 
-# # Targets:
+# Targets:
 install(TARGETS GIFT
         EXPORT "${targets_export_name}"
         LIBRARY DESTINATION "lib"
@@ -111,13 +111,10 @@ install(TARGETS GIFT
         INCLUDES DESTINATION "${include_install_dir}")
 
 # Config
-#   * <prefix>/lib/cmake/opengv/opengvConfig.cmake
-#   * <prefix>/lib/cmake/opengv/opengvConfigVersion.cmake
 install(FILES "${project_config}"
         DESTINATION "${config_install_dir}")
 
 # Config
-#   * <prefix>/lib/cmake/opengv/opengvTargets.cmake
 install(EXPORT "${targets_export_name}"
         # NAMESPACE "${namespace}"
         DESTINATION "${config_install_dir}")

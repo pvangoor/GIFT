@@ -37,9 +37,10 @@ class GIFeatureTracker {
 
   public:
     // Initialisation and configuration
-    GIFeatureTracker() = default;
+    GIFeatureTracker(){};
     GIFeatureTracker(const Camera& cameraParams);
     GIFeatureTracker(const Camera& cameraParams, const Mat& mask);
+    virtual ~GIFeatureTracker(){};
     virtual void setCamera(const Camera& cameraParameters);
     virtual void setMask(const Mat& mask);
 
