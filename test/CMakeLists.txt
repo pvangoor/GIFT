@@ -1,4 +1,7 @@
-find_package(GTest REQUIRED)
+
+# Get gtest as an external project
+include(PrepareGTest.cmake)
+# This creates the linking target gtest_main
 
 # Link the tests with the test data
 add_compile_definitions(TEST_DATA_DIR="${TEST_DATA_DIR}/")
@@ -16,8 +19,7 @@ foreach(TEST_NAME ${TESTS_LIST})
     add_executable(${TEST_NAME} "${TEST_NAME}.cpp")
     target_include_directories(${TEST_NAME} PUBLIC ${OpenCV_INCLUDE_DIRS})
     target_link_libraries(${TEST_NAME}
-        GTest::GTest
-        GTest::Main
+        gtest_main
         GIFT
     )
     add_test("${TEST_NAME}" ${TEST_NAME})
