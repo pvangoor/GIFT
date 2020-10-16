@@ -29,19 +29,27 @@
 
 int main(int argc, char* argv[]) {
 
-    if (argc != 3) {
-        std::cout << "There should be exactly 2 input arguments.\n";
-        std::cout << "Usage: VisualOdometryTracking camera.yaml video.mp4" << std::endl;
+    if (argc != 3 && argc != 4) {
+        std::cout << "Usage: VisualOdometryTracking camera.yaml video.mp4 (settings.yaml)" << std::endl;
         exit(1);
     }
 
     // Set up the feature tracker
     GIFT::Camera camera = GIFT::Camera(cv::String(argv[1]));
     GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(camera);
-    ft.featureDist = 20;
     ft.maxFeatures = 30;
+    ft.featureDist = 30;
     ft.minHarrisQuality = 0.05;
-    ft.featureSearchThreshold = 20.0 / 30.0;
+    ft.featureSearchThreshold = 0.8;
+
+    if (argc == 4) {
+        // std::cout << "Reading filter settings from " << argv[3] << std::endl;
+        const YAML::Node configNode = YAML::LoadFile(std::string(argv[3]));
+        ft.maxFeatures = configNode["maxFeatures"].as<int>();
+        ft.featureDist = configNode["featureDist"].as<ftype>();
+        ft.minHarrisQuality = configNode["minHarrisQuality"].as<ftype>();
+        ft.featureSearchThreshold = configNode["featureSearchThreshold"].as<ftype>();
+    }
 
     // Set up the video capture
     cv::VideoCapture cap;

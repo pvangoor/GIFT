@@ -1,0 +1,4 @@
+maxFeatures: 30
+featureDist: 30
+minHarrisQuality: 0.05
+featureSearchThreshold: 0.8
