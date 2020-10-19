@@ -49,6 +49,8 @@ int main(int argc, char* argv[]) {
         ft.featureDist = configNode["featureDist"].as<ftype>();
         ft.minHarrisQuality = configNode["minHarrisQuality"].as<ftype>();
         ft.featureSearchThreshold = configNode["featureSearchThreshold"].as<ftype>();
+        ft.maxError = configNode["maxError"].as<float>();
+        ft.winSize = configNode["winSize"].as<int>();
     }
 
     // Set up the video capture
