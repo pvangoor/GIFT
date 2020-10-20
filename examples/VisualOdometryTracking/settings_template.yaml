@@ -4,3 +4,4 @@ minHarrisQuality: 0.05
 featureSearchThreshold: 0.8
 maxError: 1e8
 winSize: 21
+maxLevel: 3

@@ -68,7 +68,8 @@ void PointFeatureTracker::trackLandmarks(const Mat& image) {
     vector<Point2f> points;
     vector<uchar> status;
     vector<float> err;
-    calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err, Size(winSize, winSize));
+    calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err, Size(winSize, winSize), maxLevel,
+        TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, (0.01000000000000000021)));
 
     for (long int i = points.size() - 1; i >= 0; --i) {
         if (status[i] == 0 || err[i] >= maxError) {
