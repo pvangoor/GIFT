@@ -44,18 +44,11 @@ vector<Feature> PointFeatureTracker::createNewLandmarks(const Mat& image, const 
     if (newFeatures.empty())
         return newLandmarks;
 
-    vector<Point2f> newFeaturesNorm;
-    cv::undistortPoints(newFeatures, newFeaturesNorm, cameraPtr->K(), cameraPtr->distortion());
-
     for (int i = 0; i < newFeatures.size(); ++i) {
-
-        Point2f proposedFeature = newFeatures[i];
-        Point2f proposedFeatureNorm = newFeaturesNorm[i];
-
         colorVec pointColor = {image.at<Vec3b>(newFeatures[i]).val[0], image.at<Vec3b>(newFeatures[i]).val[1],
             image.at<Vec3b>(newFeatures[i]).val[2]};
 
-        Feature lm(proposedFeature, cameraPtr, -1, pointColor);
+        Feature lm(newFeatures[i], cameraPtr, -1, pointColor);
 
         newLandmarks.emplace_back(lm);
     }
