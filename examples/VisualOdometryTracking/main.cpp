@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
         ft.featureSearchThreshold = configNode["featureSearchThreshold"].as<ftype>();
         ft.maxError = configNode["maxError"].as<float>();
         ft.winSize = configNode["winSize"].as<int>();
+        ft.maxLevel = configNode["maxLevel"].as<int>();
     }
 
     // Set up the video capture
