@@ -45,13 +45,13 @@ int main(int argc, char* argv[]) {
     if (argc == 4) {
         // std::cout << "Reading filter settings from " << argv[3] << std::endl;
         const YAML::Node configNode = YAML::LoadFile(std::string(argv[3]));
-        ft.maxFeatures = configNode["maxFeatures"].as<int>();
-        ft.featureDist = configNode["featureDist"].as<ftype>();
-        ft.minHarrisQuality = configNode["minHarrisQuality"].as<ftype>();
-        ft.featureSearchThreshold = configNode["featureSearchThreshold"].as<ftype>();
-        ft.maxError = configNode["maxError"].as<float>();
-        ft.winSize = configNode["winSize"].as<int>();
-        ft.maxLevel = configNode["maxLevel"].as<int>();
+        ft.maxFeatures = configNode["GIFT"]["maxFeatures"].as<int>();
+        ft.featureDist = configNode["GIFT"]["featureDist"].as<ftype>();
+        ft.minHarrisQuality = configNode["GIFT"]["minHarrisQuality"].as<ftype>();
+        ft.featureSearchThreshold = configNode["GIFT"]["featureSearchThreshold"].as<ftype>();
+        ft.maxError = configNode["GIFT"]["maxError"].as<float>();
+        ft.winSize = configNode["GIFT"]["winSize"].as<int>();
+        ft.maxLevel = configNode["GIFT"]["maxLevel"].as<int>();
     }
 
     // Set up the video capture
