@@ -50,6 +50,9 @@ class PointFeatureTracker {
     ftype featureDist = 20;
     ftype minHarrisQuality = 0.1;
     ftype featureSearchThreshold = 1.0;
+    float maxError = 1e8;
+    int winSize = 21;
+    int maxLevel = 3;
 
     // // Stereo Specific
     // ftype stereoBaseline = 0.1;

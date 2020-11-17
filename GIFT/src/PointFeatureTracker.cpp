@@ -44,18 +44,11 @@ vector<Feature> PointFeatureTracker::createNewLandmarks(const Mat& image, const 
     if (newFeatures.empty())
         return newLandmarks;
 
-    vector<Point2f> newFeaturesNorm;
-    cv::undistortPoints(newFeatures, newFeaturesNorm, cameraPtr->K(), cameraPtr->distortion());
-
     for (int i = 0; i < newFeatures.size(); ++i) {
-
-        Point2f proposedFeature = newFeatures[i];
-        Point2f proposedFeatureNorm = newFeaturesNorm[i];
-
         colorVec pointColor = {image.at<Vec3b>(newFeatures[i]).val[0], image.at<Vec3b>(newFeatures[i]).val[1],
             image.at<Vec3b>(newFeatures[i]).val[2]};
 
-        Feature lm(proposedFeature, cameraPtr, -1, pointColor);
+        Feature lm(newFeatures[i], cameraPtr, -1, pointColor);
 
         newLandmarks.emplace_back(lm);
     }
@@ -75,13 +68,11 @@ void PointFeatureTracker::trackLandmarks(const Mat& image) {
     vector<Point2f> points;
     vector<uchar> status;
     vector<float> err;
-    calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err);
-
-    vector<Point2f> pointsNorm;
-    cv::undistortPoints(points, pointsNorm, cameraPtr->K(), cameraPtr->distortion());
+    calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err, Size(winSize, winSize), maxLevel,
+        TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, (0.01000000000000000021)));
 
     for (long int i = points.size() - 1; i >= 0; --i) {
-        if (status[i] == 0) {
+        if (status[i] == 0 || err[i] >= maxError) {
             landmarks.erase(landmarks.begin() + i);
             continue;
         }
