@@ -64,9 +64,9 @@ EgoMotion::EgoMotion(
     this->numberOfFeatures = sphereFlows.size();
 }
 
-EgoMotion::EgoMotion(const std::vector<Feature>& landmarks, const ftype& dt) {
+EgoMotion::EgoMotion(const std::vector<Feature>& features, const ftype& dt) {
     vector<pair<Vector3T, Vector3T>> sphereFlows;
-    for (const auto& lm : landmarks) {
+    for (const auto& lm : features) {
         if (lm.lifetime < 2)
             continue;
         sphereFlows.emplace_back(make_pair(lm.sphereCoordinates(), lm.opticalFlowSphere() / dt));
@@ -84,9 +84,9 @@ EgoMotion::EgoMotion(const std::vector<Feature>& landmarks, const ftype& dt) {
     this->numberOfFeatures = sphereFlows.size();
 }
 
-EgoMotion::EgoMotion(const vector<GIFT::Feature>& landmarks, const Vector3T& initLinVel, const ftype& dt) {
+EgoMotion::EgoMotion(const vector<GIFT::Feature>& features, const Vector3T& initLinVel, const ftype& dt) {
     vector<pair<Vector3T, Vector3T>> sphereFlows;
-    for (const auto& lm : landmarks) {
+    for (const auto& lm : features) {
         if (lm.lifetime < 2)
             continue;
         sphereFlows.emplace_back(make_pair(lm.sphereCoordinates(), lm.opticalFlowSphere() / dt));
@@ -105,9 +105,9 @@ EgoMotion::EgoMotion(const vector<GIFT::Feature>& landmarks, const Vector3T& ini
 }
 
 EgoMotion::EgoMotion(
-    const std::vector<Feature>& landmarks, const Vector3T& initLinVel, const Vector3T& initAngVel, const ftype& dt) {
+    const std::vector<Feature>& features, const Vector3T& initLinVel, const Vector3T& initAngVel, const ftype& dt) {
     vector<pair<Vector3T, Vector3T>> sphereFlows;
-    for (const auto& lm : landmarks) {
+    for (const auto& lm : features) {
         if (lm.lifetime < 2)
             continue;
         sphereFlows.emplace_back(make_pair(lm.sphereCoordinates(), lm.opticalFlowSphere() / dt));
@@ -228,8 +228,8 @@ void EgoMotion::optimizationStep(
     angVel += -step.block<3, 1>(3, 0);
 }
 
-vector<pair<Point2f, Vector2T>> EgoMotion::estimateFlowsNorm(const vector<GIFT::Feature>& landmarks) const {
-    vector<pair<Vector3T, Vector3T>> flowsSphere = estimateFlows(landmarks);
+vector<pair<Point2f, Vector2T>> EgoMotion::estimateFlowsNorm(const vector<GIFT::Feature>& features) const {
+    vector<pair<Vector3T, Vector3T>> flowsSphere = estimateFlows(features);
     vector<pair<Point2f, Vector2T>> flowsNorm;
 
     for (const auto& flowSphere : flowsSphere) {
@@ -246,12 +246,12 @@ vector<pair<Point2f, Vector2T>> EgoMotion::estimateFlowsNorm(const vector<GIFT::
     return flowsNorm;
 }
 
-vector<pair<Vector3T, Vector3T>> EgoMotion::estimateFlows(const vector<GIFT::Feature>& landmarks) const {
+vector<pair<Vector3T, Vector3T>> EgoMotion::estimateFlows(const vector<GIFT::Feature>& features) const {
     auto Proj3 = [](const Vector3T& vec) { return Matrix3T::Identity() - vec * vec.transpose() / vec.squaredNorm(); };
 
     vector<pair<Vector3T, Vector3T>> estFlows;
 
-    for (const auto& lm : landmarks) {
+    for (const auto& lm : features) {
         const Vector3T& eta = lm.sphereCoordinates();
         const Vector3T etaVel = Proj3(eta) * this->linearVelocity;
 

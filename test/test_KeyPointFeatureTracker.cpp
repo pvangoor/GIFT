@@ -43,7 +43,7 @@ TEST_F(PFTTest, DetectAndTrack) {
     kpt.settings.minimumFeatureDistance = 10;
 
     kpt.detectFeatures(img0);
-    vector<GIFT::Feature> landmarks0 = kpt.outputFeatures();
+    vector<GIFT::Feature> features0 = kpt.outputFeatures();
 
     Point2f translationVec = Point2f(20, 10);
     const Mat translationMat = (Mat_<double>(2, 3) << 1, 0, translationVec.x, 0, 1, translationVec.y);
@@ -51,13 +51,13 @@ TEST_F(PFTTest, DetectAndTrack) {
     warpAffine(img0, shiftedImg0, translationMat, img0.size());
 
     kpt.trackFeatures(shiftedImg0);
-    vector<GIFT::Feature> landmarks1 = kpt.outputFeatures();
+    vector<GIFT::Feature> features1 = kpt.outputFeatures();
 
     // Check basic logic
-    ASSERT_EQ(landmarks0.size(), landmarks1.size());
-    for (int i = 0; i < landmarks0.size(); ++i) {
-        const GIFT::Feature& lmi0 = landmarks0[i];
-        const GIFT::Feature& lmi1 = landmarks1[i];
+    ASSERT_EQ(features0.size(), features1.size());
+    for (int i = 0; i < features0.size(); ++i) {
+        const GIFT::Feature& lmi0 = features0[i];
+        const GIFT::Feature& lmi1 = features1[i];
 
         EXPECT_EQ(lmi0.idNumber, lmi1.idNumber);
         EXPECT_EQ(lmi0.lifetime, 0);
@@ -65,16 +65,16 @@ TEST_F(PFTTest, DetectAndTrack) {
     }
 
     // Check tracking success
-    for (int i = 0; i < landmarks0.size(); ++i) {
-        const GIFT::Feature& lmi0 = landmarks0[i];
-        const GIFT::Feature& lmi1 = landmarks1[i];
+    for (int i = 0; i < features0.size(); ++i) {
+        const GIFT::Feature& lmi0 = features0[i];
+        const GIFT::Feature& lmi1 = features1[i];
 
         Point2f coordinateError = (lmi0.camCoordinates + translationVec - lmi1.camCoordinates);
         float coordinateErrorNorm = pow(coordinateError.dot(coordinateError), 0.5);
         EXPECT_LE(coordinateErrorNorm, 1.0);
     }
 
-    Mat flowImage = GIFT::drawFlowImage(img0, shiftedImg0, landmarks0, landmarks1);
+    Mat flowImage = GIFT::drawFlowImage(img0, shiftedImg0, features0, features1);
     imshow("Flow", flowImage);
     waitKey(0);
 }

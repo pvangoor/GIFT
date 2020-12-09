@@ -125,7 +125,7 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
         lm.lifetime = feature.lifetime;
         lm.pointColor.fill(feature.patch.at(feature.patch.rows / 2, feature.patch.cols / 2));
         return lm;
-        // TODO: Some parts of the landmark are missing. Is this a problem?
+        // TODO: Some parts of the feature are missing. Is this a problem?
     }
 
     static void removePointsTooClose(

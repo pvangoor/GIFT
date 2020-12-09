@@ -76,10 +76,10 @@ void GIFT::KeyPointFeatureTracker::trackFeatures(const Mat& image) {
 }
 
 vector<GIFT::Feature> GIFT::KeyPointFeatureTracker::outputFeatures() const {
-    vector<Feature> landmarks(features.size());
-    transform(features.begin(), features.end(), landmarks.begin(),
+    vector<Feature> featuresOut(features.size());
+    transform(features.begin(), features.end(), featuresOut.begin(),
         [this](const InternalKPFeature& f) { return this->featureToLandmark(f); });
-    return landmarks;
+    return featuresOut;
 }
 
 GIFT::Feature GIFT::KeyPointFeatureTracker::featureToLandmark(const InternalKPFeature& feature) const {
@@ -90,7 +90,7 @@ GIFT::Feature GIFT::KeyPointFeatureTracker::featureToLandmark(const InternalKPFe
     lm.lifetime = feature.lifetime;
     // lm.pointColor.fill();
     return lm;
-    // TODO: Some parts of the landmark are missing. Is this a problem?
+    // TODO: Some parts of the feature are missing. Is this a problem?
 }
 
 void GIFT::KeyPointFeatureTracker::removePointsTooCloseToFeatures(vector<InternalKPFeature>& newFeatures) const {

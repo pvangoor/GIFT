@@ -66,10 +66,9 @@ class StereoFeatureTracker {
     std::vector<StereoLandmark> outputStereoFeatures() const { return stereoFeatures; };
 
   protected:
-    void removeLostStereoFeatures(
-        const std::vector<Feature>& landmarksLeft, const std::vector<Feature>& landmarksRight);
-    std::vector<StereoLandmark> createNewStereoFeatures(const std::vector<Feature>& landmarksLeft,
-        const cv::Mat& imageLeft, const std::vector<Feature>& landmarksRight, const cv::Mat& imageRight) const;
+    void removeLostStereoFeatures(const std::vector<Feature>& featuresLeft, const std::vector<Feature>& featuresRight);
+    std::vector<StereoLandmark> createNewStereoFeatures(const std::vector<Feature>& featuresLeft,
+        const cv::Mat& imageLeft, const std::vector<Feature>& featuresRight, const cv::Mat& imageRight) const;
     void addNewStereoFeatures(const std::vector<StereoLandmark>& newStereoFeatures);
 };
 

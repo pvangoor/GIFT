@@ -8,34 +8,34 @@ using namespace std;
 using namespace cv;
 
 Mat GIFT::drawFeatureImage(
-    const Mat& baseImage, const vector<Feature>& landmarks, const int& radius, const Scalar& color) {
+    const Mat& baseImage, const vector<Feature>& features, const int& radius, const Scalar& color) {
     Mat featureImage = baseImage.clone();
 
-    auto drawingLambda = [&](const Feature& landmark) { circle(featureImage, landmark.camCoordinates, radius, color); };
-    for_each(landmarks.begin(), landmarks.end(), drawingLambda);
+    auto drawingLambda = [&](const Feature& feature) { circle(featureImage, feature.camCoordinates, radius, color); };
+    for_each(features.begin(), features.end(), drawingLambda);
 
     return featureImage;
 }
 
-Mat GIFT::drawFlowImage(const Mat& baseImage, const vector<Feature>& landmarks0, const vector<Feature>& landmarks1,
+Mat GIFT::drawFlowImage(const Mat& baseImage, const vector<Feature>& features0, const vector<Feature>& features1,
     const int& radius, const Scalar& circleColor, const int& thickness, const Scalar& lineColor) {
     Mat flowImage = baseImage.clone();
 
     auto flowDrawingLambda = [&](const Feature& lm0) {
         auto lm1it = find_if(
-            landmarks1.begin(), landmarks1.end(), [&lm0](const Feature& lm1) { return lm1.idNumber == lm0.idNumber; });
-        if (lm1it != landmarks1.end()) {
+            features1.begin(), features1.end(), [&lm0](const Feature& lm1) { return lm1.idNumber == lm0.idNumber; });
+        if (lm1it != features1.end()) {
             circle(flowImage, lm0.camCoordinates, radius, circleColor);
             line(flowImage, lm0.camCoordinates, lm1it->camCoordinates, lineColor, thickness);
         }
     };
-    for_each(landmarks0.begin(), landmarks0.end(), flowDrawingLambda);
+    for_each(features0.begin(), features0.end(), flowDrawingLambda);
 
     return flowImage;
 }
 
-Mat GIFT::drawFlowImage(const Mat& image0, const Mat& image1, const vector<Feature>& landmarks0,
-    const vector<Feature>& landmarks1, const int& radius, const Scalar& circleColor, const int& thickness,
+Mat GIFT::drawFlowImage(const Mat& image0, const Mat& image1, const vector<Feature>& features0,
+    const vector<Feature>& features1, const int& radius, const Scalar& circleColor, const int& thickness,
     const Scalar& lineColor) {
     // draw the flow image on a red/blue merge of image0 and image1
     Mat gray0 = image0;
@@ -49,6 +49,6 @@ Mat GIFT::drawFlowImage(const Mat& image0, const Mat& image1, const vector<Featu
     Mat redBlueImage;
     merge(redBlueImageVec, redBlueImage);
 
-    Mat flowImage = drawFlowImage(redBlueImage, landmarks0, landmarks1, radius, circleColor, thickness, lineColor);
+    Mat flowImage = drawFlowImage(redBlueImage, features0, features1, radius, circleColor, thickness, lineColor);
     return flowImage;
 }
