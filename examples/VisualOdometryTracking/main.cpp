@@ -28,8 +28,7 @@
 #include <string>
 
 int main(int argc, char* argv[]) {
-
-    if (argc != 3 && argc != 4) {
+    if (argc < 3 || argc > 4) {
         std::cout << "Usage: VisualOdometryTracking camera.yaml video.mp4 (settings.yaml)" << std::endl;
         exit(1);
     }
@@ -37,8 +36,8 @@ int main(int argc, char* argv[]) {
     // Set up the feature tracker
     GIFT::Camera camera = GIFT::Camera(cv::String(argv[1]));
     GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(camera);
-    ft.maxFeatures = 30;
-    ft.featureDist = 30;
+    ft.maxFeatures = 50;
+    ft.featureDist = 15;
     ft.minHarrisQuality = 0.05;
     ft.featureSearchThreshold = 0.8;
 
@@ -56,8 +55,13 @@ int main(int argc, char* argv[]) {
 
     // Set up the video capture
     cv::VideoCapture cap;
-    cap.open(cv::String(argv[2]));
+    const cv::String videoFname(argv[2]);
+    cap.open(videoFname);
     cv::Mat image;
+
+    cv::VideoWriter writer;
+    const cv::String outputVideoFname =
+        videoFname.substr(0, videoFname.rfind('.')) + "_features" + videoFname.substr(videoFname.rfind('.'));
 
     // Set up the output file
     std::time_t t = std::time(nullptr);
@@ -68,6 +72,12 @@ int main(int argc, char* argv[]) {
 
     int frameCounter = 0;
     while (cap.read(image)) {
+
+        if (!writer.isOpened()) {
+            const bool isColor = (image.type() == CV_8UC3);
+            const int fourcc = cap.get(CAP_PROP_FOURCC);
+            writer.open(outputVideoFname, fourcc, cap.get(CAP_PROP_FPS), image.size(), isColor);
+        }
 
         ft.processImage(image);
         std::vector<GIFT::Feature> features = ft.outputLandmarks();
@@ -80,6 +90,10 @@ int main(int argc, char* argv[]) {
             outputFile << ", " << f.sphereCoordinates().format(IOFormat(-1, 0, ", ", ", "));
         }
         outputFile << std::endl;
+
+        // Write image to file
+        const Mat featureImage = ft.drawFeatureImage(cv::Scalar(0, 255, 0), 3, 2);
+        writer.write(featureImage);
 
         ++frameCounter;
     }
