@@ -50,7 +50,7 @@ TEST_F(PFTTest, DetectAndTrackTranslation) {
     pftTrans.settings.pyramidLevels = 4;
 
     pftTrans.detectFeatures(img0);
-    vector<GIFT::Feature> landmarks0 = pftTrans.outputLandmarks();
+    vector<GIFT::Feature> landmarks0 = pftTrans.outputFeatures();
 
     Point2f translationVec = Point2f(20, 10);
     const Mat translationMat = (Mat_<double>(2, 3) << 1, 0, translationVec.x, 0, 1, translationVec.y);
@@ -58,7 +58,7 @@ TEST_F(PFTTest, DetectAndTrackTranslation) {
     warpAffine(img0, shiftedImg0, translationMat, img0.size());
 
     pftTrans.trackFeatures(shiftedImg0);
-    vector<GIFT::Feature> landmarks1 = pftTrans.outputLandmarks();
+    vector<GIFT::Feature> landmarks1 = pftTrans.outputFeatures();
 
     // Check basic logic
     ASSERT_EQ(landmarks0.size(), landmarks1.size());
@@ -94,7 +94,7 @@ TEST_F(PFTTest, DetectAndTrackAffine) {
     pftAffine.settings.pyramidLevels = 4;
 
     pftAffine.detectFeatures(img0);
-    vector<GIFT::Feature> landmarks0 = pftAffine.outputLandmarks();
+    vector<GIFT::Feature> landmarks0 = pftAffine.outputFeatures();
 
     Point2f translationVec = Point2f(10, 10);
     const Mat translationMat = (Mat_<double>(2, 3) << 1, 0, translationVec.x, 0, 1, translationVec.y);
@@ -102,7 +102,7 @@ TEST_F(PFTTest, DetectAndTrackAffine) {
     warpAffine(img0, shiftedImg0, translationMat, img0.size());
 
     pftAffine.trackFeatures(shiftedImg0);
-    vector<GIFT::Feature> landmarks1 = pftAffine.outputLandmarks();
+    vector<GIFT::Feature> landmarks1 = pftAffine.outputFeatures();
 
     // Check basic logic
     ASSERT_EQ(landmarks0.size(), landmarks1.size());

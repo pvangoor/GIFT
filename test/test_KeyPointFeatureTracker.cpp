@@ -43,7 +43,7 @@ TEST_F(PFTTest, DetectAndTrack) {
     kpt.settings.minimumFeatureDistance = 10;
 
     kpt.detectFeatures(img0);
-    vector<GIFT::Feature> landmarks0 = kpt.outputLandmarks();
+    vector<GIFT::Feature> landmarks0 = kpt.outputFeatures();
 
     Point2f translationVec = Point2f(20, 10);
     const Mat translationMat = (Mat_<double>(2, 3) << 1, 0, translationVec.x, 0, 1, translationVec.y);
@@ -51,7 +51,7 @@ TEST_F(PFTTest, DetectAndTrack) {
     warpAffine(img0, shiftedImg0, translationMat, img0.size());
 
     kpt.trackFeatures(shiftedImg0);
-    vector<GIFT::Feature> landmarks1 = kpt.outputLandmarks();
+    vector<GIFT::Feature> landmarks1 = kpt.outputFeatures();
 
     // Check basic logic
     ASSERT_EQ(landmarks0.size(), landmarks1.size());

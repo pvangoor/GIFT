@@ -38,7 +38,7 @@ class PointFeatureTracker {
     // Variables used in the tracking algorithms
     int currentNumber = 0;
     cv::Mat previousImage;
-    std::vector<Feature> landmarks;
+    std::vector<Feature> features;
     cv::Mat imageMask;
 
   public:
@@ -64,7 +64,7 @@ class PointFeatureTracker {
 
     // Core
     void processImage(const cv::Mat& image);
-    std::vector<Feature> outputLandmarks() const { return landmarks; };
+    std::vector<Feature> outputFeatures() const { return features; };
 
     // Visualisation
     cv::Mat drawFeatureImage(
@@ -83,10 +83,10 @@ class PointFeatureTracker {
   protected:
     std::vector<cv::Point2f> detectNewFeatures(const cv::Mat& image) const;
     std::vector<cv::Point2f> removeDuplicateFeatures(const std::vector<cv::Point2f>& proposedFeatures) const;
-    std::vector<Feature> createNewLandmarks(const cv::Mat& image, const std::vector<cv::Point2f>& newFeatures);
+    std::vector<Feature> createNewFeatures(const cv::Mat& image, const std::vector<cv::Point2f>& newFeatures);
 
-    void trackLandmarks(const cv::Mat& image);
-    void addNewLandmarks(std::vector<Feature> newLandmarks);
+    void trackFeatures(const cv::Mat& image);
+    void addNewFeatures(std::vector<Feature> newFeatures);
     void computeLandmarkPositions();
 };
 

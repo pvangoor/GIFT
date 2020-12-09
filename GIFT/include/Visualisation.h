@@ -23,14 +23,14 @@
 
 namespace GIFT {
 
-cv::Mat drawFeatureImage(const cv::Mat& baseImage, const std::vector<Feature>& landmarks, const int& radius = 3,
+cv::Mat drawFeatureImage(const cv::Mat& baseImage, const std::vector<Feature>& features, const int& radius = 3,
     const cv::Scalar& color = cv::Scalar(0, 255, 255));
-cv::Mat drawFlowImage(const cv::Mat& baseImage, const std::vector<Feature>& landmarks0,
-    const std::vector<Feature>& landmarks1, const int& radius = 3,
+cv::Mat drawFlowImage(const cv::Mat& baseImage, const std::vector<Feature>& features0,
+    const std::vector<Feature>& features1, const int& radius = 3,
     const cv::Scalar& circleColor = cv::Scalar(0, 255, 255), const int& thickness = 2,
     const cv::Scalar& lineColor = cv::Scalar(255, 0, 255));
-cv::Mat drawFlowImage(const cv::Mat& image0, const cv::Mat& image1, const std::vector<Feature>& landmarks0,
-    const std::vector<Feature>& landmarks1, const int& radius = 3,
+cv::Mat drawFlowImage(const cv::Mat& image0, const cv::Mat& image1, const std::vector<Feature>& features0,
+    const std::vector<Feature>& features1, const int& radius = 3,
     const cv::Scalar& circleColor = cv::Scalar(0, 255, 255), const int& thickness = 2,
     const cv::Scalar& lineColor = cv::Scalar(0, 255, 0));
 

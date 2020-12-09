@@ -58,7 +58,7 @@ class KeyPointFeatureTracker : public GIFeatureTracker {
 
     virtual void trackFeatures(const cv::Mat& image) override;
 
-    [[nodiscard]] virtual std::vector<Feature> outputLandmarks() const override;
+    [[nodiscard]] virtual std::vector<Feature> outputFeatures() const override;
 
     [[nodiscard]] Feature featureToLandmark(const InternalKPFeature& feature) const;
 

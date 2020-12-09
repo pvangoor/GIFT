@@ -30,41 +30,41 @@ using namespace std;
 using namespace cv;
 
 void PointFeatureTracker::processImage(const Mat& image) {
-    this->trackLandmarks(image);
+    this->trackFeatures(image);
     image.copyTo(this->previousImage);
 
-    if (this->landmarks.size() > this->featureSearchThreshold * this->maxFeatures)
+    if (this->features.size() > this->featureSearchThreshold * this->maxFeatures)
         return;
 
-    vector<Point2f> newFeatures = this->detectNewFeatures(image);
-    vector<Feature> newLandmarks = this->createNewLandmarks(image, newFeatures);
+    vector<Point2f> newPoints = this->detectNewFeatures(image);
+    vector<Feature> newFeatures = this->createNewFeatures(image, newPoints);
 
-    this->addNewLandmarks(newLandmarks);
+    this->addNewFeatures(newFeatures);
 }
 
-vector<Feature> PointFeatureTracker::createNewLandmarks(const Mat& image, const vector<Point2f>& newFeatures) {
-    vector<Feature> newLandmarks;
+vector<Feature> PointFeatureTracker::createNewFeatures(const Mat& image, const vector<Point2f>& newPoints) {
+    vector<Feature> newFeatures;
     if (newFeatures.empty())
-        return newLandmarks;
+        return newFeatures;
 
-    for (int i = 0; i < newFeatures.size(); ++i) {
-        colorVec pointColor = {image.at<Vec3b>(newFeatures[i]).val[0], image.at<Vec3b>(newFeatures[i]).val[1],
-            image.at<Vec3b>(newFeatures[i]).val[2]};
+    for (int i = 0; i < newPoints.size(); ++i) {
+        colorVec pointColor = {image.at<Vec3b>(newPoints[i]).val[0], image.at<Vec3b>(newPoints[i]).val[1],
+            image.at<Vec3b>(newPoints[i]).val[2]};
 
-        Feature lm(newFeatures[i], cameraPtr, -1, pointColor);
+        Feature lm(newPoints[i], cameraPtr, -1, pointColor);
 
-        newLandmarks.emplace_back(lm);
+        newFeatures.emplace_back(lm);
     }
 
-    return newLandmarks;
+    return newFeatures;
 }
 
-void PointFeatureTracker::trackLandmarks(const Mat& image) {
-    if (landmarks.empty())
+void PointFeatureTracker::trackFeatures(const Mat& image) {
+    if (features.empty())
         return;
 
     vector<Point2f> oldPoints;
-    for (const auto& feature : landmarks) {
+    for (const auto& feature : features) {
         oldPoints.emplace_back(feature.camCoordinates);
     }
 
@@ -76,20 +76,20 @@ void PointFeatureTracker::trackLandmarks(const Mat& image) {
 
     for (long int i = points.size() - 1; i >= 0; --i) {
         if (status[i] == 0 || err[i] >= maxError) {
-            landmarks.erase(landmarks.begin() + i);
+            features.erase(features.begin() + i);
             continue;
         }
 
         if (!imageMask.empty()) {
             if (imageMask.at<uchar>(points[i]) == 0) {
-                landmarks.erase(landmarks.begin() + i);
+                features.erase(features.begin() + i);
                 continue;
             }
         }
 
         colorVec pointColor = {
             image.at<Vec3b>(points[i]).val[0], image.at<Vec3b>(points[i]).val[1], image.at<Vec3b>(points[i]).val[2]};
-        landmarks[i].update(points[i], pointColor);
+        features[i].update(points[i], pointColor);
     }
 }
 
@@ -108,7 +108,7 @@ vector<Point2f> PointFeatureTracker::removeDuplicateFeatures(const vector<Point2
     vector<Point2f> newFeatures;
     for (const auto& proposedFeature : proposedFeatures) {
         bool useFlag = true;
-        for (const auto& feature : this->landmarks) {
+        for (const auto& feature : this->features) {
             if (norm(proposedFeature - feature.camCoordinates) < featureDist) {
                 useFlag = false;
                 break;
@@ -122,13 +122,13 @@ vector<Point2f> PointFeatureTracker::removeDuplicateFeatures(const vector<Point2
     return newFeatures;
 }
 
-void PointFeatureTracker::addNewLandmarks(vector<Feature> newLandmarks) {
-    for (auto& lm : newLandmarks) {
-        if (landmarks.size() >= maxFeatures)
+void PointFeatureTracker::addNewFeatures(vector<Feature> newFeatures) {
+    for (auto& lm : newFeatures) {
+        if (features.size() >= maxFeatures)
             break;
 
         lm.idNumber = ++currentNumber;
-        landmarks.emplace_back(lm);
+        features.emplace_back(lm);
     }
 }
 
@@ -143,7 +143,7 @@ Eigen::Matrix3T GIFT::skew_matrix(const Eigen::Vector3T& t) {
 Mat PointFeatureTracker::drawFeatureImage(const Scalar& color, const int pointSize, const int thickness) const {
     cv::Mat featureImage;
     this->previousImage.copyTo(featureImage);
-    for (const auto& lm : this->landmarks) {
+    for (const auto& lm : this->features) {
         cv::circle(featureImage, lm.camCoordinates, pointSize, color, thickness);
     }
     return featureImage;
@@ -152,7 +152,7 @@ Mat PointFeatureTracker::drawFeatureImage(const Scalar& color, const int pointSi
 Mat PointFeatureTracker::drawFlowImage(
     const Scalar& featureColor, const Scalar& flowColor, const int pointSize, const int thickness) const {
     Mat flowImage = drawFeatureImage(featureColor, pointSize, thickness);
-    for (const auto& lm : this->landmarks) {
+    for (const auto& lm : this->features) {
         Point2f p1 = lm.camCoordinates;
         Point2f p0 = p1 - Point2f(lm.opticalFlowRaw.x(), lm.opticalFlowRaw.y());
         line(flowImage, p0, p1, flowColor, thickness);
@@ -165,7 +165,7 @@ Mat PointFeatureTracker::drawFlow(
     Mat flow(this->previousImage.size(), CV_8UC3);
     flow.setTo(0);
 
-    for (const auto& lm : this->landmarks) {
+    for (const auto& lm : this->features) {
         Point2f p1 = lm.camCoordinates;
         Point2f p0 = p1 - Point2f(lm.opticalFlowRaw.x(), lm.opticalFlowRaw.y());
         circle(flow, p1, pointSize, featureColor, thickness);
@@ -177,7 +177,7 @@ Mat PointFeatureTracker::drawFlow(
 /*
 void PointFeatureTracker::computeLandmarkPositions() {
     if (mode == TrackerMode::MONO) return;
-    for (auto & lm : landmarks) {
+    for (auto & lm : features) {
         if (mode == TrackerMode::STEREO) {
             lm.position = this->solveStereo(lm.camCoordinatesNorm()[0], lm.camCoordinatesNorm()[1]);
         }

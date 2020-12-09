@@ -75,7 +75,7 @@ void GIFT::KeyPointFeatureTracker::trackFeatures(const Mat& image) {
     }
 }
 
-vector<GIFT::Feature> GIFT::KeyPointFeatureTracker::outputLandmarks() const {
+vector<GIFT::Feature> GIFT::KeyPointFeatureTracker::outputFeatures() const {
     vector<Feature> landmarks(features.size());
     transform(features.begin(), features.end(), landmarks.begin(),
         [this](const InternalKPFeature& f) { return this->featureToLandmark(f); });

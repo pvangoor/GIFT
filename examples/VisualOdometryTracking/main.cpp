@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
         }
 
         ft.processImage(image);
-        std::vector<GIFT::Feature> features = ft.outputLandmarks();
+        std::vector<GIFT::Feature> features = ft.outputFeatures();
 
         // Write features to file
         outputFile << frameCounter << ", ";

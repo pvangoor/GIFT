@@ -43,6 +43,6 @@ class GIFeatureTracker {
     // Core
     virtual void detectFeatures(const cv::Mat& image) = 0;
     virtual void trackFeatures(const cv::Mat& image) = 0;
-    virtual std::vector<Feature> outputLandmarks() const = 0;
+    virtual std::vector<Feature> outputFeatures() const = 0;
 };
 } // namespace GIFT
