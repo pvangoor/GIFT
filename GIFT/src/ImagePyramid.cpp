@@ -19,6 +19,10 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <algorithm>
 
+using namespace Eigen;
+using namespace std;
+using namespace cv;
+
 ImagePyramid::ImagePyramid(const cv::Mat& image, const int& numLevels) {
     assert(numLevels > 0);
     levels.resize(numLevels);

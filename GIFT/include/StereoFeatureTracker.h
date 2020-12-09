@@ -20,10 +20,6 @@
 #include "PointFeatureTracker.h"
 #include "StereoLandmark.h"
 
-using namespace Eigen;
-using namespace std;
-using namespace cv;
-
 namespace GIFT {
 
 enum class StereoCam { Left, Right };
@@ -33,7 +29,7 @@ class StereoFeatureTracker {
   protected:
     PointFeatureTracker trackerLeft;
     PointFeatureTracker trackerRight;
-    vector<StereoLandmark> stereoLandmarks;
+    std::vector<StereoLandmark> stereoLandmarks;
 
   public:
     // Stereo Specific
@@ -58,7 +54,7 @@ class StereoFeatureTracker {
         else
             trackerRight.setCameraConfiguration(configuration);
     }
-    void setMask(const Mat& mask, StereoCam stereoCam = StereoCam::Left) {
+    void setMask(const cv::Mat& mask, StereoCam stereoCam = StereoCam::Left) {
         if (stereoCam == StereoCam::Left)
             trackerLeft.setMask(mask);
         else
@@ -66,14 +62,15 @@ class StereoFeatureTracker {
     }
 
     // Core
-    void processImages(const Mat& imageLeft, const Mat& imageRight);
-    vector<StereoLandmark> outputStereoLandmarks() const { return stereoLandmarks; };
+    void processImages(const cv::Mat& imageLeft, const cv::Mat& imageRight);
+    std::vector<StereoLandmark> outputStereoLandmarks() const { return stereoLandmarks; };
 
   protected:
-    void removeLostStereoLandmarks(const vector<Feature>& landmarksLeft, const vector<Feature>& landmarksRight);
-    vector<StereoLandmark> createNewStereoLandmarks(const vector<Feature>& landmarksLeft, const Mat& imageLeft,
-        const vector<Feature>& landmarksRight, const Mat& imageRight) const;
-    void addNewStereoLandmarks(const vector<StereoLandmark>& newStereoLandmarks);
+    void removeLostStereoLandmarks(
+        const std::vector<Feature>& landmarksLeft, const std::vector<Feature>& landmarksRight);
+    std::vector<StereoLandmark> createNewStereoLandmarks(const std::vector<Feature>& landmarksLeft,
+        const cv::Mat& imageLeft, const std::vector<Feature>& landmarksRight, const cv::Mat& imageRight) const;
+    void addNewStereoLandmarks(const std::vector<StereoLandmark>& newStereoLandmarks);
 };
 
 } // namespace GIFT

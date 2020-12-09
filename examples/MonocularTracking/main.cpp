@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
         ft.processImage(image);
         std::vector<GIFT::Feature> landmarks = ft.outputLandmarks();
 
-        cv::Mat featureImage = ft.drawFeatureImage(Scalar(0, 0, 255), 5, 3);
+        cv::Mat featureImage = ft.drawFeatureImage(cv::Scalar(0, 0, 255), 5, 3);
 
         cv::imshow("debug", featureImage);
         int k = cv::waitKey(1);

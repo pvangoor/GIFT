@@ -25,6 +25,10 @@
 
 #include <fstream>
 
+using namespace Eigen;
+using namespace cv;
+using namespace std;
+
 class PFTTest : public ::testing::Test {
   protected:
     PFTTest() {

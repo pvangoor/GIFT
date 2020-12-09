@@ -22,12 +22,8 @@
 #include "opencv2/core/core.hpp"
 #include <vector>
 
-using namespace std;
-using namespace Eigen;
-using namespace cv;
-
 struct ImagePyramid {
-    vector<cv::Mat> levels;
+    std::vector<cv::Mat> levels;
     ImagePyramid(){};
     ImagePyramid(const cv::Mat& image, const int& numLevels);
 };
@@ -41,31 +37,31 @@ struct ImageWithGradient {
 };
 
 struct ImageWithGradientPyramid {
-    vector<ImageWithGradient> levels;
+    std::vector<ImageWithGradient> levels;
     ImageWithGradientPyramid(){};
     ImageWithGradientPyramid(const cv::Mat& image, const int& numLevels);
 };
 
 struct PyramidPatch {
-    vector<VectorXT> vecImage;
-    vector<Matrix<ftype, Dynamic, 2>> vecDifferential;
-    Vector2T baseCentre;
+    std::vector<Eigen::VectorXT> vecImage;
+    std::vector<Eigen::Matrix<ftype, Eigen::Dynamic, 2>> vecDifferential;
+    Eigen::Vector2T baseCentre;
     int rows;
     int cols;
     ftype at(int row, int col, int lv = 0) const;
 };
 
 struct ImagePatch {
-    VectorXT vecImage;
-    Matrix<ftype, Dynamic, 2> vecDifferential;
-    Vector2T centre;
+    Eigen::VectorXT vecImage;
+    Eigen::Matrix<ftype, Eigen::Dynamic, 2> vecDifferential;
+    Eigen::Vector2T centre;
     int rows;
     int cols;
     ftype at(int row, int col) const;
 };
 
 PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr);
-vector<PyramidPatch> extractPyramidPatches(
-    const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels);
+std::vector<PyramidPatch> extractPyramidPatches(
+    const std::vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels);
 ImagePatch getPatchAtLevel(const PyramidPatch& pyrPatch, const int lv);
-VectorXT vectoriseImage(const Mat& image);
+Eigen::VectorXT vectoriseImage(const cv::Mat& image);

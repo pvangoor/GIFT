@@ -24,11 +24,13 @@
 
 #include <fstream>
 
+using namespace std;
+using namespace cv;
 class PFTTest : public ::testing::Test {
   protected:
     PFTTest() {
-        img0 = imread(String(TEST_DATA_DIR) + String("img0.png"));
-        img1 = imread(String(TEST_DATA_DIR) + String("img1.png"));
+        img0 = cv::imread(String(TEST_DATA_DIR) + String("img0.png"));
+        img1 = cv::imread(String(TEST_DATA_DIR) + String("img1.png"));
     }
 
   public:

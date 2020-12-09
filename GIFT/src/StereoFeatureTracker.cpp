@@ -19,6 +19,9 @@
 #include <set>
 
 using namespace GIFT;
+using namespace Eigen;
+using namespace std;
+using namespace cv;
 
 void StereoFeatureTracker::processImages(const Mat& imageLeft, const Mat& imageRight) {
     trackerLeft.processImage(imageLeft);

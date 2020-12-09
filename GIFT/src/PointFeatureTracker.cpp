@@ -25,6 +25,9 @@
 #include <PointFeatureTracker.h>
 
 using namespace GIFT;
+using namespace Eigen;
+using namespace std;
+using namespace cv;
 
 void PointFeatureTracker::processImage(const Mat& image) {
     this->trackLandmarks(image);

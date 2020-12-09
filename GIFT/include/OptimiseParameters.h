@@ -22,7 +22,8 @@ class ParameterGroup;
 
 void optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const ImagePyramid& pyramid);
 void optimiseParameters(
-    vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const ImagePyramid& pyramid);
-void optimiseParameters(vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const Mat& image);
-float getSubPixel(const Mat& image, const Vector2T& point);
+    std::vector<ParameterGroup>& params, const std::vector<PyramidPatch>& patches, const ImagePyramid& pyramid);
+void optimiseParameters(
+    std::vector<ParameterGroup>& params, const std::vector<PyramidPatch>& patches, const cv::Mat& image);
+float getSubPixel(const cv::Mat& image, const Eigen::Vector2T& point);
 int clamp(const int x, const int a, const int b);

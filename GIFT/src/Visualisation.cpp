@@ -4,6 +4,8 @@
 #include <algorithm>
 
 using namespace GIFT;
+using namespace std;
+using namespace cv;
 
 Mat GIFT::drawFeatureImage(
     const Mat& baseImage, const vector<Feature>& landmarks, const int& radius, const Scalar& color) {

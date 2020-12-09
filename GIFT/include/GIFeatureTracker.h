@@ -23,30 +23,26 @@
 #include "Feature.h"
 #include "opencv2/core.hpp"
 
-using namespace Eigen;
-using namespace std;
-using namespace cv;
-
 namespace GIFT {
 
 class GIFeatureTracker {
   protected:
     int currentNumber = 0;
-    shared_ptr<Camera> cameraPtr;
-    Mat mask;
+    std::shared_ptr<Camera> cameraPtr;
+    cv::Mat mask;
 
   public:
     // Initialisation and configuration
     GIFeatureTracker(){};
     GIFeatureTracker(const Camera& cameraParams);
-    GIFeatureTracker(const Camera& cameraParams, const Mat& mask);
+    GIFeatureTracker(const Camera& cameraParams, const cv::Mat& mask);
     virtual ~GIFeatureTracker(){};
     virtual void setCamera(const Camera& cameraParameters);
-    virtual void setMask(const Mat& mask);
+    virtual void setMask(const cv::Mat& mask);
 
     // Core
-    virtual void detectFeatures(const Mat& image) = 0;
-    virtual void trackFeatures(const Mat& image) = 0;
-    virtual vector<Feature> outputLandmarks() const = 0;
+    virtual void detectFeatures(const cv::Mat& image) = 0;
+    virtual void trackFeatures(const cv::Mat& image) = 0;
+    virtual std::vector<Feature> outputLandmarks() const = 0;
 };
 } // namespace GIFT

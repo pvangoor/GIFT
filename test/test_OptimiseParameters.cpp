@@ -21,6 +21,10 @@
 #include "opencv2/imgproc.hpp"
 #include "gtest/gtest.h"
 
+using namespace Eigen;
+using namespace cv;
+using namespace std;
+
 class OptimiseParametersTest : public ::testing::Test {
   protected:
     OptimiseParametersTest() {

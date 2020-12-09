@@ -75,8 +75,8 @@ int main(int argc, char* argv[]) {
 
         if (!writer.isOpened()) {
             const bool isColor = (image.type() == CV_8UC3);
-            const int fourcc = cap.get(CAP_PROP_FOURCC);
-            writer.open(outputVideoFname, fourcc, cap.get(CAP_PROP_FPS), image.size(), isColor);
+            const int fourcc = cap.get(cv::CAP_PROP_FOURCC);
+            writer.open(outputVideoFname, fourcc, cap.get(cv::CAP_PROP_FPS), image.size(), isColor);
         }
 
         ft.processImage(image);
@@ -87,12 +87,12 @@ int main(int argc, char* argv[]) {
         outputFile << features.size();
         for (const GIFT::Feature f : features) {
             outputFile << ", " << f.idNumber;
-            outputFile << ", " << f.sphereCoordinates().format(IOFormat(-1, 0, ", ", ", "));
+            outputFile << ", " << f.sphereCoordinates().format(Eigen::IOFormat(-1, 0, ", ", ", "));
         }
         outputFile << std::endl;
 
         // Write image to file
-        const Mat featureImage = ft.drawFeatureImage(cv::Scalar(0, 255, 0), 3, 2);
+        const cv::Mat featureImage = ft.drawFeatureImage(cv::Scalar(0, 255, 0), 3, 2);
         writer.write(featureImage);
 
         ++frameCounter;

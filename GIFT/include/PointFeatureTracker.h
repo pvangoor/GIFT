@@ -27,23 +27,19 @@
 #include <memory>
 #include <vector>
 
-using namespace Eigen;
-using namespace std;
-using namespace cv;
-
 namespace GIFT {
 
 Eigen::Matrix3T skew_matrix(const Eigen::Vector3T& t);
 
 class PointFeatureTracker {
   protected:
-    shared_ptr<Camera> cameraPtr;
+    std::shared_ptr<Camera> cameraPtr;
 
     // Variables used in the tracking algorithms
     int currentNumber = 0;
-    Mat previousImage;
-    vector<Feature> landmarks;
-    Mat imageMask;
+    cv::Mat previousImage;
+    std::vector<Feature> landmarks;
+    cv::Mat imageMask;
 
   public:
     int maxFeatures = 500;
@@ -60,35 +56,37 @@ class PointFeatureTracker {
 
   public:
     // Initialisation and configuration
-    PointFeatureTracker(const Camera& configuration = Camera()) { cameraPtr = make_shared<Camera>(configuration); };
+    PointFeatureTracker(const Camera& configuration = Camera()) {
+        cameraPtr = std::make_shared<Camera>(configuration);
+    };
 
-    void setCameraConfiguration(const Camera& configuration) { cameraPtr = make_shared<Camera>(configuration); }
+    void setCameraConfiguration(const Camera& configuration) { cameraPtr = std::make_shared<Camera>(configuration); }
 
     // Core
-    void processImage(const Mat& image);
-    vector<Feature> outputLandmarks() const { return landmarks; };
+    void processImage(const cv::Mat& image);
+    std::vector<Feature> outputLandmarks() const { return landmarks; };
 
     // Visualisation
-    Mat drawFeatureImage(
-        const Scalar& color = Scalar(0, 0, 255), const int pointSize = 2, const int thickness = 1) const;
-    Mat drawFlowImage(const Scalar& featureColor = Scalar(0, 0, 255), const Scalar& flowColor = Scalar(0, 255, 255),
-        const int pointSize = 2, const int thickness = 1) const;
-    Mat drawFlow(const Scalar& featureColor = Scalar(0, 0, 255), const Scalar& flowColor = Scalar(0, 255, 255),
-        const int pointSize = 2, const int thickness = 1) const;
+    cv::Mat drawFeatureImage(
+        const cv::Scalar& color = cv::Scalar(0, 0, 255), const int pointSize = 2, const int thickness = 1) const;
+    cv::Mat drawFlowImage(const cv::Scalar& featureColor = cv::Scalar(0, 0, 255),
+        const cv::Scalar& flowColor = cv::Scalar(0, 255, 255), const int pointSize = 2, const int thickness = 1) const;
+    cv::Mat drawFlow(const cv::Scalar& featureColor = cv::Scalar(0, 0, 255),
+        const cv::Scalar& flowColor = cv::Scalar(0, 255, 255), const int pointSize = 2, const int thickness = 1) const;
 
     // Masking
-    void setMask(const Mat& mask, int cameraNumber = 0);
+    void setMask(const cv::Mat& mask, int cameraNumber = 0);
 
     // EgoMotion
     EgoMotion computeEgoMotion(int minLifetime = 1) const;
 
   protected:
-    vector<Point2f> detectNewFeatures(const Mat& image) const;
-    vector<Point2f> removeDuplicateFeatures(const vector<Point2f>& proposedFeatures) const;
-    vector<Feature> createNewLandmarks(const Mat& image, const vector<Point2f>& newFeatures);
+    std::vector<cv::Point2f> detectNewFeatures(const cv::Mat& image) const;
+    std::vector<cv::Point2f> removeDuplicateFeatures(const std::vector<cv::Point2f>& proposedFeatures) const;
+    std::vector<Feature> createNewLandmarks(const cv::Mat& image, const std::vector<cv::Point2f>& newFeatures);
 
-    void trackLandmarks(const Mat& image);
-    void addNewLandmarks(vector<Feature> newLandmarks);
+    void trackLandmarks(const cv::Mat& image);
+    void addNewLandmarks(std::vector<Feature> newLandmarks);
     void computeLandmarkPositions();
 };
 

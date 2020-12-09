@@ -20,6 +20,7 @@
 #include "eigen3/Eigen/Dense"
 
 using namespace Eigen;
+using namespace std;
 using namespace cv;
 
 int clamp(const int x, const int a, const int b) {

@@ -2,30 +2,37 @@
 /*
   allow for selection of single versus double precision
  */
+
+#include <eigen3/Eigen/Eigen>
+
 #if defined(USE_SINGLE_FLOAT)
 
 // use single precision
-#define ftype float
-#define Vector2T Vector2f
-#define Vector3T Vector3f
-#define Vector4T Vector4f
-#define VectorXT VectorXf
-#define Matrix2T Matrix2f
-#define Matrix3T Matrix3f
-#define Matrix4T Matrix4f
-#define MatrixXT MatrixXf
+typedef float ftype;
+namespace Eigen {
+typedef Eigen::Vector2f Vector2T;
+typedef Eigen::Vector3f Vector3T;
+typedef Eigen::Vector4f Vector4T;
+typedef Eigen::VectorXf VectorXT;
+typedef Eigen::Matrix2f Matrix2T;
+typedef Eigen::Matrix3f Matrix3T;
+typedef Eigen::Matrix4f Matrix4T;
+typedef Eigen::MatrixXf MatrixXT;
+} // namespace Eigen
 
 #else
 
 // use double precision
-#define ftype double
-#define Vector2T Vector2d
-#define Vector3T Vector3d
-#define Vector4T Vector4d
-#define VectorXT VectorXd
-#define Matrix2T Matrix2d
-#define Matrix3T Matrix3d
-#define Matrix4T Matrix4d
-#define MatrixXT MatrixXd
+typedef double ftype;
+namespace Eigen {
+typedef Eigen::Vector2d Vector2T;
+typedef Eigen::Vector3d Vector3T;
+typedef Eigen::Vector4d Vector4T;
+typedef Eigen::VectorXd VectorXT;
+typedef Eigen::Matrix2d Matrix2T;
+typedef Eigen::Matrix3d Matrix3T;
+typedef Eigen::Matrix4d Matrix4T;
+typedef Eigen::MatrixXd MatrixXT;
+} // namespace Eigen
 
 #endif

@@ -17,6 +17,10 @@
 
 #include "KeyPointFeatureTracker.h"
 
+using namespace cv;
+using namespace std;
+using namespace Eigen;
+
 void GIFT::KeyPointFeatureTracker::detectFeatures(const Mat& image) {
     // Detect features and compute descriptors
     vector<KeyPoint> newKeypoints;

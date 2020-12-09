@@ -28,17 +28,17 @@ namespace GIFT {
 class KeyPointFeatureTracker : public GIFeatureTracker {
   protected:
     struct InternalKPFeature {
-        KeyPoint kp;
-        Mat descriptor;
+        cv::KeyPoint kp;
+        cv::Mat descriptor;
         int id = -1;
         int lifetime = 0;
         double descriptorDist = 0;
-        Point2f camCoordinates() const { return kp.pt; }
+        cv::Point2f camCoordinates() const { return kp.pt; }
     };
 
-    vector<InternalKPFeature> features; // Feature storage
-    Ptr<ORB> ORBDetector = ORB::create();
-    Ptr<BFMatcher> matcher = BFMatcher::create(NORM_HAMMING);
+    std::vector<InternalKPFeature> features; // Feature storage
+    cv::Ptr<cv::ORB> ORBDetector = cv::ORB::create();
+    cv::Ptr<cv::BFMatcher> matcher = cv::BFMatcher::create(cv::NORM_HAMMING);
 
   public:
     // Settings
@@ -51,20 +51,20 @@ class KeyPointFeatureTracker : public GIFeatureTracker {
     // Initialisation and configuration
     KeyPointFeatureTracker() = default;
     KeyPointFeatureTracker(const Camera& cameraParams) : GIFeatureTracker(cameraParams){};
-    KeyPointFeatureTracker(const Camera& cameraParams, const Mat& mask) : GIFeatureTracker(cameraParams, mask){};
+    KeyPointFeatureTracker(const Camera& cameraParams, const cv::Mat& mask) : GIFeatureTracker(cameraParams, mask){};
 
     // Core
-    virtual void detectFeatures(const Mat& image) override;
+    virtual void detectFeatures(const cv::Mat& image) override;
 
-    virtual void trackFeatures(const Mat& image) override;
+    virtual void trackFeatures(const cv::Mat& image) override;
 
-    [[nodiscard]] virtual vector<Feature> outputLandmarks() const override;
+    [[nodiscard]] virtual std::vector<Feature> outputLandmarks() const override;
 
     [[nodiscard]] Feature featureToLandmark(const InternalKPFeature& feature) const;
 
-    void removePointsTooCloseToFeatures(vector<InternalKPFeature>& newKeypoints) const;
+    void removePointsTooCloseToFeatures(std::vector<InternalKPFeature>& newKeypoints) const;
     static void filterForBestPoints(
-        vector<InternalKPFeature>& proposedFeatures, const int& maxFeatures, const double& minDist);
+        std::vector<InternalKPFeature>& proposedFeatures, const int& maxFeatures, const double& minDist);
 };
 
 } // namespace GIFT

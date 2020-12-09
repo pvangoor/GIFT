@@ -113,12 +113,12 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        cv::Mat flowImage = ft.drawFlowImage(Scalar(0, 0, 255), Scalar(0, 255, 255), 3, 2);
+        cv::Mat flowImage = ft.drawFlowImage(cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 255), 3, 2);
         cv::imshow("flow", flowImage);
 
         // Draw the normalised flow and estimates
         constexpr int viewScale = 500;
-        cv::Mat estFlowImage(viewScale * 2, viewScale * 2, CV_8UC3, Scalar(255, 255, 255));
+        cv::Mat estFlowImage(viewScale * 2, viewScale * 2, CV_8UC3, cv::Scalar(255, 255, 255));
         for (const auto& flow : estFlows) {
             cv::Point2f p1 = flow.first;
             cv::Point2f p0 = p1 - cv::Point2f(flow.second.x(), flow.second.y());

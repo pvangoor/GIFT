@@ -20,14 +20,12 @@
 #include "eigen3/Eigen/Core"
 #include "ftype.h"
 
-using namespace Eigen;
-
 class ParameterGroup {
   public:
     virtual int dim() const = 0;
-    virtual Matrix<ftype, 2, Dynamic> actionJacobian(const Vector2T& point) const = 0;
-    virtual void applyStepOnRight(const VectorXT& step) = 0;
-    virtual Vector2T applyLeftAction(const Vector2T& point) const = 0;
+    virtual Eigen::Matrix<ftype, 2, Eigen::Dynamic> actionJacobian(const Eigen::Vector2T& point) const = 0;
+    virtual void applyStepOnRight(const Eigen::VectorXT& step) = 0;
+    virtual Eigen::Vector2T applyLeftAction(const Eigen::Vector2T& point) const = 0;
     virtual void changeLevel(const int& newLevel) = 0;
     int level = 0;
 };
@@ -36,12 +34,12 @@ class Affine2Group : public ParameterGroup {
   public:
     int dim() const { return 6; }
 
-    Matrix2T transformation;
-    Vector2T translation;
+    Eigen::Matrix2T transformation;
+    Eigen::Vector2T translation;
 
-    Matrix<ftype, 2, Dynamic> actionJacobian(const Vector2T& point) const;
-    Vector2T applyLeftAction(const Vector2T& point) const;
-    void applyStepOnRight(const VectorXT& step);
+    Eigen::Matrix<ftype, 2, Eigen::Dynamic> actionJacobian(const Eigen::Vector2T& point) const;
+    Eigen::Vector2T applyLeftAction(const Eigen::Vector2T& point) const;
+    void applyStepOnRight(const Eigen::VectorXT& step);
     void changeLevel(const int& newLevel);
 
     static Affine2Group Identity();
@@ -51,11 +49,11 @@ class TranslationGroup : public ParameterGroup {
   public:
     int dim() const { return 2; }
 
-    Vector2T translation;
+    Eigen::Vector2T translation;
 
-    Matrix<ftype, 2, Dynamic> actionJacobian(const Vector2T& point) const;
-    Vector2T applyLeftAction(const Vector2T& point) const;
-    void applyStepOnRight(const VectorXT& step);
+    Eigen::Matrix<ftype, 2, Eigen::Dynamic> actionJacobian(const Eigen::Vector2T& point) const;
+    Eigen::Vector2T applyLeftAction(const Eigen::Vector2T& point) const;
+    void applyStepOnRight(const Eigen::VectorXT& step);
     void changeLevel(const int& newLevel);
 
     static TranslationGroup Identity();

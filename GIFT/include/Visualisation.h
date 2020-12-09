@@ -21,18 +21,17 @@
 #include "opencv2/core.hpp"
 #include <vector>
 
-using namespace std;
-using namespace cv;
-
 namespace GIFT {
 
-Mat drawFeatureImage(const Mat& baseImage, const vector<Feature>& landmarks, const int& radius = 3,
-    const Scalar& color = Scalar(0, 255, 255));
-Mat drawFlowImage(const Mat& baseImage, const vector<Feature>& landmarks0, const vector<Feature>& landmarks1,
-    const int& radius = 3, const Scalar& circleColor = Scalar(0, 255, 255), const int& thickness = 2,
-    const Scalar& lineColor = Scalar(255, 0, 255));
-Mat drawFlowImage(const Mat& image0, const Mat& image1, const vector<Feature>& landmarks0,
-    const vector<Feature>& landmarks1, const int& radius = 3, const Scalar& circleColor = Scalar(0, 255, 255),
-    const int& thickness = 2, const Scalar& lineColor = Scalar(0, 255, 0));
+cv::Mat drawFeatureImage(const cv::Mat& baseImage, const std::vector<Feature>& landmarks, const int& radius = 3,
+    const cv::Scalar& color = cv::Scalar(0, 255, 255));
+cv::Mat drawFlowImage(const cv::Mat& baseImage, const std::vector<Feature>& landmarks0,
+    const std::vector<Feature>& landmarks1, const int& radius = 3,
+    const cv::Scalar& circleColor = cv::Scalar(0, 255, 255), const int& thickness = 2,
+    const cv::Scalar& lineColor = cv::Scalar(255, 0, 255));
+cv::Mat drawFlowImage(const cv::Mat& image0, const cv::Mat& image1, const std::vector<Feature>& landmarks0,
+    const std::vector<Feature>& landmarks1, const int& radius = 3,
+    const cv::Scalar& circleColor = cv::Scalar(0, 255, 255), const int& thickness = 2,
+    const cv::Scalar& lineColor = cv::Scalar(0, 255, 0));
 
 } // namespace GIFT

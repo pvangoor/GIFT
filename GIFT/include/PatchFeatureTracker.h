@@ -37,13 +37,13 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
         PG parameters;
         int id = -1;
         int lifetime = 0;
-        Point2f camCoordinates() const {
-            const Vector2T result = patch.baseCentre + parameters.applyLeftAction(Vector2T(0, 0));
-            return Point2f(result.x(), result.y());
+        cv::Point2f camCoordinates() const {
+            const Eigen::Vector2T result = patch.baseCentre + parameters.applyLeftAction(Eigen::Vector2T(0, 0));
+            return cv::Point2f(result.x(), result.y());
         }
     };
 
-    vector<InternalPatchFeature> features; // Feature storage
+    std::vector<InternalPatchFeature> features; // Feature storage
 
   public:
     // Settings
@@ -52,35 +52,35 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
         double minimumFeatureDistance = 20;
         double minimumRelativeQuality = 0.05;
         int pyramidLevels = 3;
-        Size patchSize = Size(21, 21);
+        cv::Size patchSize = cv::Size(21, 21);
     };
     Settings settings;
 
     // Initialisation and configuration
     PatchFeatureTracker() = default;
     PatchFeatureTracker(const Camera& cameraParams) : GIFeatureTracker(cameraParams){};
-    PatchFeatureTracker(const Camera& cameraParams, const Mat& mask) : GIFeatureTracker(cameraParams, mask){};
+    PatchFeatureTracker(const Camera& cameraParams, const cv::Mat& mask) : GIFeatureTracker(cameraParams, mask){};
 
     // Core
-    virtual void detectFeatures(const Mat& image) override {
+    virtual void detectFeatures(const cv::Mat& image) override {
         // Detect new points
-        vector<Point2f> newPoints;
-        Mat gray = image;
+        std::vector<cv::Point2f> newPoints;
+        cv::Mat gray = image;
         if (gray.channels() > 1)
-            cvtColor(image, gray, COLOR_RGB2GRAY);
+            cv::cvtColor(image, gray, cv::COLOR_RGB2GRAY);
         goodFeaturesToTrack(gray, newPoints, settings.maximumFeatures, settings.minimumRelativeQuality,
             settings.minimumFeatureDistance);
 
         // Remove new points that are too close to existing features
-        vector<Point2f> oldPoints(features.size());
+        std::vector<cv::Point2f> oldPoints(features.size());
         transform(features.begin(), features.end(), oldPoints.begin(),
             [](const InternalPatchFeature& f) { return f.camCoordinates(); });
         removePointsTooClose(newPoints, oldPoints, settings.minimumFeatureDistance);
         const int numPointsToAdd = settings.maximumFeatures - oldPoints.size();
-        newPoints.resize(max(numPointsToAdd, 0));
+        newPoints.resize(std::max(numPointsToAdd, 0));
 
         // Convert the new points to patch features
-        vector<PyramidPatch> newPatches =
+        std::vector<PyramidPatch> newPatches =
             extractPyramidPatches(newPoints, gray, settings.patchSize, settings.pyramidLevels);
         auto newFeatureLambda = [this](const PyramidPatch& patch) {
             InternalPatchFeature feature;
@@ -89,7 +89,7 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
             feature.id = ++this->currentNumber;
             return feature;
         };
-        vector<InternalPatchFeature> newFeatures(newPatches.size());
+        std::vector<InternalPatchFeature> newFeatures(newPatches.size());
         transform(newPatches.begin(), newPatches.end(), newFeatures.begin(), newFeatureLambda);
 
         // Append
@@ -98,20 +98,20 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
         // TODO: This only adds new features. Ideally, we also refresh existing features.
     };
 
-    virtual void trackFeatures(const Mat& image) override {
-        Mat gray = image;
+    virtual void trackFeatures(const cv::Mat& image) override {
+        cv::Mat gray = image;
         if (gray.channels() > 1)
-            cvtColor(image, gray, COLOR_RGB2GRAY);
+            cv::cvtColor(image, gray, cv::COLOR_RGB2GRAY);
         ImagePyramid newPyr(gray, settings.pyramidLevels);
-        for_each(features.begin(), features.end(), [&newPyr](InternalPatchFeature& feature) {
+        std::for_each(features.begin(), features.end(), [&newPyr](InternalPatchFeature& feature) {
             optimiseParameters(feature.parameters, feature.patch, newPyr);
             ++feature.lifetime;
         });
         // TODO: We need to remove features that are no longer visible.
     };
 
-    [[nodiscard]] virtual vector<Feature> outputLandmarks() const override {
-        vector<Feature> landmarks(features.size());
+    [[nodiscard]] virtual std::vector<Feature> outputLandmarks() const override {
+        std::vector<Feature> landmarks(features.size());
         transform(features.begin(), features.end(), landmarks.begin(),
             [this](const InternalPatchFeature& f) { return this->featureToLandmark(f); });
         return landmarks;
@@ -129,11 +129,11 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
     }
 
     static void removePointsTooClose(
-        vector<Point2f> newPoints, const vector<Point2f>& oldPoints, const double& minDist) {
+        std::vector<cv::Point2f> newPoints, const std::vector<cv::Point2f>& oldPoints, const double& minDist) {
         const double minDistSq = minDist * minDist;
         for (int i = newPoints.size() - 1; i >= 0; --i) {
-            Point2f& newPoint = newPoints[i];
-            for (const Point2f& point : oldPoints) {
+            cv::Point2f& newPoint = newPoints[i];
+            for (const cv::Point2f& point : oldPoints) {
                 const double distSq =
                     (point.x - newPoint.x) * (point.x - newPoint.x) + (point.y - newPoint.y) * (point.y - newPoint.y);
                 if (distSq < minDistSq) {
