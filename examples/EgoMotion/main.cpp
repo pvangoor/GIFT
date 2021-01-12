@@ -88,10 +88,10 @@ int main(int argc, char* argv[]) {
         // Track the features
         ft.processImage(image);
 
-        std::vector<GIFT::Feature> landmarks = ft.outputLandmarks();
+        std::vector<GIFT::Feature> features = ft.outputFeatures();
 
         // Compute EgoMotion
-        GIFT::EgoMotion egoMotion(landmarks);
+        GIFT::EgoMotion egoMotion(features);
         if (!quiet) {
             std::cout << "Estimated Linear Velocity:" << std::endl;
             std::cout << egoMotion.linearVelocity << '\n';
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
             std::cout << egoMotion.angularVelocity << '\n' << std::endl;
         }
 
-        auto estFlows = egoMotion.estimateFlowsNorm(landmarks);
+        auto estFlows = egoMotion.estimateFlowsNorm(features);
 
         if (++report_count == 100) {
             double now = time_seconds();
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
             p1 = cv::Point2f(viewScale, viewScale) + p1 * viewScale;
             cv::line(estFlowImage, p0, p1, cv::Scalar(255, 0, 0));
         }
-        for (const auto& lm : landmarks) {
+        for (const auto& lm : features) {
             cv::Point2f p1 = lm.camCoordinatesNorm();
             cv::Point2f p0 = p1 - cv::Point2f(lm.opticalFlowNorm.x(), lm.opticalFlowNorm.y());
             p0 = cv::Point2f(viewScale, viewScale) + p0 * viewScale;

@@ -33,9 +33,9 @@ class EgoMotion {
     static constexpr ftype optimisationThreshold = 1e-8;
     static constexpr int maxIterations = 30;
 
-    EgoMotion(const std::vector<GIFT::Feature>& landmarks, const ftype& dt = 1);
-    EgoMotion(const std::vector<GIFT::Feature>& landmarks, const Eigen::Vector3T& initLinVel, const ftype& dt = 1);
-    EgoMotion(const std::vector<GIFT::Feature>& landmarks, const Eigen::Vector3T& initLinVel,
+    EgoMotion(const std::vector<GIFT::Feature>& features, const ftype& dt = 1);
+    EgoMotion(const std::vector<GIFT::Feature>& features, const Eigen::Vector3T& initLinVel, const ftype& dt = 1);
+    EgoMotion(const std::vector<GIFT::Feature>& features, const Eigen::Vector3T& initLinVel,
         const Eigen::Vector3T& initAngVel, const ftype& dt = 1);
     EgoMotion(const std::vector<std::pair<Eigen::Vector3T, Eigen::Vector3T>>& sphereFlows);
     EgoMotion(
@@ -43,9 +43,9 @@ class EgoMotion {
     EgoMotion(const std::vector<std::pair<Eigen::Vector3T, Eigen::Vector3T>>& sphereFlows,
         const Eigen::Vector3T& initLinVel, const Eigen::Vector3T& initAngVel);
     std::vector<std::pair<Eigen::Vector3T, Eigen::Vector3T>> estimateFlows(
-        const std::vector<GIFT::Feature>& landmarks) const;
+        const std::vector<GIFT::Feature>& features) const;
     std::vector<std::pair<cv::Point2f, Eigen::Vector2T>> estimateFlowsNorm(
-        const std::vector<GIFT::Feature>& landmarks) const;
+        const std::vector<GIFT::Feature>& features) const;
     static Eigen::Vector3T estimateAngularVelocity(
         const std::vector<std::pair<Eigen::Vector3T, Eigen::Vector3T>>& sphereFlows,
         const Eigen::Vector3T& linVel = Eigen::Vector3T::Zero());

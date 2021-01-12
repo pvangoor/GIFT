@@ -29,7 +29,7 @@ class StereoFeatureTracker {
   protected:
     PointFeatureTracker trackerLeft;
     PointFeatureTracker trackerRight;
-    std::vector<StereoLandmark> stereoLandmarks;
+    std::vector<StereoLandmark> stereoFeatures;
 
   public:
     // Stereo Specific
@@ -63,14 +63,13 @@ class StereoFeatureTracker {
 
     // Core
     void processImages(const cv::Mat& imageLeft, const cv::Mat& imageRight);
-    std::vector<StereoLandmark> outputStereoLandmarks() const { return stereoLandmarks; };
+    std::vector<StereoLandmark> outputStereoFeatures() const { return stereoFeatures; };
 
   protected:
-    void removeLostStereoLandmarks(
-        const std::vector<Feature>& landmarksLeft, const std::vector<Feature>& landmarksRight);
-    std::vector<StereoLandmark> createNewStereoLandmarks(const std::vector<Feature>& landmarksLeft,
-        const cv::Mat& imageLeft, const std::vector<Feature>& landmarksRight, const cv::Mat& imageRight) const;
-    void addNewStereoLandmarks(const std::vector<StereoLandmark>& newStereoLandmarks);
+    void removeLostStereoFeatures(const std::vector<Feature>& featuresLeft, const std::vector<Feature>& featuresRight);
+    std::vector<StereoLandmark> createNewStereoFeatures(const std::vector<Feature>& featuresLeft,
+        const cv::Mat& imageLeft, const std::vector<Feature>& featuresRight, const cv::Mat& imageRight) const;
+    void addNewStereoFeatures(const std::vector<StereoLandmark>& newStereoFeatures);
 };
 
 } // namespace GIFT

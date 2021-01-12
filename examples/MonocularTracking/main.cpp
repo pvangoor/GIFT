@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
         ;
 
         ft.processImage(image);
-        std::vector<GIFT::Feature> landmarks = ft.outputLandmarks();
+        std::vector<GIFT::Feature> features = ft.outputFeatures();
 
         cv::Mat featureImage = ft.drawFeatureImage(cv::Scalar(0, 0, 255), 5, 3);
 

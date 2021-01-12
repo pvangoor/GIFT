@@ -110,11 +110,11 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
         // TODO: We need to remove features that are no longer visible.
     };
 
-    [[nodiscard]] virtual std::vector<Feature> outputLandmarks() const override {
-        std::vector<Feature> landmarks(features.size());
-        transform(features.begin(), features.end(), landmarks.begin(),
+    [[nodiscard]] virtual std::vector<Feature> outputFeatures() const override {
+        std::vector<Feature> featuresOut(features.size());
+        transform(features.begin(), features.end(), featuresOut.begin(),
             [this](const InternalPatchFeature& f) { return this->featureToLandmark(f); });
-        return landmarks;
+        return featuresOut;
     };
 
     [[nodiscard]] Feature featureToLandmark(const InternalPatchFeature& feature) const {
@@ -125,7 +125,7 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
         lm.lifetime = feature.lifetime;
         lm.pointColor.fill(feature.patch.at(feature.patch.rows / 2, feature.patch.cols / 2));
         return lm;
-        // TODO: Some parts of the landmark are missing. Is this a problem?
+        // TODO: Some parts of the feature are missing. Is this a problem?
     }
 
     static void removePointsTooClose(

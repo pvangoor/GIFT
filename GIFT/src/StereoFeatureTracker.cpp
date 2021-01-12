@@ -27,57 +27,57 @@ void StereoFeatureTracker::processImages(const Mat& imageLeft, const Mat& imageR
     trackerLeft.processImage(imageLeft);
     trackerRight.processImage(imageRight);
 
-    const vector<Feature> landmarksLeft = trackerLeft.outputLandmarks();
-    const vector<Feature> landmarksRight = trackerRight.outputLandmarks();
+    const vector<Feature> featuresLeft = trackerLeft.outputFeatures();
+    const vector<Feature> featuresRight = trackerRight.outputFeatures();
 
-    removeLostStereoLandmarks(landmarksLeft, landmarksRight);
-    vector<StereoLandmark> newStereoLandmarks =
-        createNewStereoLandmarks(landmarksLeft, imageLeft, landmarksRight, imageRight);
-    addNewStereoLandmarks(newStereoLandmarks);
+    removeLostStereoFeatures(featuresLeft, featuresRight);
+    vector<StereoLandmark> newStereoFeatures =
+        createNewStereoFeatures(featuresLeft, imageLeft, featuresRight, imageRight);
+    addNewStereoFeatures(newStereoFeatures);
 }
 
-void StereoFeatureTracker::removeLostStereoLandmarks(
-    const vector<Feature>& landmarksLeft, const vector<Feature>& landmarksRight) {
+void StereoFeatureTracker::removeLostStereoFeatures(
+    const vector<Feature>& featuresLeft, const vector<Feature>& featuresRight) {
     set<int> idsLeft, idsRight;
-    for (const Feature& lm : landmarksLeft)
+    for (const Feature& lm : featuresLeft)
         idsLeft.emplace(lm.idNumber);
-    for (const Feature& lm : landmarksRight)
+    for (const Feature& lm : featuresRight)
         idsRight.emplace(lm.idNumber);
 
     auto checkValidLandmark = [idsLeft, idsRight](const int idLeft, const int idRight) {
         return (idsLeft.count(idLeft) * idsRight.count(idRight));
     };
 
-    vector<StereoLandmark>::iterator iter = stereoLandmarks.begin();
-    while (iter != stereoLandmarks.end()) {
-        if (checkValidLandmark(iter->landmarkLeft->idNumber, iter->landmarkRight->idNumber)) {
+    vector<StereoLandmark>::iterator iter = stereoFeatures.begin();
+    while (iter != stereoFeatures.end()) {
+        if (checkValidLandmark(iter->featureLeft->idNumber, iter->featureRight->idNumber)) {
             ++iter;
         } else {
-            iter = stereoLandmarks.erase(iter);
+            iter = stereoFeatures.erase(iter);
         }
     }
 }
 
-vector<StereoLandmark> StereoFeatureTracker::createNewStereoLandmarks(const vector<Feature>& landmarksLeft,
-    const Mat& imageLeft, const vector<Feature>& landmarksRight, const Mat& imageRight) const {
-    vector<StereoLandmark> newLandmarks;
-    return newLandmarks;
+vector<StereoLandmark> StereoFeatureTracker::createNewStereoFeatures(const vector<Feature>& featuresLeft,
+    const Mat& imageLeft, const vector<Feature>& featuresRight, const Mat& imageRight) const {
+    vector<StereoLandmark> newFeatures;
+    return newFeatures;
 }
 
-void StereoFeatureTracker::addNewStereoLandmarks(const vector<StereoLandmark>& newStereoLandmarks) {
+void StereoFeatureTracker::addNewStereoFeatures(const vector<StereoLandmark>& newStereoFeatures) {
     set<int> idsLeft, idsRight;
-    for (const StereoLandmark& lm : this->stereoLandmarks) {
-        idsLeft.emplace(lm.landmarkLeft->idNumber);
-        idsRight.emplace(lm.landmarkRight->idNumber);
+    for (const StereoLandmark& lm : this->stereoFeatures) {
+        idsLeft.emplace(lm.featureLeft->idNumber);
+        idsRight.emplace(lm.featureRight->idNumber);
     }
 
     auto checkValidLandmark = [idsLeft, idsRight](const int idLeft, const int idRight) {
         return (idsLeft.count(idLeft) * idsRight.count(idRight));
     };
 
-    for (const StereoLandmark& stereoLM : newStereoLandmarks) {
-        if (checkValidLandmark(stereoLM.landmarkLeft->idNumber, stereoLM.landmarkRight->idNumber)) {
-            this->stereoLandmarks.emplace_back(stereoLM);
+    for (const StereoLandmark& stereoLM : newStereoFeatures) {
+        if (checkValidLandmark(stereoLM.featureLeft->idNumber, stereoLM.featureRight->idNumber)) {
+            this->stereoFeatures.emplace_back(stereoLM);
         }
     }
 }

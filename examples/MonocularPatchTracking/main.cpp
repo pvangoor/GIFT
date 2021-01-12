@@ -35,14 +35,14 @@ int main(int argc, char* argv[]) {
         ft.trackFeatures(image);
         ft.detectFeatures(image);
 
-        std::vector<GIFT::Feature> landmarks = ft.outputLandmarks();
+        std::vector<GIFT::Feature> features = ft.outputFeatures();
 
-        cv::Mat featureImage = GIFT::drawFeatureImage(image, landmarks);
+        cv::Mat featureImage = GIFT::drawFeatureImage(image, features);
 
         cv::imshow("debug", featureImage);
         int k = cv::waitKey(0);
         std::cout << "Read Image " << ++counter << std::endl;
-        std::cout << "Number of features is  " << landmarks.size() << std::endl;
+        std::cout << "Number of features is  " << features.size() << std::endl;
         if (k == 's')
             cv::imwrite("FeatureImage.png", featureImage);
         if (k == 27)
