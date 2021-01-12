@@ -44,7 +44,7 @@ void PointFeatureTracker::processImage(const Mat& image) {
 
 vector<Feature> PointFeatureTracker::createNewFeatures(const Mat& image, const vector<Point2f>& newPoints) {
     vector<Feature> newFeatures;
-    if (newFeatures.empty())
+    if (newPoints.empty())
         return newFeatures;
 
     for (int i = 0; i < newPoints.size(); ++i) {
