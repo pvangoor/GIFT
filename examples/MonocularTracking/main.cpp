@@ -17,6 +17,7 @@
 
 #include "Configure.h"
 #include "PointFeatureTracker.h"
+#include "Visualisation.h"
 
 #include "opencv2/highgui/highgui.hpp"
 
@@ -28,12 +29,11 @@ int main(int argc, char* argv[]) {
     cap.open(cv::String(argv[2]));
     cv::Mat image;
     while (cap.read(image)) {
-        ;
 
         ft.processImage(image);
         std::vector<GIFT::Feature> features = ft.outputFeatures();
 
-        cv::Mat featureImage = ft.drawFeatureImage(cv::Scalar(0, 0, 255), 5, 3);
+        cv::Mat featureImage = GIFT::drawFeatureImage(image, features, 5, cv::Scalar(0, 0, 255));
 
         cv::imshow("debug", featureImage);
         int k = cv::waitKey(1);

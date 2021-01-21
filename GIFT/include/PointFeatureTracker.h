@@ -63,14 +63,6 @@ class PointFeatureTracker : public GIFeatureTracker {
     virtual void trackFeatures(const cv::Mat& image) override;
     std::vector<Feature> outputFeatures() const { return features; };
 
-    // Visualisation
-    cv::Mat drawFeatureImage(
-        const cv::Scalar& color = cv::Scalar(0, 0, 255), const int pointSize = 2, const int thickness = 1) const;
-    cv::Mat drawFlowImage(const cv::Scalar& featureColor = cv::Scalar(0, 0, 255),
-        const cv::Scalar& flowColor = cv::Scalar(0, 255, 255), const int pointSize = 2, const int thickness = 1) const;
-    cv::Mat drawFlow(const cv::Scalar& featureColor = cv::Scalar(0, 0, 255),
-        const cv::Scalar& flowColor = cv::Scalar(0, 255, 255), const int pointSize = 2, const int thickness = 1) const;
-
     // Masking
     void setMask(const cv::Mat& mask, int cameraNumber = 0);
 
