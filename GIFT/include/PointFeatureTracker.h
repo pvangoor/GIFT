@@ -50,10 +50,6 @@ class PointFeatureTracker {
     int winSize = 21;
     int maxLevel = 3;
 
-    // // Stereo Specific
-    // ftype stereoBaseline = 0.1;
-    // ftype stereoThreshold = 1;
-
   public:
     // Initialisation and configuration
     PointFeatureTracker(const Camera& configuration = Camera()) {

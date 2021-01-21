@@ -31,3 +31,8 @@ void GIFeatureTracker::setCamera(const Camera& cameraParameters) {
 }
 
 void GIFeatureTracker::setMask(const cv::Mat& mask) { this->mask = mask; }
+
+void GIFeatureTracker::processImage(const cv::Mat& image) {
+    trackFeatures(image);
+    detectFeatures(image);
+}

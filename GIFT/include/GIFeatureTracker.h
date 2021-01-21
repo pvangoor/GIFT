@@ -40,7 +40,11 @@ class GIFeatureTracker {
     virtual void setCamera(const Camera& cameraParameters);
     virtual void setMask(const cv::Mat& mask);
 
+    double featureSearchThreshold = 0.8;
+    int maxFeatures = 50;
+
     // Core
+    virtual void processImage(const cv::Mat& image);
     virtual void detectFeatures(const cv::Mat& image) = 0;
     virtual void trackFeatures(const cv::Mat& image) = 0;
     virtual std::vector<Feature> outputFeatures() const = 0;

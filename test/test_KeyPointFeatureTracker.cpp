@@ -26,9 +26,9 @@
 
 using namespace std;
 using namespace cv;
-class PFTTest : public ::testing::Test {
+class KPFTTest : public ::testing::Test {
   protected:
-    PFTTest() {
+    KPFTTest() {
         img0 = cv::imread(String(TEST_DATA_DIR) + String("img0.png"));
         img1 = cv::imread(String(TEST_DATA_DIR) + String("img1.png"));
     }
@@ -38,7 +38,7 @@ class PFTTest : public ::testing::Test {
     GIFT::KeyPointFeatureTracker kpt;
 };
 
-TEST_F(PFTTest, DetectAndTrack) {
+TEST_F(KPFTTest, DetectAndTrack) {
     kpt.settings.maximumFeatures = 100;
     kpt.settings.minimumFeatureDistance = 10;
 
