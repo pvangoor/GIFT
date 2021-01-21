@@ -28,6 +28,7 @@
 #include "Configure.h"
 #include "EgoMotion.h"
 #include "PointFeatureTracker.h"
+#include "Visualisation.h"
 #include <getopt.h>
 #include <sys/time.h>
 
@@ -113,8 +114,8 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        cv::Mat flowImage = ft.drawFlowImage(cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 255), 3, 2);
-        cv::imshow("flow", flowImage);
+        // cv::Mat flowImage = ft.drawFlowImage(cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 255), 3, 2);
+        // cv::imshow("flow", flowImage);
 
         // Draw the normalised flow and estimates
         constexpr int viewScale = 500;

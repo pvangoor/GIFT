@@ -39,20 +39,20 @@ class StereoFeatureTracker {
   public:
     // Initialisation
     StereoFeatureTracker(const Camera& camLeft, const Camera& camRight) {
-        trackerLeft.setCameraConfiguration(camLeft);
-        trackerRight.setCameraConfiguration(camRight);
+        trackerLeft.setCamera(camLeft);
+        trackerRight.setCamera(camRight);
     };
 
     // Configuration
     void setCameraConfiguration(const Camera& camLeft, const Camera& camRight) {
-        trackerLeft.setCameraConfiguration(camLeft);
-        trackerRight.setCameraConfiguration(camRight);
+        trackerLeft.setCamera(camLeft);
+        trackerRight.setCamera(camRight);
     };
     void setCameraConfiguration(const Camera& configuration, StereoCam stereoCam = StereoCam::Left) {
         if (stereoCam == StereoCam::Left)
-            trackerLeft.setCameraConfiguration(configuration);
+            trackerLeft.setCamera(configuration);
         else
-            trackerRight.setCameraConfiguration(configuration);
+            trackerRight.setCamera(configuration);
     }
     void setMask(const cv::Mat& mask, StereoCam stereoCam = StereoCam::Left) {
         if (stereoCam == StereoCam::Left)

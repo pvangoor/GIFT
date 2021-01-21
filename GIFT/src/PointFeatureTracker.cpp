@@ -36,9 +36,12 @@ void PointFeatureTracker::processImage(const Mat& image) {
     if (this->features.size() > this->featureSearchThreshold * this->maxFeatures)
         return;
 
-    vector<Point2f> newPoints = this->detectNewFeatures(image);
-    vector<Feature> newFeatures = this->createNewFeatures(image, newPoints);
+    detectFeatures(image);
+}
 
+void PointFeatureTracker::detectFeatures(const Mat& image) {
+    vector<Point2f> newPoints = this->identifyFeatureCandidates(image);
+    vector<Feature> newFeatures = this->createNewFeatures(image, newPoints);
     this->addNewFeatures(newFeatures);
 }
 
@@ -80,8 +83,8 @@ void PointFeatureTracker::trackFeatures(const Mat& image) {
             continue;
         }
 
-        if (!imageMask.empty()) {
-            if (imageMask.at<uchar>(points[i]) == 0) {
+        if (!mask.empty()) {
+            if (mask.at<uchar>(points[i]) == 0) {
                 features.erase(features.begin() + i);
                 continue;
             }
@@ -93,12 +96,12 @@ void PointFeatureTracker::trackFeatures(const Mat& image) {
     }
 }
 
-vector<Point2f> PointFeatureTracker::detectNewFeatures(const Mat& image) const {
+vector<Point2f> PointFeatureTracker::identifyFeatureCandidates(const Mat& image) const {
     Mat imageGrey;
     cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
 
     vector<Point2f> proposedFeatures;
-    goodFeaturesToTrack(imageGrey, proposedFeatures, maxFeatures, minHarrisQuality, featureDist, imageMask);
+    goodFeaturesToTrack(imageGrey, proposedFeatures, maxFeatures, minHarrisQuality, featureDist, mask);
     vector<Point2f> newFeatures = this->removeDuplicateFeatures(proposedFeatures);
 
     return newFeatures;
@@ -132,117 +135,20 @@ void PointFeatureTracker::addNewFeatures(vector<Feature> newFeatures) {
     }
 }
 
-void PointFeatureTracker::setMask(const Mat& mask, int cameraNumber) { imageMask = mask; }
-
 Eigen::Matrix3T GIFT::skew_matrix(const Eigen::Vector3T& t) {
     Eigen::Matrix3T t_hat;
     t_hat << 0, -t(2), t(1), t(2), 0, -t(0), -t(1), t(0), 0;
     return t_hat;
 }
 
-Mat PointFeatureTracker::drawFeatureImage(const Scalar& color, const int pointSize, const int thickness) const {
-    cv::Mat featureImage;
-    this->previousImage.copyTo(featureImage);
-    for (const auto& lm : this->features) {
-        cv::circle(featureImage, lm.camCoordinates, pointSize, color, thickness);
-    }
-    return featureImage;
-}
-
-Mat PointFeatureTracker::drawFlowImage(
-    const Scalar& featureColor, const Scalar& flowColor, const int pointSize, const int thickness) const {
-    Mat flowImage = drawFeatureImage(featureColor, pointSize, thickness);
-    for (const auto& lm : this->features) {
-        Point2f p1 = lm.camCoordinates;
-        Point2f p0 = p1 - Point2f(lm.opticalFlowRaw.x(), lm.opticalFlowRaw.y());
-        line(flowImage, p0, p1, flowColor, thickness);
-    }
-    return flowImage;
-}
-
-Mat PointFeatureTracker::drawFlow(
-    const Scalar& featureColor, const Scalar& flowColor, const int pointSize, const int thickness) const {
-    Mat flow(this->previousImage.size(), CV_8UC3);
-    flow.setTo(0);
-
-    for (const auto& lm : this->features) {
-        Point2f p1 = lm.camCoordinates;
-        Point2f p0 = p1 - Point2f(lm.opticalFlowRaw.x(), lm.opticalFlowRaw.y());
-        circle(flow, p1, pointSize, featureColor, thickness);
-        line(flow, p0, p1, flowColor, thickness);
-    }
-    return flow;
-}
-
-/*
-void PointFeatureTracker::computeLandmarkPositions() {
-    if (mode == TrackerMode::MONO) return;
-    for (auto & lm : features) {
-        if (mode == TrackerMode::STEREO) {
-            lm.position = this->solveStereo(lm.camCoordinatesNorm()[0], lm.camCoordinatesNorm()[1]);
+void PointFeatureTracker::useFeaturePredictions(const std::vector<Feature>& predictedFeatures) {
+    for (const Feature& pf : predictedFeatures) {
+        // Find a match
+        for (Feature& f : this->features) {
+            if (f.idNumber == pf.idNumber) {
+                f.camCoordinates = pf.camCoordinates;
+                break;
+            }
         }
     }
 }
-
-Vector3T PointFeatureTracker::solveStereo(const Point2f& leftKp, const Point2f& rightKp) const {
-    assert(leftKp.x > rightKp.x);
-    Vector3T position;
-    position << leftKp.x, leftKp.y, 1;
-
-    ftype scale = stereoBaseline / (leftKp.x - rightKp.x);
-    position = scale*position;
-
-    return position;
-}
-
-Vector3T PointFeatureTracker::solveMultiView(const vector<Point2f> imageCoordinatesNorm) const {
-    int camNum = cameras.size();
-    assert(imageCoordinatesNorm.size() == cameras.size());
-    assert(camNum >= 2);
-
-    MatrixXT solutionMat(3*camNum, 4);
-
-    for (int i=0; i<camNum; ++i) {
-        Vector3T imageCoord;
-        imageCoord << imageCoordinatesNorm[i].x, imageCoordinatesNorm[i].y, 1;
-        solutionMat.block<3,4>(3*i,0) = skew_matrix(imageCoord) * cameras[i].P;
-    }
-
-    JacobiSVD<MatrixXT> svd(solutionMat, ComputeThinU | ComputeFullV);
-    Vector4T positionHomogeneous = svd.matrixV().block<4,1>(0,3);
-
-    Vector3T position = positionHomogeneous.block<3,1>(0,0) / positionHomogeneous(3);
-    return position;
-}
-
-vector<vector<Point2f>> PointFeatureTracker::detectNewStereoFeatures(const cv::Mat &imageLeft, const cv::Mat
-&imageRight) const { vector<vector<Point2f>> newFeatures(2);
-
-    // Obtain left features
-    Mat imageGreyLeft;
-    cv::cvtColor(imageLeft, imageGreyLeft, cv::COLOR_BGR2GRAY);
-    goodFeaturesToTrack(imageGreyLeft, newFeatures[0], 2*maxFeatures, 0.001, featureDist, imageMasks[0]);
-    newFeatures[0] = this->removeDuplicateFeatures(newFeatures[0]);
-
-    // Track features to the right image
-    vector<uchar> status;
-    vector<float> err;
-    calcOpticalFlowPyrLK(imageLeft, imageRight, newFeatures[0], newFeatures[1], status, err);
-
-    assert(newFeatures[0].size() == newFeatures[1].size());
-
-    for (long int i=newFeatures[0].size()-1; i >= 0; --i) {
-        bool eraseCondition = (status[i] == 0);
-        if (!imageMasks[0].empty()) eraseCondition |= imageMasks[0].at<uchar>(newFeatures[0][i]);
-        if (!imageMasks[1].empty()) eraseCondition |= imageMasks[1].at<uchar>(newFeatures[1][i]);
-
-        if (eraseCondition) {
-            newFeatures[0].erase(newFeatures[0].begin() +i);
-            newFeatures[1].erase(newFeatures[1].begin() +i);
-        }
-    }
-
-    return newFeatures;
-
-}
-*/

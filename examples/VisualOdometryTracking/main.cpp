@@ -17,6 +17,7 @@
 
 #include "Configure.h"
 #include "PointFeatureTracker.h"
+#include "Visualisation.h"
 
 #include "opencv2/highgui/highgui.hpp"
 
@@ -92,7 +93,7 @@ int main(int argc, char* argv[]) {
         outputFile << std::endl;
 
         // Write image to file
-        const cv::Mat featureImage = ft.drawFeatureImage(cv::Scalar(0, 255, 0), 3, 2);
+        const cv::Mat featureImage = GIFT::drawFeatureImage(image, features, 3, cv::Scalar(0, 255, 0));
         writer.write(featureImage);
 
         ++frameCounter;
