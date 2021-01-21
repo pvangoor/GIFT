@@ -52,6 +52,7 @@ class PointFeatureTracker : public GIFeatureTracker {
     virtual void processImage(const cv::Mat& image) override;
     virtual void detectFeatures(const cv::Mat& image) override;
     virtual void trackFeatures(const cv::Mat& image) override;
+    virtual void useFeaturePredictions(const std::vector<Feature>& predictedFeatures);
     std::vector<Feature> outputFeatures() const { return features; };
 
     // EgoMotion

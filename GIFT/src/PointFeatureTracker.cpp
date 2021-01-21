@@ -140,3 +140,15 @@ Eigen::Matrix3T GIFT::skew_matrix(const Eigen::Vector3T& t) {
     t_hat << 0, -t(2), t(1), t(2), 0, -t(0), -t(1), t(0), 0;
     return t_hat;
 }
+
+void PointFeatureTracker::useFeaturePredictions(const std::vector<Feature>& predictedFeatures) {
+    for (const Feature& pf : predictedFeatures) {
+        // Find a match
+        for (Feature& f : this->features) {
+            if (f.idNumber == pf.idNumber) {
+                f.camCoordinates = pf.camCoordinates;
+                break;
+            }
+        }
+    }
+}
