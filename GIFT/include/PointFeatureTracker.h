@@ -17,13 +17,12 @@
 
 #pragma once
 
-#include "Camera.h"
 #include "EgoMotion.h"
-#include "Feature.h"
+
+#include "GIFeatureTracker.h"
+
 #include "eigen3/Eigen/Dense"
-#include "ftype.h"
-#include "opencv2/core/core.hpp"
-#include "opencv2/features2d/features2d.hpp"
+
 #include <memory>
 #include <vector>
 
@@ -31,7 +30,7 @@ namespace GIFT {
 
 Eigen::Matrix3T skew_matrix(const Eigen::Vector3T& t);
 
-class PointFeatureTracker {
+class PointFeatureTracker : public GIFeatureTracker {
   protected:
     std::shared_ptr<Camera> cameraPtr;
 
@@ -59,7 +58,9 @@ class PointFeatureTracker {
     void setCameraConfiguration(const Camera& configuration) { cameraPtr = std::make_shared<Camera>(configuration); }
 
     // Core
-    void processImage(const cv::Mat& image);
+    virtual void processImage(const cv::Mat& image) override;
+    virtual void detectFeatures(const cv::Mat& image) override;
+    virtual void trackFeatures(const cv::Mat& image) override;
     std::vector<Feature> outputFeatures() const { return features; };
 
     // Visualisation
@@ -77,11 +78,10 @@ class PointFeatureTracker {
     EgoMotion computeEgoMotion(int minLifetime = 1) const;
 
   protected:
-    std::vector<cv::Point2f> detectNewFeatures(const cv::Mat& image) const;
+    std::vector<cv::Point2f> identifyFeatureCandidates(const cv::Mat& image) const;
     std::vector<cv::Point2f> removeDuplicateFeatures(const std::vector<cv::Point2f>& proposedFeatures) const;
     std::vector<Feature> createNewFeatures(const cv::Mat& image, const std::vector<cv::Point2f>& newFeatures);
 
-    void trackFeatures(const cv::Mat& image);
     void addNewFeatures(std::vector<Feature> newFeatures);
     void computeLandmarkPositions();
 };

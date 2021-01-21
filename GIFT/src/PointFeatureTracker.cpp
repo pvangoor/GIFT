@@ -36,9 +36,12 @@ void PointFeatureTracker::processImage(const Mat& image) {
     if (this->features.size() > this->featureSearchThreshold * this->maxFeatures)
         return;
 
-    vector<Point2f> newPoints = this->detectNewFeatures(image);
-    vector<Feature> newFeatures = this->createNewFeatures(image, newPoints);
+    detectFeatures(image);
+}
 
+void PointFeatureTracker::detectFeatures(const Mat& image) {
+    vector<Point2f> newPoints = this->identifyFeatureCandidates(image);
+    vector<Feature> newFeatures = this->createNewFeatures(image, newPoints);
     this->addNewFeatures(newFeatures);
 }
 
@@ -93,7 +96,7 @@ void PointFeatureTracker::trackFeatures(const Mat& image) {
     }
 }
 
-vector<Point2f> PointFeatureTracker::detectNewFeatures(const Mat& image) const {
+vector<Point2f> PointFeatureTracker::identifyFeatureCandidates(const Mat& image) const {
     Mat imageGrey;
     cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
 
