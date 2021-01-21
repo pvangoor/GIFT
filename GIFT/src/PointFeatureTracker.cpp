@@ -83,8 +83,8 @@ void PointFeatureTracker::trackFeatures(const Mat& image) {
             continue;
         }
 
-        if (!imageMask.empty()) {
-            if (imageMask.at<uchar>(points[i]) == 0) {
+        if (!mask.empty()) {
+            if (mask.at<uchar>(points[i]) == 0) {
                 features.erase(features.begin() + i);
                 continue;
             }
@@ -101,7 +101,7 @@ vector<Point2f> PointFeatureTracker::identifyFeatureCandidates(const Mat& image)
     cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
 
     vector<Point2f> proposedFeatures;
-    goodFeaturesToTrack(imageGrey, proposedFeatures, maxFeatures, minHarrisQuality, featureDist, imageMask);
+    goodFeaturesToTrack(imageGrey, proposedFeatures, maxFeatures, minHarrisQuality, featureDist, mask);
     vector<Point2f> newFeatures = this->removeDuplicateFeatures(proposedFeatures);
 
     return newFeatures;
@@ -134,8 +134,6 @@ void PointFeatureTracker::addNewFeatures(vector<Feature> newFeatures) {
         features.emplace_back(lm);
     }
 }
-
-void PointFeatureTracker::setMask(const Mat& mask, int cameraNumber) { imageMask = mask; }
 
 Eigen::Matrix3T GIFT::skew_matrix(const Eigen::Vector3T& t) {
     Eigen::Matrix3T t_hat;

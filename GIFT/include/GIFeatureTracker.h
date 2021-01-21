@@ -40,7 +40,7 @@ class GIFeatureTracker {
     virtual void setCamera(const Camera& cameraParameters);
     virtual void setMask(const cv::Mat& mask);
 
-    double featureSearchThreshold = 0.8;
+    ftype featureSearchThreshold = 0.8;
     int maxFeatures = 50;
 
     // Core

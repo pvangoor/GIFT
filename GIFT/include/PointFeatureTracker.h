@@ -32,39 +32,27 @@ Eigen::Matrix3T skew_matrix(const Eigen::Vector3T& t);
 
 class PointFeatureTracker : public GIFeatureTracker {
   protected:
-    std::shared_ptr<Camera> cameraPtr;
-
-    // Variables used in the tracking algorithms
-    int currentNumber = 0;
     cv::Mat previousImage;
     std::vector<Feature> features;
-    cv::Mat imageMask;
 
   public:
-    int maxFeatures = 500;
     ftype featureDist = 20;
     ftype minHarrisQuality = 0.1;
-    ftype featureSearchThreshold = 1.0;
     float maxError = 1e8;
     int winSize = 21;
     int maxLevel = 3;
 
   public:
     // Initialisation and configuration
-    PointFeatureTracker(const Camera& configuration = Camera()) {
-        cameraPtr = std::make_shared<Camera>(configuration);
-    };
-
-    void setCameraConfiguration(const Camera& configuration) { cameraPtr = std::make_shared<Camera>(configuration); }
+    PointFeatureTracker() : GIFeatureTracker() {}
+    PointFeatureTracker(const Camera& cameraParams) : GIFeatureTracker(cameraParams) {}
+    PointFeatureTracker(const Camera& cameraParams, const cv::Mat& mask) : GIFeatureTracker(cameraParams, mask) {}
 
     // Core
     virtual void processImage(const cv::Mat& image) override;
     virtual void detectFeatures(const cv::Mat& image) override;
     virtual void trackFeatures(const cv::Mat& image) override;
     std::vector<Feature> outputFeatures() const { return features; };
-
-    // Masking
-    void setMask(const cv::Mat& mask, int cameraNumber = 0);
 
     // EgoMotion
     EgoMotion computeEgoMotion(int minLifetime = 1) const;
