@@ -42,6 +42,8 @@ class Camera {
     const std::vector<ftype>& distortion() const;
 
     cv::Point2f undistortPoint(const cv::Point2f& point) const;
+    cv::Point2f projectPoint(const Eigen::Vector3T& point) const;
+    cv::Point2f projectPoint(const cv::Point2f& point) const;
     static cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist);
 };
 

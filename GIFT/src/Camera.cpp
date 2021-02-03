@@ -74,6 +74,19 @@ cv::Point2f Camera::undistortPoint(const cv::Point2f& point) const {
     return udPoint;
 }
 
+cv::Point2f Camera::projectPoint(const Eigen::Vector3T& point) const {
+    cv::Point2f homogPoint;
+    homogPoint.x = point.x() / point.z();
+    homogPoint.y = point.y() / point.z();
+    return projectPoint(homogPoint);
+}
+
+cv::Point2f Camera::projectPoint(const cv::Point2f& point) const {
+    cv::Point2f distortedPoint = distortNormalisedPoint(point, this->dist);
+    cv::Point2f projectedPoint(fx * distortedPoint.x + cx, fy * distortedPoint.y + cy);
+    return projectedPoint;
+}
+
 cv::Point2f Camera::distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist) {
     cv::Point2f distortedPoint = normalPoint;
     const ftype r2 = normalPoint.x * normalPoint.x + normalPoint.y * normalPoint.y;
