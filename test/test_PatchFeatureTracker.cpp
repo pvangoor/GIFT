@@ -80,10 +80,6 @@ TEST_F(PFTTest, DetectAndTrackTranslation) {
         float coordinateErrorNorm = pow(coordinateError.dot(coordinateError), 0.5);
         EXPECT_LE(coordinateErrorNorm, 0.1);
     }
-
-    Mat flowImage = GIFT::drawFlowImage(img0, shiftedImg0, features0, features1);
-    imshow("Flow", flowImage);
-    waitKey(0);
 }
 
 TEST_F(PFTTest, DetectAndTrackAffine) {
@@ -124,8 +120,4 @@ TEST_F(PFTTest, DetectAndTrackAffine) {
         float coordinateErrorNorm = pow(coordinateError.dot(coordinateError), 0.5);
         EXPECT_LE(coordinateErrorNorm, 0.1);
     }
-
-    Mat flowImage = GIFT::drawFlowImage(img0, shiftedImg0, features0, features1);
-    imshow("Flow", flowImage);
-    waitKey(0);
 }
