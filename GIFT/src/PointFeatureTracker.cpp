@@ -98,7 +98,11 @@ void PointFeatureTracker::trackFeatures(const Mat& image) {
 
 vector<Point2f> PointFeatureTracker::identifyFeatureCandidates(const Mat& image) const {
     Mat imageGrey;
-    cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
+    if (image.channels() > 1)
+        [[unlikely]] { cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY); }
+    else {
+        imageGrey = image;
+    }
 
     vector<Point2f> proposedFeatures;
     goodFeaturesToTrack(imageGrey, proposedFeatures, maxFeatures, minHarrisQuality, featureDist, mask);
