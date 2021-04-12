@@ -23,7 +23,21 @@
 #include <vector>
 
 namespace GIFT {
-class Camera {
+
+class GICamera {
+
+  public:
+    cv::Size imageSize;
+
+    GICamera(){};
+    GICamera(const cv::String& cameraConfigFile);
+
+    virtual cv::Point2f undistortPoint(const cv::Point2f& point) const = 0;
+    virtual cv::Point2f projectPoint(const Eigen::Vector3T& point) const = 0;
+    virtual cv::Point2f projectPoint(const cv::Point2f& point) const = 0;
+    virtual cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint) = 0;
+};
+class Camera : public GICamera {
   protected:
     ftype fx, fy, cx, cy; // intrinsic parameters
     std::vector<ftype> dist;
@@ -31,8 +45,7 @@ class Camera {
     std::vector<ftype> computeInverseDistortion() const;
 
   public:
-    cv::Size imageSize;
-
+    Camera(){};
     Camera(const cv::String& cameraConfigFile);
     Camera(
         cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F), std::vector<ftype> dist = {0, 0, 0, 0});
@@ -41,10 +54,11 @@ class Camera {
     cv::Mat K() const; // intrinsic matrix (3x3)
     const std::vector<ftype>& distortion() const;
 
-    cv::Point2f undistortPoint(const cv::Point2f& point) const;
-    cv::Point2f projectPoint(const Eigen::Vector3T& point) const;
-    cv::Point2f projectPoint(const cv::Point2f& point) const;
     static cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist);
+    cv::Point2f undistortPoint(const cv::Point2f& point) const override;
+    cv::Point2f projectPoint(const Eigen::Vector3T& point) const override;
+    cv::Point2f projectPoint(const cv::Point2f& point) const override;
+    cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint) override;
 };
 
 } // namespace GIFT

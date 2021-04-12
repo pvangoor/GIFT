@@ -87,6 +87,10 @@ cv::Point2f Camera::projectPoint(const cv::Point2f& point) const {
     return projectedPoint;
 }
 
+cv::Point2f Camera::distortNormalisedPoint(const cv::Point2f& normalPoint) {
+    return distortNormalisedPoint(normalPoint, this->dist);
+}
+
 cv::Point2f Camera::distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist) {
     cv::Point2f distortedPoint = normalPoint;
     const ftype r2 = normalPoint.x * normalPoint.x + normalPoint.y * normalPoint.y;
