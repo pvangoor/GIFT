@@ -37,7 +37,8 @@ class GICamera {
     virtual cv::Point2f projectPoint(const cv::Point2f& point) const = 0;
     virtual cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint) = 0;
 };
-class Camera : public GICamera {
+
+class PinholeCamera : public GICamera {
   protected:
     ftype fx, fy, cx, cy; // intrinsic parameters
     std::vector<ftype> dist;
@@ -45,9 +46,9 @@ class Camera : public GICamera {
     std::vector<ftype> computeInverseDistortion() const;
 
   public:
-    Camera(){};
-    Camera(const cv::String& cameraConfigFile);
-    Camera(
+    PinholeCamera(){};
+    PinholeCamera(const cv::String& cameraConfigFile);
+    PinholeCamera(
         cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F), std::vector<ftype> dist = {0, 0, 0, 0});
 
     // Geometry functions

@@ -22,7 +22,8 @@ using namespace GIFT;
 using namespace cv;
 using namespace Eigen;
 
-Feature::Feature(const Point2f& newCamCoords, const CamParamConstPtr& cameraPtr, int idNumber, const colorVec& col) {
+Feature::Feature(
+    const Point2f& newCamCoords, const std::shared_ptr<const GICamera>& cameraPtr, int idNumber, const colorVec& col) {
     this->camCoordinates = newCamCoords;
     this->cameraPtr = cameraPtr;
 

@@ -19,7 +19,7 @@
 
 namespace GIFT {
 
-Camera::Camera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) {
+PinholeCamera::PinholeCamera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) {
 
     this->imageSize = sze;
     assert(K.rows == 3 && K.cols == 3);
@@ -31,7 +31,7 @@ Camera::Camera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) {
     this->invDist = computeInverseDistortion();
 }
 
-Camera::Camera(const cv::String& cameraConfigFile) {
+PinholeCamera::PinholeCamera(const cv::String& cameraConfigFile) {
 
     cv::FileStorage fs(cameraConfigFile, cv::FileStorage::READ);
 
@@ -67,31 +67,31 @@ Camera::Camera(const cv::String& cameraConfigFile) {
     this->invDist = computeInverseDistortion();
 }
 
-cv::Point2f Camera::undistortPoint(const cv::Point2f& point) const {
+cv::Point2f PinholeCamera::undistortPoint(const cv::Point2f& point) const {
     cv::Point2f udPoint = cv::Point2f((point.x - cx) / fx, (point.y - cy) / fy);
     udPoint = distortNormalisedPoint(udPoint, invDist);
 
     return udPoint;
 }
 
-cv::Point2f Camera::projectPoint(const Eigen::Vector3T& point) const {
+cv::Point2f PinholeCamera::projectPoint(const Eigen::Vector3T& point) const {
     cv::Point2f homogPoint;
     homogPoint.x = point.x() / point.z();
     homogPoint.y = point.y() / point.z();
     return projectPoint(homogPoint);
 }
 
-cv::Point2f Camera::projectPoint(const cv::Point2f& point) const {
+cv::Point2f PinholeCamera::projectPoint(const cv::Point2f& point) const {
     cv::Point2f distortedPoint = distortNormalisedPoint(point, this->dist);
     cv::Point2f projectedPoint(fx * distortedPoint.x + cx, fy * distortedPoint.y + cy);
     return projectedPoint;
 }
 
-cv::Point2f Camera::distortNormalisedPoint(const cv::Point2f& normalPoint) {
+cv::Point2f PinholeCamera::distortNormalisedPoint(const cv::Point2f& normalPoint) {
     return distortNormalisedPoint(normalPoint, this->dist);
 }
 
-cv::Point2f Camera::distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist) {
+cv::Point2f PinholeCamera::distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist) {
     cv::Point2f distortedPoint = normalPoint;
     const ftype r2 = normalPoint.x * normalPoint.x + normalPoint.y * normalPoint.y;
     if (dist.size() >= 2) {
@@ -111,7 +111,7 @@ cv::Point2f Camera::distortNormalisedPoint(const cv::Point2f& normalPoint, const
     return distortedPoint;
 }
 
-std::vector<ftype> Camera::computeInverseDistortion() const {
+std::vector<ftype> PinholeCamera::computeInverseDistortion() const {
     const cv::Size compSize = imageSize.area() == 0 ? cv::Size(int(round(cx * 2)), int(round(cy * 2))) : imageSize;
 
     // Construct a vector of normalised points
@@ -144,7 +144,7 @@ std::vector<ftype> Camera::computeInverseDistortion() const {
     return invDistVec;
 }
 
-cv::Mat Camera::K() const {
+cv::Mat PinholeCamera::K() const {
     cv::Mat K = cv::Mat::eye(3, 3, CV_64F);
     K.at<double>(0, 0) = fx;
     K.at<double>(1, 1) = fy;
@@ -153,6 +153,6 @@ cv::Mat Camera::K() const {
     return K;
 }
 
-const std::vector<ftype>& Camera::distortion() const { return dist; }
+const std::vector<ftype>& PinholeCamera::distortion() const { return dist; }
 
 } // namespace GIFT

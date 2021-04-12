@@ -29,13 +29,11 @@ using colorVec = std::array<uchar, 3>;
 
 namespace GIFT {
 
-struct Camera;
-using CamParamConstPtr = std::shared_ptr<const Camera>;
-
+class GICamera;
 struct Feature {
     cv::Point2f camCoordinates;
 
-    std::shared_ptr<const Camera> cameraPtr;
+    std::shared_ptr<const GICamera> cameraPtr;
 
     Eigen::Vector2T opticalFlowRaw;
     Eigen::Vector2T opticalFlowNorm;
@@ -45,7 +43,7 @@ struct Feature {
     int lifetime = 0;
 
     Feature(){};
-    Feature(const cv::Point2f& newCamCoords, const CamParamConstPtr& cameraPtr, int idNumber,
+    Feature(const cv::Point2f& newCamCoords, const std::shared_ptr<const GICamera>& cameraPtr, int idNumber,
         const colorVec& col = {0, 0, 0});
     void update(const cv::Point2f& newCamCoords, const colorVec& col = {0, 0, 0});
 

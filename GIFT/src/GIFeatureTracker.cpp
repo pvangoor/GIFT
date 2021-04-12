@@ -19,15 +19,20 @@
 using namespace GIFT;
 
 // Initialisation and configuration
-GIFeatureTracker::GIFeatureTracker(const Camera& cameraParams, const cv::Mat& mask) {
+GIFeatureTracker::GIFeatureTracker(const std::shared_ptr<const GICamera> cameraParams, const cv::Mat& mask) {
     this->setCamera(cameraParams);
     this->setMask(mask);
 }
 
-GIFeatureTracker::GIFeatureTracker(const Camera& cameraParams) { this->setCamera(cameraParams); }
+GIFeatureTracker::GIFeatureTracker(const std::shared_ptr<const GICamera> cameraParams) {
+    this->setCamera(cameraParams);
+}
 
-void GIFeatureTracker::setCamera(const Camera& cameraParameters) {
-    cameraPtr = std::make_shared<Camera>(cameraParameters);
+void GIFeatureTracker::setCamera(const std::shared_ptr<const GICamera> cameraParameters) {
+    // cameraPtr = std::shared_ptr<const GICamera>(cameraParameters);
+    // cameraPtr = std::make_shared<const GICamera>(cameraParameters);
+    // cameraPtr.reset(cameraParameters);
+    cameraPtr = cameraParameters;
 }
 
 void GIFeatureTracker::setMask(const cv::Mat& mask) { this->mask = mask; }

@@ -25,7 +25,6 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
-#include "Configure.h"
 #include "EgoMotion.h"
 #include "PointFeatureTracker.h"
 #include "Visualisation.h"
@@ -72,8 +71,8 @@ int main(int argc, char* argv[]) {
     videoFile = argv[1];
 
     // Set up a monocular feature tracker
-    GIFT::Camera cam0 = GIFT::readCameraConfig(camConfigFile);
-    GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(cam0);
+    GIFT::PinholeCamera cam0 = GIFT::PinholeCamera(camConfigFile);
+    GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(std::make_shared<const GIFT::PinholeCamera>(cam0));
     ft.maxFeatures = 250;
     ft.featureDist = 20;
 

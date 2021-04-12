@@ -50,8 +50,9 @@ class KeyPointFeatureTracker : public GIFeatureTracker {
 
     // Initialisation and configuration
     KeyPointFeatureTracker() = default;
-    KeyPointFeatureTracker(const Camera& cameraParams) : GIFeatureTracker(cameraParams){};
-    KeyPointFeatureTracker(const Camera& cameraParams, const cv::Mat& mask) : GIFeatureTracker(cameraParams, mask){};
+    KeyPointFeatureTracker(const std::shared_ptr<const GICamera> cameraParams) : GIFeatureTracker(cameraParams){};
+    KeyPointFeatureTracker(const std::shared_ptr<const GICamera> cameraParams, const cv::Mat& mask)
+        : GIFeatureTracker(cameraParams, mask){};
 
     // Core
     virtual void detectFeatures(const cv::Mat& image) override;

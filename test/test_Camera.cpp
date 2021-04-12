@@ -33,7 +33,7 @@ TEST(CameraTest, Project) {
     const double cy = 248.375;
     const Mat K = (Mat_<double>(3, 3) << fx, 0, cx, 0, fy, cy, 0, 0, 1);
 
-    Camera cam_noDist = Camera(imageSize, K);
+    PinholeCamera cam_noDist = PinholeCamera(imageSize, K);
 
     // Test on a grid of points
     constexpr int skip = 30;
