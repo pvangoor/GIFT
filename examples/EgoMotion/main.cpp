@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 
     // Set up a monocular feature tracker
     GIFT::PinholeCamera cam0 = GIFT::PinholeCamera(camConfigFile);
-    GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(std::make_shared<const GIFT::PinholeCamera>(cam0));
+    GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(cam0);
     ft.maxFeatures = 250;
     ft.featureDist = 20;
 

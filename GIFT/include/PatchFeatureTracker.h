@@ -27,11 +27,10 @@
 
 namespace GIFT {
 
-template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeatureTracker {
+template <class PG = TranslationGroup, std::enable_if_t<std::is_base_of<ParameterGroup, PG>::value, bool> = true>
+class PatchFeatureTracker : public GIFeatureTracker {
   protected:
     // Transform parameters and patches
-    static_assert(
-        std::is_base_of<ParameterGroup, PG>::value, "Patch tracker template is not derived from ParameterGroup.");
     struct InternalPatchFeature {
         PyramidPatch patch;
         PG parameters;
@@ -61,6 +60,8 @@ template <class PG = TranslationGroup> class PatchFeatureTracker : public GIFeat
     PatchFeatureTracker(const std::shared_ptr<const GICamera> cameraParams) : GIFeatureTracker(cameraParams){};
     PatchFeatureTracker(const std::shared_ptr<const GICamera> cameraParams, const cv::Mat& mask)
         : GIFeatureTracker(cameraParams, mask){};
+    template <class CamClass, std::enable_if_t<std::is_base_of<GICamera, CamClass>::value, bool> = true>
+    PatchFeatureTracker(const CamClass& cameraParams) : GIFeatureTracker(cameraParams){};
 
     // Core
     virtual void detectFeatures(const cv::Mat& image) override {

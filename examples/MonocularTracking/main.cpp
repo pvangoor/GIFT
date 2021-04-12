@@ -23,7 +23,7 @@
 int main(int argc, char* argv[]) {
 
     GIFT::PinholeCamera camera = GIFT::PinholeCamera(cv::String(argv[1]));
-    GIFT::PointFeatureTracker ft(std::make_shared<const GIFT::PinholeCamera>(camera));
+    GIFT::PointFeatureTracker ft(camera);
 
     cv::VideoCapture cap;
     cap.open(cv::String(argv[2]));

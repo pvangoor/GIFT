@@ -22,10 +22,8 @@
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-
-    GIFT::PinholeCamera cameraParams = GIFT::PinholeCamera(cv::String(argv[1]));
-    GIFT::PatchFeatureTracker<TranslationGroup> ft =
-        GIFT::PatchFeatureTracker<TranslationGroup>(std::make_shared<const GIFT::PinholeCamera>(cameraParams));
+    const GIFT::PinholeCamera cameraParams{cv::String(argv[1])};
+    GIFT::PatchFeatureTracker<TranslationGroup> ft = GIFT::PatchFeatureTracker<TranslationGroup>(cameraParams);
 
     cv::VideoCapture cap;
     cap.open(cv::String(argv[2]));

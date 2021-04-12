@@ -23,6 +23,8 @@
 #include "Feature.h"
 #include "opencv2/core.hpp"
 
+#include <type_traits>
+
 namespace GIFT {
 
 class GIFeatureTracker {
@@ -34,6 +36,8 @@ class GIFeatureTracker {
   public:
     // Initialisation and configuration
     GIFeatureTracker(){};
+    template <class CamClass, std::enable_if_t<std::is_base_of<GICamera, CamClass>::value, bool> = true>
+    GIFeatureTracker(const CamClass& cameraParams) : GIFeatureTracker(std::make_shared<const CamClass>(cameraParams)) {}
     GIFeatureTracker(const std::shared_ptr<const GICamera> cameraParams);
     GIFeatureTracker(const std::shared_ptr<const GICamera> cameraParams, const cv::Mat& mask);
     virtual ~GIFeatureTracker(){};

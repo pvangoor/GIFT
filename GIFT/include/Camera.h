@@ -46,10 +46,9 @@ class PinholeCamera : public GICamera {
     std::vector<ftype> computeInverseDistortion() const;
 
   public:
-    PinholeCamera(){};
-    PinholeCamera(const cv::String& cameraConfigFile);
     PinholeCamera(
         cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F), std::vector<ftype> dist = {0, 0, 0, 0});
+    PinholeCamera(const cv::String& cameraConfigFile);
 
     // Geometry functions
     cv::Mat K() const; // intrinsic matrix (3x3)
