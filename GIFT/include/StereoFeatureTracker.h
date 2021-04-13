@@ -38,17 +38,20 @@ class StereoFeatureTracker {
 
   public:
     // Initialisation
-    StereoFeatureTracker(const Camera& camLeft, const Camera& camRight) {
+    StereoFeatureTracker(
+        const std::shared_ptr<const GICamera> camLeft, const std::shared_ptr<const GICamera> camRight) {
         trackerLeft.setCamera(camLeft);
         trackerRight.setCamera(camRight);
     };
 
     // Configuration
-    void setCameraConfiguration(const Camera& camLeft, const Camera& camRight) {
+    void setCameraConfiguration(
+        const std::shared_ptr<const GICamera> camLeft, const std::shared_ptr<const GICamera> camRight) {
         trackerLeft.setCamera(camLeft);
         trackerRight.setCamera(camRight);
     };
-    void setCameraConfiguration(const Camera& configuration, StereoCam stereoCam = StereoCam::Left) {
+    void setCameraConfiguration(
+        const std::shared_ptr<const GICamera> configuration, StereoCam stereoCam = StereoCam::Left) {
         if (stereoCam == StereoCam::Left)
             trackerLeft.setCamera(configuration);
         else

@@ -50,10 +50,6 @@ set(GIFT_HEADER_FILES
 find_package(yaml-cpp REQUIRED)
 if(yaml-cpp_FOUND)
     message("Including optional dependency yaml-cpp")
-    list(APPEND GIFT_SOURCE_FILES
-    src/Configure.cpp)
-    list(APPEND GIFT_HEADER_FILES
-    include/Configure.h)
 else()
     message("yaml-cpp was not found.")
 endif()

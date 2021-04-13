@@ -15,7 +15,6 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Configure.h"
 #include "PointFeatureTracker.h"
 #include "Visualisation.h"
 
@@ -23,7 +22,8 @@
 
 int main(int argc, char* argv[]) {
 
-    GIFT::PointFeatureTracker ft(GIFT::readCameraConfig(cv::String(argv[1])));
+    GIFT::PinholeCamera camera = GIFT::PinholeCamera(cv::String(argv[1]));
+    GIFT::PointFeatureTracker ft(camera);
 
     cv::VideoCapture cap;
     cap.open(cv::String(argv[2]));

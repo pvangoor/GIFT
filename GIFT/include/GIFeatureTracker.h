@@ -23,21 +23,25 @@
 #include "Feature.h"
 #include "opencv2/core.hpp"
 
+#include <type_traits>
+
 namespace GIFT {
 
 class GIFeatureTracker {
   protected:
     int currentNumber = 0;
-    std::shared_ptr<Camera> cameraPtr;
+    std::shared_ptr<const GICamera> cameraPtr;
     cv::Mat mask;
 
   public:
     // Initialisation and configuration
     GIFeatureTracker(){};
-    GIFeatureTracker(const Camera& cameraParams);
-    GIFeatureTracker(const Camera& cameraParams, const cv::Mat& mask);
+    template <class CamClass, std::enable_if_t<std::is_base_of<GICamera, CamClass>::value, bool> = true>
+    GIFeatureTracker(const CamClass& cameraParams) : GIFeatureTracker(std::make_shared<const CamClass>(cameraParams)) {}
+    GIFeatureTracker(const std::shared_ptr<const GICamera> cameraParams);
+    GIFeatureTracker(const std::shared_ptr<const GICamera> cameraParams, const cv::Mat& mask);
     virtual ~GIFeatureTracker(){};
-    virtual void setCamera(const Camera& cameraParameters);
+    virtual void setCamera(const std::shared_ptr<const GICamera> cameraParameters);
     virtual void setMask(const cv::Mat& mask);
 
     ftype featureSearchThreshold = 0.8;

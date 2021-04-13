@@ -15,11 +15,11 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Configure.h"
 #include "PointFeatureTracker.h"
 #include "Visualisation.h"
 
 #include "opencv2/highgui/highgui.hpp"
+#include "yaml-cpp/yaml.h"
 
 #include <ctime>
 #include <fstream>
@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Set up the feature tracker
-    GIFT::Camera camera = GIFT::Camera(cv::String(argv[1]));
+    GIFT::PinholeCamera camera = GIFT::PinholeCamera(cv::String(argv[1]));
     GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(camera);
     ft.maxFeatures = 50;
     ft.featureDist = 15;

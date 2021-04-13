@@ -15,7 +15,6 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Configure.h"
 #include "PatchFeatureTracker.h"
 #include "Visualisation.h"
 
@@ -23,9 +22,8 @@
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-
-    GIFT::Camera cameraParams = GIFT::readCameraConfig(cv::String(argv[1]));
-    GIFT::PatchFeatureTracker<TranslationGroup> ft(cameraParams);
+    const GIFT::PinholeCamera cameraParams{cv::String(argv[1])};
+    GIFT::PatchFeatureTracker<TranslationGroup> ft = GIFT::PatchFeatureTracker<TranslationGroup>(cameraParams);
 
     cv::VideoCapture cap;
     cap.open(cv::String(argv[2]));

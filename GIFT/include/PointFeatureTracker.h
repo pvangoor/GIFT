@@ -45,8 +45,11 @@ class PointFeatureTracker : public GIFeatureTracker {
   public:
     // Initialisation and configuration
     PointFeatureTracker() : GIFeatureTracker() {}
-    PointFeatureTracker(const Camera& cameraParams) : GIFeatureTracker(cameraParams) {}
-    PointFeatureTracker(const Camera& cameraParams, const cv::Mat& mask) : GIFeatureTracker(cameraParams, mask) {}
+    PointFeatureTracker(const std::shared_ptr<const GICamera> cameraParams) : GIFeatureTracker(cameraParams) {}
+    PointFeatureTracker(const std::shared_ptr<const GICamera> cameraParams, const cv::Mat& mask)
+        : GIFeatureTracker(cameraParams, mask) {}
+    template <class CamClass, std::enable_if_t<std::is_base_of<GICamera, CamClass>::value, bool> = true>
+    PointFeatureTracker(const CamClass& cameraParams) : GIFeatureTracker(cameraParams){};
 
     // Core
     virtual void processImage(const cv::Mat& image) override;
