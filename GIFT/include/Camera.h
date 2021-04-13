@@ -33,9 +33,19 @@ class GICamera {
     GICamera(){};
     GICamera(const cv::String& cameraConfigFile);
 
-    virtual cv::Point2f undistortPoint(const cv::Point2f& point) const = 0;
+    // map from pixels to R3 sphere coordinates
+    virtual Eigen::Vector3T undistortPoint(const cv::Point2f& point) const = 0;
+
+    // map from R3 sphere coordinates to pixels
     virtual cv::Point2f projectPoint(const Eigen::Vector3T& point) const = 0;
-    virtual cv::Point2f projectPoint(const cv::Point2f& point) const = 0;
+
+    virtual cv::Point2f undistortPointCV(const cv::Point2f& point) const {
+        Eigen::Vector3T uPoint = undistortPoint(point);
+        return cv::Point2f(uPoint.x(), uPoint.y()) / uPoint.z();
+    };
+    virtual cv::Point2f projectPoint(const cv::Point2f& point) const {
+        return projectPoint(Eigen::Vector3T(point.x, point.y, 1.0));
+    }
 };
 
 class PinholeCamera : public GICamera {
@@ -55,7 +65,8 @@ class PinholeCamera : public GICamera {
     const std::vector<ftype>& distortion() const;
 
     static cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist);
-    cv::Point2f undistortPoint(const cv::Point2f& point) const override;
+    Eigen::Vector3T undistortPoint(const cv::Point2f& point) const override;
+    cv::Point2f undistortPointCV(const cv::Point2f& point) const override;
     cv::Point2f projectPoint(const Eigen::Vector3T& point) const override;
     cv::Point2f projectPoint(const cv::Point2f& point) const override;
     cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint);
@@ -74,9 +85,8 @@ class DoubleSphereCamera : public GICamera {
     // Geometry functions
     std::array<ftype, 6> parameters() const;
 
-    cv::Point2f undistortPoint(const cv::Point2f& point) const override;
+    Eigen::Vector3T undistortPoint(const cv::Point2f& point) const override;
     cv::Point2f projectPoint(const Eigen::Vector3T& point) const override;
-    cv::Point2f projectPoint(const cv::Point2f& point) const override;
 };
 
 } // namespace GIFT

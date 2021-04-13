@@ -41,7 +41,7 @@ TEST(CameraTest, Project) {
         for (int y = 0; y < imageSize.width; y += skip) {
             const Point2f imagePoint(x, y);
             const Point2f normalPoint((x - cx) / fx, (y - cy) / fy);
-            const Point2f estNormalPoint = cam_noDist.undistortPoint(imagePoint);
+            const Point2f estNormalPoint = cam_noDist.undistortPointCV(imagePoint);
 
             const double error = norm(estNormalPoint - normalPoint);
             EXPECT_LE(error, 1e-4);

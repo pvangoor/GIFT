@@ -67,7 +67,12 @@ PinholeCamera::PinholeCamera(const cv::String& cameraConfigFile) {
     this->invDist = computeInverseDistortion();
 }
 
-cv::Point2f PinholeCamera::undistortPoint(const cv::Point2f& point) const {
+Eigen::Vector3T PinholeCamera::undistortPoint(const cv::Point2f& point) const {
+    cv::Point2f uPoint = undistortPointCV(point);
+    return Eigen::Vector3T(uPoint.x, uPoint.y, 1.0).normalized();
+}
+
+cv::Point2f PinholeCamera::undistortPointCV(const cv::Point2f& point) const {
     cv::Point2f udPoint = cv::Point2f((point.x - cx) / fx, (point.y - cy) / fy);
     udPoint = distortNormalisedPoint(udPoint, invDist);
 
@@ -165,38 +170,76 @@ DoubleSphereCamera::DoubleSphereCamera(const std::array<ftype, 6>& doubleSphereP
     alpha = doubleSphereParameters[5];
 }
 
-// DoubleSphereCamera::DoubleSphereCamera(const cv::String& cameraConfigFile);
+DoubleSphereCamera::DoubleSphereCamera(const cv::String& cameraConfigFile) {
+
+    cv::FileStorage fs(cameraConfigFile, cv::FileStorage::READ);
+
+    std::vector<int> tempSize = {0, 0};
+    if (!fs["image_size"].empty()) {
+        fs["image_size"] >> tempSize;
+    } else if (!fs["size"].empty()) {
+        fs["size"] >> tempSize;
+    }
+    this->imageSize = cv::Size(tempSize[1], tempSize[0]);
+
+    cv::Mat K;
+    bool KFlag = true;
+    if (!fs["camera_matrix"].empty()) {
+        fs["camera_matrix"] >> K;
+    } else if (!fs["camera"].empty()) {
+        fs["camera"] >> K;
+    } else if (!fs["K"].empty()) {
+        fs["K"] >> K;
+    } else {
+        KFlag = false;
+    }
+    if (KFlag) {
+        this->fx = K.at<double>(0, 0);
+        this->fy = K.at<double>(1, 1);
+        this->cx = K.at<double>(0, 2);
+        this->cy = K.at<double>(1, 2);
+    } else {
+        if (!fs["fx"].empty())
+            fs["fx"] >> this->fx;
+        if (!fs["fy"].empty())
+            fs["fy"] >> this->fy;
+        if (!fs["cx"].empty())
+            fs["cx"] >> this->cx;
+        if (!fs["cy"].empty())
+            fs["cy"] >> this->cy;
+    }
+
+    if (!fs["xi"].empty()) {
+        fs["xi"] >> this->xi;
+    }
+    if (!fs["alpha"].empty()) {
+        fs["alpha"] >> this->alpha;
+    }
+}
 
 std::array<ftype, 6> DoubleSphereCamera::parameters() const { return std::array<ftype, 6>{fx, fy, cx, cy, xi, alpha}; }
 
-cv::Point2f DoubleSphereCamera::undistortPoint(const cv::Point2f& point) const {
-    float mx = (point.x - cx) / fx;
-    float my = (point.y - cy) / fy;
-    float r2 = mx * mx + my * my;
-    float mz = (1 - alpha * alpha * r2) / (alpha * sqrt(1 - (2 * alpha - 1) * r2) + 1. - alpha);
+Eigen::Vector3T DoubleSphereCamera::undistortPoint(const cv::Point2f& point) const {
+    Eigen::Vector3T mVec;
 
-    float factor = (mz * xi + sqrt(mz * mz + (1 - xi * xi) * r2)) / (mz * mz + r2);
-    float newZ = factor * mz - xi;
+    mVec.x() = (point.x - cx) / fx;
+    mVec.y() = (point.y - cy) / fy;
+    float r2 = mVec.x() * mVec.x() + mVec.y() * mVec.y();
+    mVec.z() = (1 - alpha * alpha * r2) / (alpha * sqrt(1 - (2 * alpha - 1) * r2) + 1. - alpha);
 
-    cv::Point2f uPoint;
-    uPoint.x = factor * mx / newZ;
-    uPoint.y = factor * my / newZ;
-    return uPoint;
+    float factor = (mVec.z() * xi + sqrt(mVec.z() * mVec.z() + (1 - xi * xi) * r2)) / (mVec.z() * mVec.z() + r2);
+    mVec = factor * mVec - Eigen::Vector3T(0, 0, xi);
+
+    return mVec;
 }
 
 cv::Point2f DoubleSphereCamera::projectPoint(const Eigen::Vector3T& point) const {
-    cv::Point2f homogPoint;
-    homogPoint.x = point.x() / point.z();
-    homogPoint.y = point.y() / point.z();
-    return projectPoint(homogPoint);
-}
-cv::Point2f DoubleSphereCamera::projectPoint(const cv::Point2f& point) const {
     cv::Point2f projPoint;
-    const float d1 = sqrt(point.x * point.x + point.y * point.y + 1.);
-    const float d2 = sqrt(point.x * point.x + point.y * point.y + (1. + xi * d1));
-    const float denom = 1.0 / (alpha * d2 + (1 - alpha) * (xi * d1 + 1.));
-    projPoint.x = fx * denom * point.x + cx;
-    projPoint.y = fy * denom * point.y + cy;
+    const float d1 = point.norm();
+    const float d2 = (point + Eigen::Vector3T(0, 0, xi * d1)).norm();
+    const float denom = 1.0 / (alpha * d2 + (1 - alpha) * (xi * d1 + point.z()));
+    projPoint.x = fx * denom * point.x() + cx;
+    projPoint.y = fy * denom * point.y() + cy;
 
     return projPoint;
 }

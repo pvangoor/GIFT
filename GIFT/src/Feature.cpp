@@ -39,7 +39,7 @@ Feature::Feature(
 
 void Feature::update(const cv::Point2f& newCamCoords, const colorVec& col) {
     this->opticalFlowRaw << newCamCoords.x - this->camCoordinates.x, newCamCoords.y - this->camCoordinates.y;
-    cv::Point2f newCamCoordsNorm = cameraPtr->undistortPoint(newCamCoords);
+    cv::Point2f newCamCoordsNorm = cameraPtr->undistortPointCV(newCamCoords);
     this->opticalFlowNorm << newCamCoordsNorm.x - this->camCoordinatesNorm().x,
         newCamCoordsNorm.y - this->camCoordinatesNorm().y;
 
@@ -60,7 +60,7 @@ Eigen::Vector3T Feature::sphereCoordinates() const {
     return result.normalized();
 }
 
-cv::Point2f Feature::camCoordinatesNorm() const { return cameraPtr->undistortPoint(camCoordinates); }
+cv::Point2f Feature::camCoordinatesNorm() const { return cameraPtr->undistortPointCV(camCoordinates); }
 
 Eigen::Vector3T Feature::opticalFlowSphere() const {
     const Vector3T bearing = sphereCoordinates();
