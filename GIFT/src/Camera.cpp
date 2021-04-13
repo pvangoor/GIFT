@@ -17,7 +17,7 @@
 
 #include "Camera.h"
 
-namespace GIFT {
+using namespace GIFT;
 
 PinholeCamera::PinholeCamera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) {
 
@@ -155,4 +155,48 @@ cv::Mat PinholeCamera::K() const {
 
 const std::vector<ftype>& PinholeCamera::distortion() const { return dist; }
 
-} // namespace GIFT
+DoubleSphereCamera::DoubleSphereCamera(const std::array<ftype, 6>& doubleSphereParameters, cv::Size sze) {
+    imageSize = sze;
+    fx = doubleSphereParameters[0];
+    fy = doubleSphereParameters[1];
+    cx = doubleSphereParameters[2];
+    cy = doubleSphereParameters[3];
+    xi = doubleSphereParameters[4];
+    alpha = doubleSphereParameters[5];
+}
+
+// DoubleSphereCamera::DoubleSphereCamera(const cv::String& cameraConfigFile);
+
+std::array<ftype, 6> DoubleSphereCamera::parameters() const { return std::array<ftype, 6>{fx, fy, cx, cy, xi, alpha}; }
+
+cv::Point2f DoubleSphereCamera::undistortPoint(const cv::Point2f& point) const {
+    float mx = (point.x - cx) / fx;
+    float my = (point.y - cy) / fy;
+    float r2 = mx * mx + my * my;
+    float mz = (1 - alpha * alpha * r2) / (alpha * sqrt(1 - (2 * alpha - 1) * r2) + 1. - alpha);
+
+    float factor = (mz * xi + sqrt(mz * mz + (1 - xi * xi) * r2)) / (mz * mz + r2);
+    float newZ = factor * mz - xi;
+
+    cv::Point2f uPoint;
+    uPoint.x = factor * mx / newZ;
+    uPoint.y = factor * my / newZ;
+    return uPoint;
+}
+
+cv::Point2f DoubleSphereCamera::projectPoint(const Eigen::Vector3T& point) const {
+    cv::Point2f homogPoint;
+    homogPoint.x = point.x() / point.z();
+    homogPoint.y = point.y() / point.z();
+    return projectPoint(homogPoint);
+}
+cv::Point2f DoubleSphereCamera::projectPoint(const cv::Point2f& point) const {
+    cv::Point2f projPoint;
+    const float d1 = sqrt(point.x * point.x + point.y * point.y + 1.);
+    const float d2 = sqrt(point.x * point.x + point.y * point.y + (1. + xi * d1));
+    const float denom = 1.0 / (alpha * d2 + (1 - alpha) * (xi * d1 + 1.));
+    projPoint.x = fx * denom * point.x + cx;
+    projPoint.y = fy * denom * point.y + cy;
+
+    return projPoint;
+}

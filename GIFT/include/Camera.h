@@ -20,6 +20,7 @@
 #include "eigen3/Eigen/Dense"
 #include "ftype.h"
 #include "opencv2/core/core.hpp"
+#include <array>
 #include <vector>
 
 namespace GIFT {
@@ -35,7 +36,6 @@ class GICamera {
     virtual cv::Point2f undistortPoint(const cv::Point2f& point) const = 0;
     virtual cv::Point2f projectPoint(const Eigen::Vector3T& point) const = 0;
     virtual cv::Point2f projectPoint(const cv::Point2f& point) const = 0;
-    virtual cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint) = 0;
 };
 
 class PinholeCamera : public GICamera {
@@ -58,7 +58,25 @@ class PinholeCamera : public GICamera {
     cv::Point2f undistortPoint(const cv::Point2f& point) const override;
     cv::Point2f projectPoint(const Eigen::Vector3T& point) const override;
     cv::Point2f projectPoint(const cv::Point2f& point) const override;
-    cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint) override;
+    cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint);
+};
+
+class DoubleSphereCamera : public GICamera {
+    // Implements the double sphere camera model found here:
+    // https://arxiv.org/pdf/1807.08957.pdf
+  protected:
+    ftype fx, fy, cx, cy, xi, alpha;
+
+  public:
+    DoubleSphereCamera(const std::array<ftype, 6>& doubleSphereParameters, cv::Size sze = cv::Size(0, 0));
+    DoubleSphereCamera(const cv::String& cameraConfigFile);
+
+    // Geometry functions
+    std::array<ftype, 6> parameters() const;
+
+    cv::Point2f undistortPoint(const cv::Point2f& point) const override;
+    cv::Point2f projectPoint(const Eigen::Vector3T& point) const override;
+    cv::Point2f projectPoint(const cv::Point2f& point) const override;
 };
 
 } // namespace GIFT
