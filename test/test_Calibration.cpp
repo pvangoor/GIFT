@@ -69,5 +69,12 @@ TEST(CalibrationTest, IntrinsicsRecovery) {
 
     Eigen::Matrix3T estK = GIFT::initialisePinholeIntrinsics(homographies);
 
-    EXPECT_LE((estK - trueK).norm(), 1e-3);
+    EXPECT_LE((estK - trueK).norm(), 1e-6);
+
+    // Estimate the poses again
+    std::vector<Eigen::Matrix4T> estPoses = GIFT::initialisePoses(homographies, estK);
+    ASSERT_EQ(estPoses.size(), truePoses.size());
+    for (int i = 0; i < truePoses.size(); ++i) {
+        EXPECT_LE((estPoses[i] - truePoses[i]).norm(), 1e-6);
+    }
 }

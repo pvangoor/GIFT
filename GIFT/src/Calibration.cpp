@@ -105,6 +105,23 @@ Eigen::Matrix3T GIFT::initialisePinholeIntrinsics(const std::vector<cv::Mat>& ho
 }
 
 std::vector<Eigen::Matrix4T> GIFT::initialisePoses(
+    const std::vector<Eigen::Matrix3T>& homographies, const Eigen::Matrix3T& cameraMatrix) {
+    std::vector<cv::Mat> cvHomographies(homographies.size());
+    std::transform(homographies.begin(), homographies.end(), cvHomographies.begin(), [](const Eigen::Matrix3T& H) {
+        cv::Mat cvH;
+        cv::eigen2cv(H, cvH);
+        return cvH;
+    });
+    return GIFT::initialisePoses(cvHomographies, cameraMatrix);
+}
+
+Eigen::Matrix4T GIFT::initialisePose(const Eigen::Matrix3T& homography, const Eigen::Matrix3T& cameraMatrix) {
+    cv::Mat cvH;
+    cv::eigen2cv(homography, cvH);
+    return GIFT::initialisePose(cvH, cameraMatrix);
+}
+
+std::vector<Eigen::Matrix4T> GIFT::initialisePoses(
     const std::vector<cv::Mat>& homographies, const Eigen::Matrix3T& cameraMatrix) {
     std::vector<Eigen::Matrix4T> poses(homographies.size());
     std::transform(homographies.begin(), homographies.end(), poses.begin(),

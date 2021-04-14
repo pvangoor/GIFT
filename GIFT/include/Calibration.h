@@ -27,5 +27,8 @@ Eigen::Matrix3T initialisePinholeIntrinsics(const std::vector<Eigen::Matrix3T>& 
 std::vector<Eigen::Matrix4T> initialisePoses(
     const std::vector<cv::Mat>& homographies, const Eigen::Matrix3T& cameraMatrix);
 Eigen::Matrix4T initialisePose(const cv::Mat& homography, const Eigen::Matrix3T& cameraMatrix);
+std::vector<Eigen::Matrix4T> initialisePoses(
+    const std::vector<Eigen::Matrix3T>& homographies, const Eigen::Matrix3T& cameraMatrix);
+Eigen::Matrix4T initialisePose(const Eigen::Matrix3T& homography, const Eigen::Matrix3T& cameraMatrix);
 
 }; // namespace GIFT
