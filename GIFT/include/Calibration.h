@@ -21,7 +21,9 @@
 
 namespace GIFT {
 
-GIFT::PinholeCamera initialisePinholeIntrinsics(const std::vector<cv::Mat>& homographies);
+Eigen::Matrix3T initialisePinholeIntrinsics(const std::vector<cv::Mat>& homographies);
+Eigen::Matrix3T initialisePinholeIntrinsics(const std::vector<Eigen::Matrix3T>& homographies);
+
 std::vector<Eigen::Matrix4T> initialisePoses(
     const std::vector<cv::Mat>& homographies, const Eigen::Matrix3T& cameraMatrix);
 Eigen::Matrix4T initialisePose(const cv::Mat& homography, const Eigen::Matrix3T& cameraMatrix);

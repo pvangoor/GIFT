@@ -16,12 +16,23 @@
 */
 
 #include "Calibration.h"
+
 #include "Eigen/SVD"
 #include "unsupported/Eigen/MatrixFunctions"
 
-using namespace GIFT;
+#include "opencv2/core/eigen.hpp"
 
-Eigen::Matrix3T initialisePinholeIntrinsics(const std::vector<cv::Mat>& homographies) {
+Eigen::Matrix3T GIFT::initialisePinholeIntrinsics(const std::vector<Eigen::Matrix3T>& homographies) {
+    std::vector<cv::Mat> cvHomographies(homographies.size());
+    std::transform(homographies.begin(), homographies.end(), cvHomographies.begin(), [](const Eigen::Matrix3T& H) {
+        cv::Mat cvH;
+        cv::eigen2cv(H, cvH);
+        return cvH;
+    });
+    return GIFT::initialisePinholeIntrinsics(cvHomographies);
+}
+
+Eigen::Matrix3T GIFT::initialisePinholeIntrinsics(const std::vector<cv::Mat>& homographies) {
     // Closed form solution to pinhole camera intrinsics
     // https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=888718
 
@@ -49,6 +60,9 @@ Eigen::Matrix3T initialisePinholeIntrinsics(const std::vector<cv::Mat>& homograp
             H.at<ftype>(2, 1) * H.at<ftype>(2, 1);
         Eigen::Matrix<ftype, 2, 6> V;
         V << v01.transpose(), (v00 - v11).transpose();
+
+        assert(!V.hasNaN());
+
         return V;
     });
 
@@ -57,10 +71,15 @@ Eigen::Matrix3T initialisePinholeIntrinsics(const std::vector<cv::Mat>& homograp
         constraintMatrix.block<2, 6>(2 * i, 0) = constraintMatrices[i];
     }
 
+    assert(!constraintMatrix.hasNaN());
+
     // Compute the smallest right singular vector of the constraint matrix
 
     Eigen::BDCSVD<Eigen::MatrixXT> svd(constraintMatrix, Eigen::ComputeThinU | Eigen::ComputeThinV);
     Eigen::Matrix<ftype, 6, 1> bVector = svd.matrixV().block<6, 1>(0, 5);
+
+    // assert(svd.singularValues()(5) > 1e-6);
+    assert(!bVector.hasNaN());
 
     // Extract parameters
     const ftype &B11 = bVector(0), B12 = bVector(1), B22 = bVector(2), B13 = bVector(3), B23 = bVector(4),
@@ -71,7 +90,7 @@ Eigen::Matrix3T initialisePinholeIntrinsics(const std::vector<cv::Mat>& homograp
     const ftype alpha = sqrt(lambda / B11);
     const ftype beta = sqrt(lambda * B11 / (B11 * B22 - B12 * B12));
     const ftype gamma = -B12 * alpha * alpha * beta / lambda;
-    const ftype u0 = gamma * v0 / alpha - B12 * alpha * alpha / lambda;
+    const ftype u0 = gamma * v0 / alpha - B13 * alpha * alpha / lambda;
 
     Eigen::Matrix3T cameraMatrix = Eigen::Matrix3T::Identity();
     cameraMatrix(0, 0) = alpha;
@@ -80,18 +99,20 @@ Eigen::Matrix3T initialisePinholeIntrinsics(const std::vector<cv::Mat>& homograp
     cameraMatrix(0, 2) = u0;
     cameraMatrix(1, 2) = v0;
 
+    assert(!cameraMatrix.hasNaN());
+
     return cameraMatrix;
 }
 
-std::vector<Eigen::Matrix4T> initialisePoses(
+std::vector<Eigen::Matrix4T> GIFT::initialisePoses(
     const std::vector<cv::Mat>& homographies, const Eigen::Matrix3T& cameraMatrix) {
     std::vector<Eigen::Matrix4T> poses(homographies.size());
     std::transform(homographies.begin(), homographies.end(), poses.begin(),
-        [&cameraMatrix](const cv::Mat& H) { return initialisePose(H, cameraMatrix); });
+        [&cameraMatrix](const cv::Mat& H) { return GIFT::initialisePose(H, cameraMatrix); });
     return poses;
 }
 
-Eigen::Matrix4T initialisePose(const cv::Mat& homography, const Eigen::Matrix3T& cameraMatrix) {
+Eigen::Matrix4T GIFT::initialisePose(const cv::Mat& homography, const Eigen::Matrix3T& cameraMatrix) {
     Eigen::Vector3T h1, h2, h3;
     h1 << homography.at<ftype>(0, 0), homography.at<ftype>(1, 0), homography.at<ftype>(2, 0);
     h2 << homography.at<ftype>(0, 1), homography.at<ftype>(1, 1), homography.at<ftype>(2, 1);

@@ -13,6 +13,7 @@ set(TESTS_LIST
     test_OptimiseParameters
     test_PatchFeatureTracker
     test_KeyPointFeatureTracker
+    test_Calibration
 )
 
 foreach(TEST_NAME ${TESTS_LIST})
