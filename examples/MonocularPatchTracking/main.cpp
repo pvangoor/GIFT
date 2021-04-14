@@ -22,7 +22,7 @@
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-    const GIFT::PinholeCamera cameraParams{cv::String(argv[1])};
+    const GIFT::StandardCamera cameraParams{cv::String(argv[1])};
     GIFT::PatchFeatureTracker<TranslationGroup> ft = GIFT::PatchFeatureTracker<TranslationGroup>(cameraParams);
 
     cv::VideoCapture cap;

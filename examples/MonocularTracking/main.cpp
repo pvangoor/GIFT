@@ -22,7 +22,7 @@
 
 int main(int argc, char* argv[]) {
 
-    GIFT::PinholeCamera camera = GIFT::PinholeCamera(cv::String(argv[1]));
+    GIFT::StandardCamera camera{cv::String(argv[1])};
     GIFT::PointFeatureTracker ft(camera);
 
     cv::VideoCapture cap;

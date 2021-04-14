@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Set up the feature tracker
-    GIFT::PinholeCamera camera = GIFT::PinholeCamera(cv::String(argv[1]));
+    GIFT::StandardCamera camera{cv::String(argv[1])};
     GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(camera);
     ft.maxFeatures = 50;
     ft.featureDist = 15;

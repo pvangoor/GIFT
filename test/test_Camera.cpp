@@ -33,7 +33,7 @@ TEST(CameraTest, PinholeProject) {
     const double cy = 248.375;
     const Mat K = (Mat_<double>(3, 3) << fx, 0, cx, 0, fy, cy, 0, 0, 1);
 
-    PinholeCamera cam_noDist = PinholeCamera(imageSize, K);
+    PinholeCamera cam = PinholeCamera(imageSize, K);
 
     // Test on a grid of points
     constexpr int skip = 30;
@@ -41,7 +41,7 @@ TEST(CameraTest, PinholeProject) {
         for (int y = 0; y < imageSize.width; y += skip) {
             const Point2f imagePoint(x, y);
             const Point2f normalPoint((x - cx) / fx, (y - cy) / fy);
-            const Point2f estNormalPoint = cam_noDist.undistortPointCV(imagePoint);
+            const Point2f estNormalPoint = cam.undistortPointCV(imagePoint);
 
             const double error = norm(estNormalPoint - normalPoint);
             EXPECT_LE(error, 1e-4);

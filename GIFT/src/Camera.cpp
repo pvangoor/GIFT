@@ -19,14 +19,16 @@
 
 using namespace GIFT;
 
-PinholeCamera::PinholeCamera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) {
-
+PinholeCamera::PinholeCamera(cv::Size sze, cv::Mat K) {
     this->imageSize = sze;
     assert(K.rows == 3 && K.cols == 3);
     this->fx = K.at<double>(0, 0);
     this->fy = K.at<double>(1, 1);
     this->cx = K.at<double>(0, 2);
     this->cy = K.at<double>(1, 2);
+}
+
+StandardCamera::StandardCamera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) : PinholeCamera(sze, K) {
     this->dist = dist;
     this->invDist = computeInverseDistortion();
 }
@@ -55,6 +57,11 @@ PinholeCamera::PinholeCamera(const cv::String& cameraConfigFile) {
     this->fy = K.at<double>(1, 1);
     this->cx = K.at<double>(0, 2);
     this->cy = K.at<double>(1, 2);
+}
+
+StandardCamera::StandardCamera(const cv::String& cameraConfigFile) : PinholeCamera(cameraConfigFile) {
+
+    cv::FileStorage fs(cameraConfigFile, cv::FileStorage::READ);
 
     if (!fs["distortion_coefficients"].empty()) {
         fs["distortion_coefficients"] >> this->dist;
@@ -72,11 +79,15 @@ Eigen::Vector3T PinholeCamera::undistortPoint(const cv::Point2f& point) const {
     return Eigen::Vector3T(uPoint.x, uPoint.y, 1.0).normalized();
 }
 
-cv::Point2f PinholeCamera::undistortPointCV(const cv::Point2f& point) const {
-    cv::Point2f udPoint = cv::Point2f((point.x - cx) / fx, (point.y - cy) / fy);
+cv::Point2f StandardCamera::undistortPointCV(const cv::Point2f& point) const {
+    cv::Point2f udPoint = PinholeCamera::undistortPointCV(point);
     udPoint = distortNormalisedPoint(udPoint, invDist);
 
     return udPoint;
+}
+
+cv::Point2f PinholeCamera::undistortPointCV(const cv::Point2f& point) const {
+    return cv::Point2f((point.x - cx) / fx, (point.y - cy) / fy);
 }
 
 cv::Point2f PinholeCamera::projectPoint(const Eigen::Vector3T& point) const {
@@ -86,17 +97,21 @@ cv::Point2f PinholeCamera::projectPoint(const Eigen::Vector3T& point) const {
     return projectPoint(homogPoint);
 }
 
-cv::Point2f PinholeCamera::projectPoint(const cv::Point2f& point) const {
+cv::Point2f StandardCamera::projectPoint(const cv::Point2f& point) const {
     cv::Point2f distortedPoint = distortNormalisedPoint(point, this->dist);
-    cv::Point2f projectedPoint(fx * distortedPoint.x + cx, fy * distortedPoint.y + cy);
+    return PinholeCamera::projectPoint(distortedPoint);
+}
+
+cv::Point2f PinholeCamera::projectPoint(const cv::Point2f& point) const {
+    cv::Point2f projectedPoint(fx * point.x + cx, fy * point.y + cy);
     return projectedPoint;
 }
 
-cv::Point2f PinholeCamera::distortNormalisedPoint(const cv::Point2f& normalPoint) {
+cv::Point2f StandardCamera::distortNormalisedPoint(const cv::Point2f& normalPoint) {
     return distortNormalisedPoint(normalPoint, this->dist);
 }
 
-cv::Point2f PinholeCamera::distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist) {
+cv::Point2f StandardCamera::distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist) {
     cv::Point2f distortedPoint = normalPoint;
     const ftype r2 = normalPoint.x * normalPoint.x + normalPoint.y * normalPoint.y;
     if (dist.size() >= 2) {
@@ -116,7 +131,7 @@ cv::Point2f PinholeCamera::distortNormalisedPoint(const cv::Point2f& normalPoint
     return distortedPoint;
 }
 
-std::vector<ftype> PinholeCamera::computeInverseDistortion() const {
+std::vector<ftype> StandardCamera::computeInverseDistortion() const {
     const cv::Size compSize = imageSize.area() == 0 ? cv::Size(int(round(cx * 2)), int(round(cy * 2))) : imageSize;
 
     // Construct a vector of normalised points
@@ -149,7 +164,7 @@ std::vector<ftype> PinholeCamera::computeInverseDistortion() const {
     return invDistVec;
 }
 
-cv::Mat PinholeCamera::K() const {
+cv::Mat StandardCamera::K() const {
     cv::Mat K = cv::Mat::eye(3, 3, CV_64F);
     K.at<double>(0, 0) = fx;
     K.at<double>(1, 1) = fy;
@@ -158,7 +173,7 @@ cv::Mat PinholeCamera::K() const {
     return K;
 }
 
-const std::vector<ftype>& PinholeCamera::distortion() const { return dist; }
+const std::vector<ftype>& StandardCamera::distortion() const { return dist; }
 
 DoubleSphereCamera::DoubleSphereCamera(const std::array<ftype, 6>& doubleSphereParameters, cv::Size sze) {
     imageSize = sze;

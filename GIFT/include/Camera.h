@@ -51,23 +51,33 @@ class GICamera {
 class PinholeCamera : public GICamera {
   protected:
     ftype fx, fy, cx, cy; // intrinsic parameters
+
+  public:
+    PinholeCamera(cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F));
+    PinholeCamera(const cv::String& cameraConfigFile);
+    virtual Eigen::Vector3T undistortPoint(const cv::Point2f& point) const override;
+    virtual cv::Point2f undistortPointCV(const cv::Point2f& point) const override;
+    virtual cv::Point2f projectPoint(const Eigen::Vector3T& point) const override;
+    virtual cv::Point2f projectPoint(const cv::Point2f& point) const override;
+};
+class StandardCamera : public PinholeCamera {
+  protected:
+    ftype fx, fy, cx, cy; // intrinsic parameters
     std::vector<ftype> dist;
     std::vector<ftype> invDist;
     std::vector<ftype> computeInverseDistortion() const;
 
   public:
-    PinholeCamera(
+    StandardCamera(
         cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F), std::vector<ftype> dist = {0, 0, 0, 0});
-    PinholeCamera(const cv::String& cameraConfigFile);
+    StandardCamera(const cv::String& cameraConfigFile);
 
     // Geometry functions
     cv::Mat K() const; // intrinsic matrix (3x3)
     const std::vector<ftype>& distortion() const;
 
     static cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist);
-    Eigen::Vector3T undistortPoint(const cv::Point2f& point) const override;
     cv::Point2f undistortPointCV(const cv::Point2f& point) const override;
-    cv::Point2f projectPoint(const Eigen::Vector3T& point) const override;
     cv::Point2f projectPoint(const cv::Point2f& point) const override;
     cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint);
 };
