@@ -17,6 +17,7 @@
 
 #include "Calibration.h"
 #include "Eigen/SVD"
+#include "unsupported/Eigen/MatrixFunctions"
 
 using namespace GIFT;
 
@@ -82,4 +83,32 @@ Eigen::Matrix3T initialisePinholeIntrinsics(const std::vector<cv::Mat>& homograp
     return cameraMatrix;
 }
 
-GIFT::PinholeCamera initialisePoses(const std::vector<cv::Mat>& homographies, const Eigen::Matrix3T& cameraMatrix) {}
+std::vector<Eigen::Matrix4T> initialisePoses(
+    const std::vector<cv::Mat>& homographies, const Eigen::Matrix3T& cameraMatrix) {
+    std::vector<Eigen::Matrix4T> poses(homographies.size());
+    std::transform(homographies.begin(), homographies.end(), poses.begin(),
+        [&cameraMatrix](const cv::Mat& H) { return initialisePose(H, cameraMatrix); });
+    return poses;
+}
+
+Eigen::Matrix4T initialisePose(const cv::Mat& homography, const Eigen::Matrix3T& cameraMatrix) {
+    Eigen::Vector3T h1, h2, h3;
+    h1 << homography.at<ftype>(0, 0), homography.at<ftype>(1, 0), homography.at<ftype>(2, 0);
+    h2 << homography.at<ftype>(0, 1), homography.at<ftype>(1, 1), homography.at<ftype>(2, 1);
+    h3 << homography.at<ftype>(0, 2), homography.at<ftype>(1, 2), homography.at<ftype>(2, 2);
+
+    const Eigen::Matrix3T KInv = cameraMatrix.inverse();
+    const ftype lambda = 1.0 / (KInv * h1).norm();
+
+    Eigen::Matrix4T pose = Eigen::Matrix4T::Identity();
+    pose.block<3, 1>(0, 0) = lambda * KInv * h1;
+    pose.block<3, 1>(0, 1) = lambda * KInv * h2;
+    pose.block<3, 1>(0, 2) = pose.block<3, 1>(0, 0).cross(pose.block<3, 1>(0, 1));
+    pose.block<3, 1>(0, 3) = lambda * KInv * h3; // Translation vector
+
+    // Find the best approximation of the rotation matrix
+    Eigen::Matrix3T M = pose.block<3, 3>(0, 0);
+    pose.block<3, 3>(0, 0) = M * (M.transpose() * M).sqrt().inverse();
+
+    return pose;
+}
