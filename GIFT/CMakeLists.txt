@@ -29,6 +29,7 @@ set(GIFT_SOURCE_FILES
     src/GIFeatureTracker.cpp
     src/KeyPointFeatureTracker.cpp
     src/Visualisation.cpp
+    src/Calibration.cpp
 )
 
 set(GIFT_HEADER_FILES
@@ -44,6 +45,7 @@ set(GIFT_HEADER_FILES
     include/PatchFeatureTracker.h
     include/KeyPointFeatureTracker.h
     include/Visualisation.h
+    include/Calibration.h
 )
 
 # optional dependency: yaml-cpp

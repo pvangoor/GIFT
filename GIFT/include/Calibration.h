@@ -14,3 +14,14 @@
     You should have received a copy of the GNU General Public License
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#pragma once
+
+#include "Camera.h"
+
+namespace GIFT {
+
+GIFT::PinholeCamera initialisePinholeIntrinsics(const std::vector<cv::Mat>& homographies);
+GIFT::PinholeCamera initialisePoses(const std::vector<cv::Mat>& homographies, const Eigen::Matrix3T& cameraMatrix);
+
+}; // namespace GIFT
