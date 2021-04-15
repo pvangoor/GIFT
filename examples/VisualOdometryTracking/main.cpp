@@ -15,8 +15,8 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "PointFeatureTracker.h"
-#include "Visualisation.h"
+#include "GIFT/PointFeatureTracker.h"
+#include "GIFT/Visualisation.h"
 
 #include "opencv2/highgui/highgui.hpp"
 #include "yaml-cpp/yaml.h"

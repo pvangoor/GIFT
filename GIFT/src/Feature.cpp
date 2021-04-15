@@ -15,8 +15,8 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Feature.h"
-#include "Camera.h"
+#include "GIFT/Feature.h"
+#include "GIFT/Camera.h"
 
 using namespace GIFT;
 using namespace cv;

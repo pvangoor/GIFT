@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "Camera.h"
+#include "GIFT/Camera.h"
 
 namespace GIFT {
 

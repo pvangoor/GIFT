@@ -15,6 +15,7 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "GIFT/PointFeatureTracker.h"
 #include "eigen3/Eigen/SVD"
 #include "iostream"
 #include "opencv2/calib3d.hpp"
@@ -22,7 +23,6 @@
 #include "opencv2/stereo/stereo.hpp"
 #include "opencv2/video/tracking.hpp"
 #include "string"
-#include <PointFeatureTracker.h>
 
 using namespace GIFT;
 using namespace Eigen;

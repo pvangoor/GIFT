@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "PointFeatureTracker.h"
+#include "GIFT/PointFeatureTracker.h"
 #include "StereoLandmark.h"
 
 namespace GIFT {

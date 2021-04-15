@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "Feature.h"
+#include "GIFT/Feature.h"
 #include "eigen3/Eigen/Dense"
 #include "opencv2/core/core.hpp"
 #include "opencv2/features2d/features2d.hpp"

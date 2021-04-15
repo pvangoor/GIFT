@@ -33,19 +33,19 @@ set(GIFT_SOURCE_FILES
 )
 
 set(GIFT_HEADER_FILES
-    include/Camera.h
-    include/PointFeatureTracker.h
-    include/StereoFeatureTracker.h
-    include/Feature.h
-    include/EgoMotion.h
-    include/ImagePyramid.h
-    include/OptimiseParameters.h
-    include/ParameterGroup.h
-    include/GIFeatureTracker.h
-    include/PatchFeatureTracker.h
-    include/KeyPointFeatureTracker.h
-    include/Visualisation.h
-    include/Calibration.h
+    include/GIFT/Camera.h
+    include/GIFT/PointFeatureTracker.h
+    include/GIFT/StereoFeatureTracker.h
+    include/GIFT/Feature.h
+    include/GIFT/EgoMotion.h
+    include/GIFT/ImagePyramid.h
+    include/GIFT/OptimiseParameters.h
+    include/GIFT/ParameterGroup.h
+    include/GIFT/GIFeatureTracker.h
+    include/GIFT/PatchFeatureTracker.h
+    include/GIFT/KeyPointFeatureTracker.h
+    include/GIFT/Visualisation.h
+    include/GIFT/Calibration.h
 )
 
 # optional dependency: yaml-cpp
@@ -71,7 +71,7 @@ endif()
 #####################
 target_include_directories(GIFT PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>  
-    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include/GIFT>
     ${ADDITIONAL_INCLUDE_DIRS}
 )
 

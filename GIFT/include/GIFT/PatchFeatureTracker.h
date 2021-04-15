@@ -17,10 +17,10 @@
 
 #pragma once
 
-#include "GIFeatureTracker.h"
-#include "ImagePyramid.h"
-#include "OptimiseParameters.h"
-#include "ParameterGroup.h"
+#include "GIFT/GIFeatureTracker.h"
+#include "GIFT/ImagePyramid.h"
+#include "GIFT/OptimiseParameters.h"
+#include "GIFT/ParameterGroup.h"
 
 #include "opencv2/calib3d.hpp"
 #include "opencv2/imgproc.hpp"

@@ -15,8 +15,8 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "OptimiseParameters.h"
-#include "ParameterGroup.h"
+#include "GIFT/OptimiseParameters.h"
+#include "GIFT/ParameterGroup.h"
 #include "eigen3/Eigen/Dense"
 
 using namespace Eigen;

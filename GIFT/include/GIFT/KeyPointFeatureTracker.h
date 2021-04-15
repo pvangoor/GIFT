@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "GIFeatureTracker.h"
+#include "GIFT/GIFeatureTracker.h"
 
 #include "opencv2/calib3d.hpp"
 #include "opencv2/features2d.hpp"

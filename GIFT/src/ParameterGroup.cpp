@@ -15,7 +15,7 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ParameterGroup.h"
+#include "GIFT/ParameterGroup.h"
 #include "eigen3/unsupported/Eigen/MatrixFunctions"
 
 using namespace Eigen;

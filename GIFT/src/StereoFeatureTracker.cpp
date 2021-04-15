@@ -15,7 +15,7 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "StereoFeatureTracker.h"
+#include "GIFT/StereoFeatureTracker.h"
 #include <set>
 
 using namespace GIFT;

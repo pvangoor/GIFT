@@ -15,7 +15,7 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "EgoMotion.h"
+#include "GIFT/EgoMotion.h"
 #include "gtest/gtest.h"
 
 using namespace Eigen;

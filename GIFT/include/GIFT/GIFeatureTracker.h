@@ -19,8 +19,8 @@
 
 #include <vector>
 
-#include "Camera.h"
-#include "Feature.h"
+#include "GIFT/Camera.h"
+#include "GIFT/Feature.h"
 #include "opencv2/core.hpp"
 
 #include <type_traits>

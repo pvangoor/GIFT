@@ -15,7 +15,7 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ImagePyramid.h"
+#include "GIFT/ImagePyramid.h"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <algorithm>
 

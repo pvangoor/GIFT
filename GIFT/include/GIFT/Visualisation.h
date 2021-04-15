@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "Feature.h"
+#include "GIFT/Feature.h"
 #include "opencv2/core.hpp"
 #include <vector>
 

@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "GIFeatureTracker.h"
+#include "GIFT/GIFeatureTracker.h"
 
 using namespace GIFT;
 

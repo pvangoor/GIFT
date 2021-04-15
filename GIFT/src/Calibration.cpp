@@ -15,7 +15,7 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Calibration.h"
+#include "GIFT/Calibration.h"
 
 #include "Eigen/SVD"
 #include "unsupported/Eigen/MatrixFunctions"

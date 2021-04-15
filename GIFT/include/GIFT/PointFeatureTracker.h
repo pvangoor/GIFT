@@ -17,9 +17,9 @@
 
 #pragma once
 
-#include "EgoMotion.h"
+#include "GIFT/EgoMotion.h"
 
-#include "GIFeatureTracker.h"
+#include "GIFT/GIFeatureTracker.h"
 
 #include "eigen3/Eigen/Dense"
 

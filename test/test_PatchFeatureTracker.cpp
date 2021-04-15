@@ -15,13 +15,13 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ParameterGroup.h"
-#include "PatchFeatureTracker.h"
+#include "GIFT/ParameterGroup.h"
+#include "GIFT/PatchFeatureTracker.h"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include "gtest/gtest.h"
 
-#include "Visualisation.h"
+#include "GIFT/Visualisation.h"
 
 #include <fstream>
 

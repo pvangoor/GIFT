@@ -15,12 +15,12 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "KeyPointFeatureTracker.h"
+#include "GIFT/KeyPointFeatureTracker.h"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include "gtest/gtest.h"
 
-#include "Visualisation.h"
+#include "GIFT/Visualisation.h"
 
 #include <fstream>
 

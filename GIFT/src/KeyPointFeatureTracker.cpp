@@ -15,7 +15,7 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "KeyPointFeatureTracker.h"
+#include "GIFT/KeyPointFeatureTracker.h"
 
 using namespace cv;
 using namespace std;

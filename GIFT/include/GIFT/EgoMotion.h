@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "Feature.h"
+#include "GIFT/Feature.h"
 #include "eigen3/Eigen/Dense"
 
 namespace GIFT {

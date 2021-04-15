@@ -25,9 +25,9 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
-#include "EgoMotion.h"
-#include "PointFeatureTracker.h"
-#include "Visualisation.h"
+#include "GIFT/EgoMotion.h"
+#include "GIFT/PointFeatureTracker.h"
+#include "GIFT/Visualisation.h"
 #include <getopt.h>
 #include <sys/time.h>
 
