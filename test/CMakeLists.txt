@@ -1,6 +1,8 @@
 
 # Get gtest as an external project
-include(PrepareGTest.cmake)
+if (NOT TARGET gtest_main)
+    include(PrepareGTest.cmake)
+endif()
 # This creates the linking target gtest_main
 
 # Link the tests with the test data
