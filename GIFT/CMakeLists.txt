@@ -71,7 +71,7 @@ endif()
 #####################
 target_include_directories(GIFT PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>  
-    $<INSTALL_INTERFACE:include/GIFT>
+    $<INSTALL_INTERFACE:include>
     ${ADDITIONAL_INCLUDE_DIRS}
 )
 
@@ -85,7 +85,7 @@ target_link_libraries(GIFT
 ##############
 
 set(config_install_dir "lib/cmake/${PROJECT_NAME}")
-set(include_install_dir "include/${PROJECT_NAME}")
+set(include_install_dir "include")
 set(project_config "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
 set(targets_export_name "${PROJECT_NAME}Targets")
 
@@ -119,6 +119,6 @@ install(EXPORT "${targets_export_name}"
 # message("The namespace is ${namespace}")
 
 # Headers
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/GIFT
         DESTINATION ${include_install_dir} 
         FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
