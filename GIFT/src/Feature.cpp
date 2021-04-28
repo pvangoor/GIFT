@@ -29,7 +29,6 @@ Feature::Feature(
 
     this->opticalFlowRaw.setZero();
     this->opticalFlowNorm.setZero();
-    this->opticalFlowSphere().setZero();
 
     this->pointColor = col;
     this->idNumber = idNumber;
@@ -46,9 +45,6 @@ void Feature::update(const cv::Point2f& newCamCoords, const colorVec& col) {
     this->camCoordinates = newCamCoords;
 
     Vector3T bearing = Vector3T(newCamCoordsNorm.x, newCamCoordsNorm.y, 1).normalized();
-
-    this->opticalFlowSphere() = bearing.z() * (Matrix3T::Identity() - bearing * bearing.transpose()) *
-                                Vector3T(opticalFlowNorm.x(), opticalFlowNorm.y(), 0);
 
     this->pointColor = col;
     ++lifetime;
