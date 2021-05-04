@@ -97,6 +97,13 @@ cv::Point2f PinholeCamera::projectPoint(const Eigen::Vector3T& point) const {
     return projectPoint(homogPoint);
 }
 
+Eigen::Matrix<double, 2, 3> PinholeCamera::projectionJacobian(const Eigen::Vector3T& point) const {
+    Eigen::Matrix<double, 2, 3> J;
+    J << fx / point.z(), 0, -fx * point.x() / (point.z() * point.z()), 0, fy / point.z(),
+        -fy * point.y() / (point.z() * point.z());
+    return J;
+}
+
 cv::Point2f StandardCamera::projectPoint(const cv::Point2f& point) const {
     cv::Point2f distortedPoint = distortNormalisedPoint(point, this->dist);
     return PinholeCamera::projectPoint(distortedPoint);

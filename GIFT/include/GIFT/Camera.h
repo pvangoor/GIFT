@@ -59,6 +59,8 @@ class PinholeCamera : public GICamera {
     virtual cv::Point2f undistortPointCV(const cv::Point2f& point) const override;
     virtual cv::Point2f projectPoint(const Eigen::Vector3T& point) const override;
     virtual cv::Point2f projectPoint(const cv::Point2f& point) const override;
+
+    virtual Eigen::Matrix<double, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const;
 };
 class StandardCamera : public PinholeCamera {
   protected:
@@ -83,11 +85,11 @@ class StandardCamera : public PinholeCamera {
     cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint);
 };
 
-class DoubleSphereCamera : public GICamera {
+class DoubleSphereCamera : public PinholeCamera {
     // Implements the double sphere camera model found here:
     // https://arxiv.org/pdf/1807.08957.pdf
   protected:
-    ftype fx, fy, cx, cy, xi, alpha;
+    ftype xi, alpha;
 
   public:
     DoubleSphereCamera(const std::array<ftype, 6>& doubleSphereParameters, cv::Size sze = cv::Size(0, 0));
