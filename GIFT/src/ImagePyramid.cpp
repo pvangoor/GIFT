@@ -22,6 +22,7 @@
 using namespace Eigen;
 using namespace std;
 using namespace cv;
+using namespace GIFT;
 
 ImagePyramid::ImagePyramid(const cv::Mat& image, const int& numLevels) {
     assert(numLevels > 0);
@@ -64,7 +65,8 @@ ftype PyramidPatch::at(int row, int col, int lv) const {
     return vecImage[lv](col + row * cols);
 }
 
-PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr) {
+PyramidPatch GIFT::extractPyramidPatch(
+    const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr) {
     int numLevels = pyr.levels.size();
     PyramidPatch patch;
     patch.baseCentre = Vector2T(point.x, point.y);
@@ -87,7 +89,7 @@ PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, 
     return patch;
 }
 
-vector<PyramidPatch> extractPyramidPatches(
+vector<GIFT::PyramidPatch> GIFT::extractPyramidPatches(
     const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels) {
     ImageWithGradientPyramid pyr(image, numLevels);
     auto patchLambda = [pyr, sze](const cv::Point2f& point) { return extractPyramidPatch(point, sze, pyr); };
@@ -96,8 +98,8 @@ vector<PyramidPatch> extractPyramidPatches(
     return patches;
 }
 
-ImagePatch getPatchAtLevel(const PyramidPatch& pyrPatch, const int lv) {
-    ImagePatch patch;
+GIFT::ImagePatch GIFT::getPatchAtLevel(const GIFT::PyramidPatch& pyrPatch, const int lv) {
+    GIFT::ImagePatch patch;
     patch.vecImage = pyrPatch.vecImage[lv];
     patch.vecDifferential = pyrPatch.vecDifferential[lv];
     patch.centre = pyrPatch.baseCentre * pow(2, -lv);
@@ -106,7 +108,7 @@ ImagePatch getPatchAtLevel(const PyramidPatch& pyrPatch, const int lv) {
     return patch;
 }
 
-VectorXT vectoriseImage(const Mat& image) {
+VectorXT GIFT::vectoriseImage(const Mat& image) {
     // We work row by row
     const int rows = image.rows;
     const int cols = image.cols;

@@ -22,8 +22,9 @@
 using namespace Eigen;
 using namespace std;
 using namespace cv;
+using namespace GIFT;
 
-int clamp(const int x, const int a, const int b) {
+int GIFT::clamp(const int x, const int a, const int b) {
     if (x < a)
         return a;
     if (x > b)
@@ -35,13 +36,13 @@ void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, 
 MatrixXT patchActionJacobian(const ParameterGroup& params, const ImagePatch& patch);
 VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, const Mat& image);
 
-void optimiseParameters(vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const Mat& image) {
+void GIFT::optimiseParameters(vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const Mat& image) {
     if (patches.size() == 0)
         return;
     optimiseParameters(params, patches, ImagePyramid(image, patches[0].vecImage.size()));
 }
 
-void optimiseParameters(
+void GIFT::optimiseParameters(
     vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const ImagePyramid& pyramid) {
     assert(patches.size() == params.size());
     for (int i = 0; i < params.size(); ++i) {
@@ -49,7 +50,7 @@ void optimiseParameters(
     }
 }
 
-void optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const ImagePyramid& pyramid) {
+void GIFT::optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const ImagePyramid& pyramid) {
     const int numLevels = patch.vecImage.size();
     for (int lv = numLevels - 1; lv >= 0; --lv) {
         params.changeLevel(lv);
@@ -109,7 +110,7 @@ VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, co
     return residualVector;
 }
 
-float getSubPixel(const Mat& image, const Vector2T& point) {
+float GIFT::getSubPixel(const Mat& image, const Vector2T& point) {
     // Replicate the border outside the image
     // const int x0 = clamp((int)point.x(), 0, image.cols-2);
     // const int y0 = clamp((int)point.y(), 0, image.rows-2);

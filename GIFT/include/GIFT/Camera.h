@@ -79,6 +79,7 @@ class StandardCamera : public PinholeCamera {
     static cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist);
     cv::Point2f undistortPointCV(const cv::Point2f& point) const override;
     cv::Point2f projectPoint(const cv::Point2f& point) const override;
+    using PinholeCamera::projectPoint;
     cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint);
 };
 

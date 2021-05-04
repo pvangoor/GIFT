@@ -18,6 +18,8 @@
 #include "GIFT/ImagePyramid.h"
 #include "gtest/gtest.h"
 
+using namespace GIFT;
+
 TEST(ImagePyramidTest, PyrDimensions) {
     cv::Mat baseImage = cv::Mat::zeros(cv::Size(pow(2, 10), pow(2, 10)), CV_8UC1);
     ImagePyramid pyramid(baseImage, 5);

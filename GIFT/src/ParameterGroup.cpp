@@ -20,6 +20,7 @@
 
 using namespace Eigen;
 using namespace std;
+using namespace GIFT;
 
 Matrix<ftype, 2, Dynamic> Affine2Group::actionJacobian(const Vector2T& point) const {
     Matrix<ftype, 2, Dynamic> jac(2, this->dim());

@@ -18,6 +18,8 @@
 #include "GIFT/ImagePyramid.h"
 #include "opencv2/core/core.hpp"
 
+namespace GIFT {
+
 class ParameterGroup;
 
 void optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const ImagePyramid& pyramid);
@@ -27,3 +29,5 @@ void optimiseParameters(
     std::vector<ParameterGroup>& params, const std::vector<PyramidPatch>& patches, const cv::Mat& image);
 float getSubPixel(const cv::Mat& image, const Eigen::Vector2T& point);
 int clamp(const int x, const int a, const int b);
+
+} // namespace GIFT

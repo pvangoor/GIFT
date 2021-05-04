@@ -20,6 +20,8 @@
 #include "eigen3/Eigen/Core"
 #include "ftype.h"
 
+namespace GIFT {
+
 class ParameterGroup {
   public:
     virtual int dim() const = 0;
@@ -58,3 +60,5 @@ class TranslationGroup : public ParameterGroup {
 
     static TranslationGroup Identity();
 };
+
+} // namespace GIFT

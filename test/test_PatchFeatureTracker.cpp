@@ -28,6 +28,7 @@
 using namespace Eigen;
 using namespace cv;
 using namespace std;
+using namespace GIFT;
 
 class PFTTest : public ::testing::Test {
   protected:

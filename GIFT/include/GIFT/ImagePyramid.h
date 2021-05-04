@@ -22,6 +22,8 @@
 #include "opencv2/core/core.hpp"
 #include <vector>
 
+namespace GIFT {
+
 struct ImagePyramid {
     std::vector<cv::Mat> levels;
     ImagePyramid(){};
@@ -65,3 +67,5 @@ std::vector<PyramidPatch> extractPyramidPatches(
     const std::vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels);
 ImagePatch getPatchAtLevel(const PyramidPatch& pyrPatch, const int lv);
 Eigen::VectorXT vectoriseImage(const cv::Mat& image);
+
+} // namespace GIFT
