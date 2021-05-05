@@ -64,7 +64,6 @@ class PinholeCamera : public GICamera {
 };
 class StandardCamera : public PinholeCamera {
   protected:
-    ftype fx, fy, cx, cy; // intrinsic parameters
     std::vector<ftype> dist;
     std::vector<ftype> invDist;
     std::vector<ftype> computeInverseDistortion() const;
