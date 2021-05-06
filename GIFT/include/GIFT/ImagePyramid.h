@@ -53,14 +53,21 @@ struct ImagePatch {
     int area() const { return rows() * cols(); }
     ftype at(int row, int col) const;
     Eigen::Matrix<ftype, 1, 2> differential(int row, int col) const;
+
+    Eigen::VectorXT imageVector() const;
+    Eigen::Matrix<ftype, Eigen::Dynamic, 2> imageVectorDifferential() const;
 };
 
 struct PyramidPatch {
     std::vector<ImagePatch> levels;
+
     int rows(const int& lv = 0) const { return levels[lv].rows(); };
     int cols(const int& lv = 0) const { return levels[lv].cols(); };
     ftype at(int row, int col, int lv = 0) const;
+    int totalPixelCount() const;
     Eigen::Vector2T centre(const int& lv = 0) const { return levels[lv].centre; };
+    Eigen::VectorXT pyramidVector() const;
+    Eigen::Matrix<ftype, Eigen::Dynamic, 2> pyramidVectorDifferential() const;
 };
 
 PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr);

@@ -70,6 +70,46 @@ Eigen::Matrix<ftype, 1, 2> ImagePatch::differential(int row, int col) const {
     return DI;
 }
 
+Eigen::VectorXT ImagePatch::imageVector() const { return vectoriseImage(imageWithGrad.image); }
+
+Eigen::Matrix<ftype, Eigen::Dynamic, 2> ImagePatch::imageVectorDifferential() const {
+    Eigen::Matrix<ftype, Eigen::Dynamic, 2> DIVec(area(), 2);
+    DIVec << vectoriseImage(imageWithGrad.gradientX), vectoriseImage(imageWithGrad.gradientY);
+    return DIVec;
+}
+
+int PyramidPatch::totalPixelCount() const {
+    int total = 0;
+    for (const ImagePatch& level : levels) {
+        total += level.area();
+    }
+    return total;
+}
+
+Eigen::VectorXT PyramidPatch::pyramidVector() const {
+    Eigen::VectorXT PVec(totalPixelCount());
+    int currentBase = 0;
+    for (int lv = 0; lv < levels.size(); ++lv) {
+        PVec.segment(currentBase, levels[lv].area()) = levels[lv].imageVector();
+        currentBase += levels[lv].area();
+    }
+
+    return PVec;
+}
+
+Eigen::Matrix<ftype, Eigen::Dynamic, 2> PyramidPatch::pyramidVectorDifferential() const {
+    Eigen::Matrix<ftype, Eigen::Dynamic, 2> DPVec(totalPixelCount(), 2);
+    int currentBase = 0;
+    for (int lv = 0; lv < levels.size(); ++lv) {
+        // Note: the differential is halved each level up since the motion of a pixel on the base
+        // corresponds to only half that motion on the level above.
+        DPVec.block(currentBase, 0, levels[lv].area(), 2) = levels[lv].imageVectorDifferential() * pow(lv, -2);
+        currentBase += levels[lv].area();
+    }
+
+    return DPVec;
+}
+
 ftype PyramidPatch::at(int row, int col, int lv) const {
     assert(lv < levels.size());
     assert(row < rows(lv));
@@ -99,7 +139,16 @@ PyramidPatch GIFT::extractPyramidPatch(
 }
 
 PyramidPatch extractPyramidPatch(
-    const cv::Point2f& point, const std::vector<cv::Size>& sizes, const ImageWithGradientPyramid& pyr) {}
+    const cv::Point2f& point, const std::vector<cv::Size>& sizes, const ImageWithGradientPyramid& pyr) {
+    int numLevels = pyr.levels.size();
+    assert(numLevels == sizes.size());
+    PyramidPatch patch;
+    patch.levels.resize(numLevels);
+    for (int lv = 0; lv < numLevels; ++lv) {
+        patch.levels[lv] = extractImagePatch(point * pow(2, -lv), sizes[lv], pyr.levels[lv]);
+    }
+    return patch;
+}
 
 vector<GIFT::PyramidPatch> GIFT::extractPyramidPatches(
     const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels) {
