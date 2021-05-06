@@ -103,7 +103,7 @@ Eigen::Matrix<ftype, Eigen::Dynamic, 2> PyramidPatch::pyramidVectorDifferential(
     for (int lv = 0; lv < levels.size(); ++lv) {
         // Note: the differential is halved each level up since the motion of a pixel on the base
         // corresponds to only half that motion on the level above.
-        DPVec.block(currentBase, 0, levels[lv].area(), 2) = levels[lv].imageVectorDifferential() * pow(lv, -2);
+        DPVec.block(currentBase, 0, levels[lv].area(), 2) = levels[lv].imageVectorDifferential() * pow(2, -lv);
         currentBase += levels[lv].area();
     }
 
