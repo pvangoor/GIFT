@@ -52,42 +52,54 @@ ImageWithGradientPyramid::ImageWithGradientPyramid(const cv::Mat& image, const i
     }
 }
 
+ImageWithGradientPyramid::ImageWithGradientPyramid(const ImagePyramid& imagePyr) {
+    levels.resize(imagePyr.levels.size());
+    transform(imagePyr.levels.begin(), imagePyr.levels.end(), levels.begin(),
+        [](const cv::Mat& image) { return ImageWithGradient(image); });
+}
+
 ftype ImagePatch::at(int row, int col) const {
-    assert(row < rows);
-    assert(col < cols);
-    return vecImage(col + row * cols);
+    assert(row < rows());
+    assert(col < cols());
+    return pixelValue(imageWithGrad.image, row, col);
+}
+
+Eigen::Matrix<ftype, 1, 2> ImagePatch::differential(int row, int col) const {
+    Eigen::Matrix<ftype, 1, 2> DI;
+    DI << pixelValue(imageWithGrad.gradientX, row, col), pixelValue(imageWithGrad.gradientY, row, col);
+    return DI;
 }
 
 ftype PyramidPatch::at(int row, int col, int lv) const {
-    assert(lv < vecImage.size());
-    assert(row < rows);
-    assert(col < cols);
-    return vecImage[lv](col + row * cols);
+    assert(lv < levels.size());
+    assert(row < rows(lv));
+    assert(col < cols(lv));
+    return pixelValue(levels[lv].imageWithGrad.image, row, col);
+}
+
+ImagePatch GIFT::extractImagePatch(
+    const cv::Point2f& point, const cv::Size& sze, const ImageWithGradient& imageWithGrad) {
+    ImagePatch patch;
+    patch.centre = Vector2T(point.x, point.y);
+    getRectSubPix(imageWithGrad.image, sze, point, patch.imageWithGrad.image, CV_32F);
+    getRectSubPix(imageWithGrad.gradientX, sze, point, patch.imageWithGrad.gradientX, CV_32F);
+    getRectSubPix(imageWithGrad.gradientY, sze, point, patch.imageWithGrad.gradientY, CV_32F);
+    return patch;
 }
 
 PyramidPatch GIFT::extractPyramidPatch(
     const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr) {
     int numLevels = pyr.levels.size();
     PyramidPatch patch;
-    patch.baseCentre = Vector2T(point.x, point.y);
-    patch.vecImage.resize(numLevels);
-    patch.vecDifferential.resize(numLevels);
-    patch.rows = sze.height;
-    patch.cols = sze.width;
+    patch.levels.resize(numLevels);
     for (int lv = 0; lv < numLevels; ++lv) {
-        Mat tempI, tempX, tempY;
-        getRectSubPix(pyr.levels[lv].image, sze, point * pow(2, -lv), tempI, CV_32F);
-        getRectSubPix(pyr.levels[lv].gradientX, sze, point * pow(2, -lv), tempX, CV_32F);
-        getRectSubPix(pyr.levels[lv].gradientY, sze, point * pow(2, -lv), tempY, CV_32F);
-
-        patch.vecImage[lv] = vectoriseImage(tempI);
-        Matrix<ftype, Dynamic, 2> temp(sze.area(), 2);
-        temp.block(0, 0, sze.area(), 1) = vectoriseImage(tempX);
-        temp.block(0, 1, sze.area(), 1) = vectoriseImage(tempY);
-        patch.vecDifferential[lv] = temp;
+        patch.levels[lv] = extractImagePatch(point * pow(2, -lv), sze, pyr.levels[lv]);
     }
     return patch;
 }
+
+PyramidPatch extractPyramidPatch(
+    const cv::Point2f& point, const std::vector<cv::Size>& sizes, const ImageWithGradientPyramid& pyr) {}
 
 vector<GIFT::PyramidPatch> GIFT::extractPyramidPatches(
     const vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels) {
@@ -98,16 +110,6 @@ vector<GIFT::PyramidPatch> GIFT::extractPyramidPatches(
     return patches;
 }
 
-GIFT::ImagePatch GIFT::getPatchAtLevel(const GIFT::PyramidPatch& pyrPatch, const int lv) {
-    GIFT::ImagePatch patch;
-    patch.vecImage = pyrPatch.vecImage[lv];
-    patch.vecDifferential = pyrPatch.vecDifferential[lv];
-    patch.centre = pyrPatch.baseCentre * pow(2, -lv);
-    patch.rows = pyrPatch.rows;
-    patch.cols = pyrPatch.cols;
-    return patch;
-}
-
 VectorXT GIFT::vectoriseImage(const Mat& image) {
     // We work row by row
     const int rows = image.rows;
@@ -115,21 +117,27 @@ VectorXT GIFT::vectoriseImage(const Mat& image) {
     VectorXT vecImage(rows * cols);
     for (int y = 0; y < rows; ++y) {
         for (int x = 0; x < cols; ++x) {
-            switch (image.depth()) {
-            case CV_8U:
-                vecImage(x + y * rows) = (ftype)image.at<uchar>(Point2i(x, y));
-                break;
-            case CV_16S:
-                vecImage(x + y * rows) = (ftype)image.at<short>(Point2i(x, y));
-                break;
-            case CV_32F:
-                vecImage(x + y * rows) = (ftype)image.at<float>(Point2i(x, y));
-                break;
-            case CV_64F:
-                vecImage(x + y * rows) = (ftype)image.at<double>(Point2i(x, y));
-                break;
-            }
+            vecImage(x + y * rows) = pixelValue(image, y, x);
         }
     }
     return vecImage;
+}
+
+ftype GIFT::pixelValue(const Mat& image, const int& row, const int& col) {
+    // We work row by row
+    switch (image.depth()) {
+    case CV_8U:
+        return (ftype)image.at<uchar>(row, col);
+        break;
+    case CV_16S:
+        return (ftype)image.at<short>(row, col);
+        break;
+    case CV_32F:
+        return (ftype)image.at<float>(row, col);
+        break;
+    case CV_64F:
+        return (ftype)image.at<double>(row, col);
+        break;
+    }
+    return nan("");
 }

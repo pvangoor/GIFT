@@ -42,30 +42,34 @@ struct ImageWithGradientPyramid {
     std::vector<ImageWithGradient> levels;
     ImageWithGradientPyramid(){};
     ImageWithGradientPyramid(const cv::Mat& image, const int& numLevels);
-};
-
-struct PyramidPatch {
-    std::vector<Eigen::VectorXT> vecImage;
-    std::vector<Eigen::Matrix<ftype, Eigen::Dynamic, 2>> vecDifferential;
-    Eigen::Vector2T baseCentre;
-    int rows;
-    int cols;
-    ftype at(int row, int col, int lv = 0) const;
+    ImageWithGradientPyramid(const ImagePyramid& imagePyr);
 };
 
 struct ImagePatch {
-    Eigen::VectorXT vecImage;
-    Eigen::Matrix<ftype, Eigen::Dynamic, 2> vecDifferential;
+    ImageWithGradient imageWithGrad;
     Eigen::Vector2T centre;
-    int rows;
-    int cols;
+    int rows() const { return imageWithGrad.image.rows; };
+    int cols() const { return imageWithGrad.image.cols; };
+    int area() const { return rows() * cols(); }
     ftype at(int row, int col) const;
+    Eigen::Matrix<ftype, 1, 2> differential(int row, int col) const;
+};
+
+struct PyramidPatch {
+    std::vector<ImagePatch> levels;
+    int rows(const int& lv = 0) const { return levels[lv].rows(); };
+    int cols(const int& lv = 0) const { return levels[lv].cols(); };
+    ftype at(int row, int col, int lv = 0) const;
+    Eigen::Vector2T centre(const int& lv = 0) const { return levels[lv].centre; };
 };
 
 PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr);
+ImagePatch extractImagePatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradient& imageWithGrad);
+PyramidPatch extractPyramidPatch(
+    const cv::Point2f& point, const std::vector<cv::Size>& sizes, const ImageWithGradientPyramid& pyr);
 std::vector<PyramidPatch> extractPyramidPatches(
     const std::vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels);
-ImagePatch getPatchAtLevel(const PyramidPatch& pyrPatch, const int lv);
 Eigen::VectorXT vectoriseImage(const cv::Mat& image);
+ftype pixelValue(const cv::Mat& image, const int& row, const int& col);
 
 } // namespace GIFT

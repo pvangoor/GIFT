@@ -39,7 +39,7 @@ VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, co
 void GIFT::optimiseParameters(vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const Mat& image) {
     if (patches.size() == 0)
         return;
-    optimiseParameters(params, patches, ImagePyramid(image, patches[0].vecImage.size()));
+    optimiseParameters(params, patches, ImagePyramid(image, patches[0].levels.size()));
 }
 
 void GIFT::optimiseParameters(
@@ -51,10 +51,10 @@ void GIFT::optimiseParameters(
 }
 
 void GIFT::optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const ImagePyramid& pyramid) {
-    const int numLevels = patch.vecImage.size();
+    const int numLevels = patch.levels.size();
     for (int lv = numLevels - 1; lv >= 0; --lv) {
         params.changeLevel(lv);
-        optimiseParametersAtLevel(params, getPatchAtLevel(patch, lv), pyramid.levels[lv]);
+        optimiseParametersAtLevel(params, patch.levels[lv], pyramid.levels[lv]);
     }
     params.changeLevel(0);
 }
@@ -82,29 +82,28 @@ void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, 
 
 MatrixXT patchActionJacobian(const ParameterGroup& params, const ImagePatch& patch) {
     // The patch is vectorised row by row.
-    const Vector2T offset = 0.5 * Vector2T(patch.cols - 1, patch.rows - 1);
-    MatrixXT jacobian(patch.rows * patch.cols, params.dim());
-    for (int y = 0; y < patch.rows; ++y) {
-        for (int x = 0; x < patch.cols; ++x) {
+    const Vector2T offset = 0.5 * Vector2T(patch.cols() - 1, patch.rows() - 1);
+    MatrixXT jacobian(patch.area(), params.dim());
+    for (int y = 0; y < patch.rows(); ++y) {
+        for (int x = 0; x < patch.cols(); ++x) {
             const Vector2T point = Vector2T(x, y) - offset;
-            int rowIdx = (x + y * patch.rows);
+            int rowIdx = (x + y * patch.rows());
 
-            jacobian.block(rowIdx, 0, 1, params.dim()) =
-                patch.vecDifferential.block<1, 2>(rowIdx, 0) * params.actionJacobian(point);
+            jacobian.block(rowIdx, 0, 1, params.dim()) = patch.differential(y, x) * params.actionJacobian(point);
         }
     }
     return jacobian;
 }
 
 VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, const Mat& image) {
-    const Vector2T offset = 0.5 * Vector2T(patch.rows - 1, patch.cols - 1);
-    VectorXT residualVector = VectorXT(patch.rows * patch.cols);
-    for (int y = 0; y < patch.rows; ++y) {
-        for (int x = 0; x < patch.cols; ++x) {
+    const Vector2T offset = 0.5 * Vector2T(patch.rows() - 1, patch.cols() - 1);
+    VectorXT residualVector = VectorXT(patch.rows() * patch.cols());
+    for (int y = 0; y < patch.rows(); ++y) {
+        for (int x = 0; x < patch.cols(); ++x) {
             const Vector2T point = Vector2T(x, y) - offset;
             const Vector2T transformedPoint = patch.centre + params.applyLeftAction(point);
             const float subPixelValue = getSubPixel(image, transformedPoint);
-            residualVector(x + y * patch.rows) = subPixelValue - patch.vecImage(x + y * patch.rows);
+            residualVector(x + y * patch.rows()) = subPixelValue - patch.at(y, x);
         }
     }
     return residualVector;

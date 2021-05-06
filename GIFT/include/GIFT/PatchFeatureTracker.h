@@ -37,7 +37,7 @@ class PatchFeatureTracker : public GIFeatureTracker {
         int id = -1;
         int lifetime = 0;
         cv::Point2f camCoordinates() const {
-            const Eigen::Vector2T result = patch.baseCentre + parameters.applyLeftAction(Eigen::Vector2T(0, 0));
+            const Eigen::Vector2T result = patch.centre() + parameters.applyLeftAction(Eigen::Vector2T(0, 0));
             return cv::Point2f(result.x(), result.y());
         }
     };
@@ -125,7 +125,7 @@ class PatchFeatureTracker : public GIFeatureTracker {
         lm.cameraPtr = cameraPtr;
         lm.idNumber = feature.id;
         lm.lifetime = feature.lifetime;
-        lm.pointColor.fill(feature.patch.at(feature.patch.rows / 2, feature.patch.cols / 2));
+        lm.pointColor.fill(feature.patch.at(feature.patch.rows() / 2, feature.patch.cols() / 2));
         return lm;
         // TODO: Some parts of the feature are missing. Is this a problem?
     }
