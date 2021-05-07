@@ -117,35 +117,39 @@ ftype PyramidPatch::at(int row, int col, int lv) const {
     return pixelValue(levels[lv].imageWithGrad.image, row, col);
 }
 
-ImagePatch GIFT::extractImagePatch(
-    const cv::Point2f& point, const cv::Size& sze, const ImageWithGradient& imageWithGrad) {
+ImagePatch GIFT::extractImagePatch(const cv::Point2f& point, const cv::Size& sze,
+    const ImageWithGradient& imageWithGrad, const Eigen::Matrix2T& axes) {
     ImagePatch patch;
     patch.centre = Vector2T(point.x, point.y);
-    getRectSubPix(imageWithGrad.image, sze, point, patch.imageWithGrad.image, CV_32F);
-    getRectSubPix(imageWithGrad.gradientX, sze, point, patch.imageWithGrad.gradientX, CV_32F);
-    getRectSubPix(imageWithGrad.gradientY, sze, point, patch.imageWithGrad.gradientY, CV_32F);
-    return patch;
-}
-
-PyramidPatch GIFT::extractPyramidPatch(
-    const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr) {
-    int numLevels = pyr.levels.size();
-    PyramidPatch patch;
-    patch.levels.resize(numLevels);
-    for (int lv = 0; lv < numLevels; ++lv) {
-        patch.levels[lv] = extractImagePatch(point * pow(2, -lv), sze, pyr.levels[lv]);
+    if (axes == Matrix2T::Identity()) {
+        getRectSubPix(imageWithGrad.image, sze, point, patch.imageWithGrad.image, CV_32F);
+        getRectSubPix(imageWithGrad.gradientX, sze, point, patch.imageWithGrad.gradientX, CV_32F);
+        getRectSubPix(imageWithGrad.gradientY, sze, point, patch.imageWithGrad.gradientY, CV_32F);
+    } else {
+        patch.imageWithGrad.image = getPatchSubPix(sze, point, patch.imageWithGrad.image, axes);
+        patch.imageWithGrad.gradientX = getPatchSubPix(sze, point, patch.imageWithGrad.gradientX, axes);
+        patch.imageWithGrad.gradientY = getPatchSubPix(sze, point, patch.imageWithGrad.gradientY, axes);
     }
     return patch;
 }
 
-PyramidPatch extractPyramidPatch(
-    const cv::Point2f& point, const std::vector<cv::Size>& sizes, const ImageWithGradientPyramid& pyr) {
+PyramidPatch GIFT::extractPyramidPatch(
+    const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr, const Eigen::Matrix2T& axes) {
+    std::vector<cv::Size> sizes(pyr.levels.size());
+    for (int lv = 0; lv < sizes.size(); ++lv) {
+        sizes[lv] = sze;
+    }
+    return extractPyramidPatch(point, sizes, pyr, axes);
+}
+
+PyramidPatch GIFT::extractPyramidPatch(const cv::Point2f& point, const std::vector<cv::Size>& sizes,
+    const ImageWithGradientPyramid& pyr, const Eigen::Matrix2T& axes) {
     int numLevels = pyr.levels.size();
     assert(numLevels == sizes.size());
     PyramidPatch patch;
     patch.levels.resize(numLevels);
     for (int lv = 0; lv < numLevels; ++lv) {
-        patch.levels[lv] = extractImagePatch(point * pow(2, -lv), sizes[lv], pyr.levels[lv]);
+        patch.levels[lv] = extractImagePatch(point * pow(2, -lv), sizes[lv], pyr.levels[lv], axes);
     }
     return patch;
 }
@@ -189,4 +193,36 @@ ftype GIFT::pixelValue(const Mat& image, const int& row, const int& col) {
         break;
     }
     return nan("");
+}
+
+float GIFT::getSubPixel(const Mat& image, const Vector2T& point) {
+    // Replicate the border outside the image
+    // const int x0 = clamp((int)point.x(), 0, image.cols-2);
+    // const int y0 = clamp((int)point.y(), 0, image.rows-2);
+    int x0 = (int)point.x();
+    int y0 = (int)point.y();
+    const float dx = (x0 >= 0 && x0 < image.cols - 1) ? (point.x() - x0) : 0.0;
+    const float dy = (y0 >= 0 && y0 < image.rows - 1) ? (point.y() - y0) : 0.0;
+    x0 = clamp(x0, 0, image.cols - 1);
+    y0 = clamp(y0, 0, image.rows - 1);
+    const uchar im00 = image.at<uchar>(y0, x0);
+    const uchar im01 = image.at<uchar>(y0 + 1, x0);
+    const uchar im10 = image.at<uchar>(y0, x0 + 1);
+    const uchar im11 = image.at<uchar>(y0 + 1, x0 + 1);
+
+    const float value =
+        dx * dy * im11 + dx * (1.0 - dy) * im10 + (1.0 - dx) * dy * im01 + (1.0 - dx) * (1.0 - dy) * im00;
+    return value;
+}
+
+cv::Mat GIFT::getPatchSubPix(
+    const cv::Size2i& sze, const cv::Point2f& point, const cv::Mat& image, const Eigen::Matrix2d& axes) {
+    cv::Mat result = cv::Mat(sze, CV_32F);
+    for (int i = 0; i < sze.height; ++i) {
+        for (int j = 0; j < sze.width; ++j) {
+            Vector2T offset = axes * Vector2T((i - sze.width / 2.), (j - sze.height / 2.));
+            result.at<float>(i, j) = getSubPixel(image, Vector2T(point.x, point.y) + offset);
+        }
+    }
+    return result;
 }

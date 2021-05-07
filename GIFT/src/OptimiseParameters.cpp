@@ -108,23 +108,3 @@ VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, co
     }
     return residualVector;
 }
-
-float GIFT::getSubPixel(const Mat& image, const Vector2T& point) {
-    // Replicate the border outside the image
-    // const int x0 = clamp((int)point.x(), 0, image.cols-2);
-    // const int y0 = clamp((int)point.y(), 0, image.rows-2);
-    int x0 = (int)point.x();
-    int y0 = (int)point.y();
-    const float dx = (x0 >= 0 && x0 < image.cols - 1) ? (point.x() - x0) : 0.0;
-    const float dy = (y0 >= 0 && y0 < image.rows - 1) ? (point.y() - y0) : 0.0;
-    x0 = clamp(x0, 0, image.cols - 1);
-    y0 = clamp(y0, 0, image.rows - 1);
-    const uchar im00 = image.at<uchar>(y0, x0);
-    const uchar im01 = image.at<uchar>(y0 + 1, x0);
-    const uchar im10 = image.at<uchar>(y0, x0 + 1);
-    const uchar im11 = image.at<uchar>(y0 + 1, x0 + 1);
-
-    const float value =
-        dx * dy * im11 + dx * (1.0 - dy) * im10 + (1.0 - dx) * dy * im01 + (1.0 - dx) * (1.0 - dy) * im00;
-    return value;
-}

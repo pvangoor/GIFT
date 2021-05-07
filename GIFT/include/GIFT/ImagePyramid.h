@@ -70,13 +70,18 @@ struct PyramidPatch {
     Eigen::Matrix<ftype, Eigen::Dynamic, 2> pyramidVectorDifferential() const;
 };
 
-PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr);
-ImagePatch extractImagePatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradient& imageWithGrad);
-PyramidPatch extractPyramidPatch(
-    const cv::Point2f& point, const std::vector<cv::Size>& sizes, const ImageWithGradientPyramid& pyr);
+ImagePatch extractImagePatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradient& imageWithGrad,
+    const Eigen::Matrix2T& axes = Eigen::Matrix2T::Identity());
+PyramidPatch extractPyramidPatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr,
+    const Eigen::Matrix2T& axes = Eigen::Matrix2T::Identity());
+PyramidPatch extractPyramidPatch(const cv::Point2f& point, const std::vector<cv::Size>& sizes,
+    const ImageWithGradientPyramid& pyr, const Eigen::Matrix2T& axes = Eigen::Matrix2T::Identity());
 std::vector<PyramidPatch> extractPyramidPatches(
     const std::vector<cv::Point2f>& points, const cv::Mat& image, const cv::Size& sze, const int& numLevels);
 Eigen::VectorXT vectoriseImage(const cv::Mat& image);
 ftype pixelValue(const cv::Mat& image, const int& row, const int& col);
+float getSubPixel(const cv::Mat& image, const Eigen::Vector2T& point);
+cv::Mat getPatchSubPix(
+    const cv::Size2i& sze, const cv::Point2f& point, const cv::Mat& image, const Eigen::Matrix2d& axes);
 
 } // namespace GIFT
