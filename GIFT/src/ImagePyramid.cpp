@@ -126,9 +126,9 @@ ImagePatch GIFT::extractImagePatch(const cv::Point2f& point, const cv::Size& sze
         getRectSubPix(imageWithGrad.gradientX, sze, point, patch.imageWithGrad.gradientX, CV_32F);
         getRectSubPix(imageWithGrad.gradientY, sze, point, patch.imageWithGrad.gradientY, CV_32F);
     } else {
-        patch.imageWithGrad.image = getPatchSubPix(sze, point, patch.imageWithGrad.image, axes);
-        patch.imageWithGrad.gradientX = getPatchSubPix(sze, point, patch.imageWithGrad.gradientX, axes);
-        patch.imageWithGrad.gradientY = getPatchSubPix(sze, point, patch.imageWithGrad.gradientY, axes);
+        patch.imageWithGrad.image = getPatchSubPix(sze, point, imageWithGrad.image, axes);
+        patch.imageWithGrad.gradientX = getPatchSubPix(sze, point, imageWithGrad.gradientX, axes);
+        patch.imageWithGrad.gradientY = getPatchSubPix(sze, point, imageWithGrad.gradientY, axes);
     }
     return patch;
 }
@@ -220,7 +220,7 @@ cv::Mat GIFT::getPatchSubPix(
     cv::Mat result = cv::Mat(sze, CV_32F);
     for (int i = 0; i < sze.height; ++i) {
         for (int j = 0; j < sze.width; ++j) {
-            Vector2T offset = axes * Vector2T((i - sze.width / 2.), (j - sze.height / 2.));
+            Vector2T offset = axes * Vector2T((j - sze.width / 2.), (i - sze.height / 2.));
             result.at<float>(i, j) = getSubPixel(image, Vector2T(point.x, point.y) + offset);
         }
     }
