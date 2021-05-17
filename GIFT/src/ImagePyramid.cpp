@@ -220,7 +220,7 @@ cv::Mat GIFT::getPatchSubPix(
     cv::Mat result = cv::Mat(sze, CV_32F);
     for (int i = 0; i < sze.height; ++i) {
         for (int j = 0; j < sze.width; ++j) {
-            Vector2T offset = axes * Vector2T((j - sze.width / 2.), (i - sze.height / 2.));
+            Vector2T offset = axes * Vector2T((j - (sze.width - 1) * 0.5), (i - (sze.height - 1) * 0.5));
             result.at<float>(i, j) = getSubPixel(image, Vector2T(point.x, point.y) + offset);
         }
     }
