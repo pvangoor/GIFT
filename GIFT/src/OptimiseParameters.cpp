@@ -39,7 +39,7 @@ VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, co
 void GIFT::optimiseParameters(vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const Mat& image) {
     if (patches.size() == 0)
         return;
-    optimiseParameters(params, patches, ImagePyramid(image, patches[0].vecImage.size()));
+    optimiseParameters(params, patches, ImagePyramid(image, patches[0].levels.size()));
 }
 
 void GIFT::optimiseParameters(
@@ -51,10 +51,10 @@ void GIFT::optimiseParameters(
 }
 
 void GIFT::optimiseParameters(ParameterGroup& params, const PyramidPatch& patch, const ImagePyramid& pyramid) {
-    const int numLevels = patch.vecImage.size();
+    const int numLevels = patch.levels.size();
     for (int lv = numLevels - 1; lv >= 0; --lv) {
         params.changeLevel(lv);
-        optimiseParametersAtLevel(params, getPatchAtLevel(patch, lv), pyramid.levels[lv]);
+        optimiseParametersAtLevel(params, patch.levels[lv], pyramid.levels[lv]);
     }
     params.changeLevel(0);
 }
@@ -82,50 +82,29 @@ void optimiseParametersAtLevel(ParameterGroup& params, const ImagePatch& patch, 
 
 MatrixXT patchActionJacobian(const ParameterGroup& params, const ImagePatch& patch) {
     // The patch is vectorised row by row.
-    const Vector2T offset = 0.5 * Vector2T(patch.cols - 1, patch.rows - 1);
-    MatrixXT jacobian(patch.rows * patch.cols, params.dim());
-    for (int y = 0; y < patch.rows; ++y) {
-        for (int x = 0; x < patch.cols; ++x) {
+    const Vector2T offset = 0.5 * Vector2T(patch.cols() - 1, patch.rows() - 1);
+    MatrixXT jacobian(patch.area(), params.dim());
+    for (int y = 0; y < patch.rows(); ++y) {
+        for (int x = 0; x < patch.cols(); ++x) {
             const Vector2T point = Vector2T(x, y) - offset;
-            int rowIdx = (x + y * patch.rows);
+            int rowIdx = (x + y * patch.rows());
 
-            jacobian.block(rowIdx, 0, 1, params.dim()) =
-                patch.vecDifferential.block<1, 2>(rowIdx, 0) * params.actionJacobian(point);
+            jacobian.block(rowIdx, 0, 1, params.dim()) = patch.differential(y, x) * params.actionJacobian(point);
         }
     }
     return jacobian;
 }
 
 VectorXT paramResidual(const ParameterGroup& params, const ImagePatch& patch, const Mat& image) {
-    const Vector2T offset = 0.5 * Vector2T(patch.rows - 1, patch.cols - 1);
-    VectorXT residualVector = VectorXT(patch.rows * patch.cols);
-    for (int y = 0; y < patch.rows; ++y) {
-        for (int x = 0; x < patch.cols; ++x) {
+    const Vector2T offset = 0.5 * Vector2T(patch.rows() - 1, patch.cols() - 1);
+    VectorXT residualVector = VectorXT(patch.rows() * patch.cols());
+    for (int y = 0; y < patch.rows(); ++y) {
+        for (int x = 0; x < patch.cols(); ++x) {
             const Vector2T point = Vector2T(x, y) - offset;
             const Vector2T transformedPoint = patch.centre + params.applyLeftAction(point);
             const float subPixelValue = getSubPixel(image, transformedPoint);
-            residualVector(x + y * patch.rows) = subPixelValue - patch.vecImage(x + y * patch.rows);
+            residualVector(x + y * patch.rows()) = subPixelValue - patch.at(y, x);
         }
     }
     return residualVector;
-}
-
-float GIFT::getSubPixel(const Mat& image, const Vector2T& point) {
-    // Replicate the border outside the image
-    // const int x0 = clamp((int)point.x(), 0, image.cols-2);
-    // const int y0 = clamp((int)point.y(), 0, image.rows-2);
-    int x0 = (int)point.x();
-    int y0 = (int)point.y();
-    const float dx = (x0 >= 0 && x0 < image.cols - 1) ? (point.x() - x0) : 0.0;
-    const float dy = (y0 >= 0 && y0 < image.rows - 1) ? (point.y() - y0) : 0.0;
-    x0 = clamp(x0, 0, image.cols - 1);
-    y0 = clamp(y0, 0, image.rows - 1);
-    const uchar im00 = image.at<uchar>(y0, x0);
-    const uchar im01 = image.at<uchar>(y0 + 1, x0);
-    const uchar im10 = image.at<uchar>(y0, x0 + 1);
-    const uchar im11 = image.at<uchar>(y0 + 1, x0 + 1);
-
-    const float value =
-        dx * dy * im11 + dx * (1.0 - dy) * im10 + (1.0 - dx) * dy * im01 + (1.0 - dx) * (1.0 - dy) * im00;
-    return value;
 }

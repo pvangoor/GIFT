@@ -75,13 +75,12 @@ TEST_F(OptimiseParametersTest, GetSubPixel) {
 
     // Check the extrapolation matches the patch
     // cout << img0PatchEdgeBase.vecImage[0] << endl;
-    const Vector2T offset = 0.5 * Vector2T(img0PatchEdgeBase.rows - 1, img0PatchEdgeBase.cols - 1);
-    for (int y = 0; y < img0PatchEdgeBase.rows; ++y) {
-        for (int x = 0; x < img0PatchEdgeBase.cols; ++x) {
-            Vector2T point = Vector2T(x, y) + img0PatchEdgeBase.baseCentre - offset;
+    const Vector2T offset = 0.5 * Vector2T(img0PatchEdgeBase.rows() - 1, img0PatchEdgeBase.cols() - 1);
+    for (int y = 0; y < img0PatchEdgeBase.rows(); ++y) {
+        for (int x = 0; x < img0PatchEdgeBase.cols(); ++x) {
+            Vector2T point = Vector2T(x, y) + img0PatchEdgeBase.centre() - offset;
             float value = getSubPixel(img0, point);
-            int rowIdx = y * img0PatchEdgeBase.rows + x;
-            EXPECT_FLOAT_EQ(value, img0PatchEdgeBase.vecImage[0](rowIdx));
+            EXPECT_FLOAT_EQ(value, img0PatchEdgeBase.at(y, x));
         }
     }
 }
