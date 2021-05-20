@@ -28,6 +28,8 @@ struct ImagePyramid {
     std::vector<cv::Mat> levels;
     ImagePyramid(){};
     ImagePyramid(const cv::Mat& image, const int& numLevels);
+
+    ImagePyramid clone() const;
 };
 
 struct ImageWithGradient {
@@ -36,6 +38,8 @@ struct ImageWithGradient {
     cv::Mat gradientY;
     ImageWithGradient(){};
     ImageWithGradient(const cv::Mat& image);
+
+    ImageWithGradient clone() const;
 };
 
 struct ImageWithGradientPyramid {
@@ -43,6 +47,8 @@ struct ImageWithGradientPyramid {
     ImageWithGradientPyramid(){};
     ImageWithGradientPyramid(const cv::Mat& image, const int& numLevels);
     ImageWithGradientPyramid(const ImagePyramid& imagePyr);
+
+    ImageWithGradientPyramid clone() const;
 };
 
 struct ImagePatch {
@@ -56,6 +62,8 @@ struct ImagePatch {
 
     Eigen::VectorXT imageVector() const;
     Eigen::Matrix<ftype, Eigen::Dynamic, 2> imageVectorDifferential() const;
+
+    ImagePatch clone() const;
 };
 
 struct PyramidPatch {
@@ -68,6 +76,8 @@ struct PyramidPatch {
     Eigen::Vector2T centre(const int& lv = 0) const { return levels[lv].centre; };
     Eigen::VectorXT pyramidVector() const;
     Eigen::Matrix<ftype, Eigen::Dynamic, 2> pyramidVectorDifferential() const;
+
+    PyramidPatch clone() const;
 };
 
 ImagePatch extractImagePatch(const cv::Point2f& point, const cv::Size& sze, const ImageWithGradient& imageWithGrad,

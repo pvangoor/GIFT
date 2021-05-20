@@ -226,3 +226,42 @@ cv::Mat GIFT::getPatchSubPix(
     }
     return result;
 }
+
+ImagePyramid ImagePyramid::clone() const {
+    ImagePyramid result;
+    result.levels.resize(this->levels.size());
+    transform(this->levels.begin(), this->levels.end(), result.levels.begin(),
+        [](const cv::Mat& img) { return img.clone(); });
+    return result;
+}
+
+ImageWithGradient ImageWithGradient::clone() const {
+    ImageWithGradient result;
+    result.image = this->image.clone();
+    result.gradientX = this->gradientX.clone();
+    result.gradientY = this->gradientY.clone();
+    return result;
+}
+
+ImageWithGradientPyramid ImageWithGradientPyramid::clone() const {
+    ImageWithGradientPyramid result;
+    result.levels.resize(this->levels.size());
+    transform(this->levels.begin(), this->levels.end(), result.levels.begin(),
+        [](const ImageWithGradient& img) { return img.clone(); });
+    return result;
+}
+
+ImagePatch ImagePatch::clone() const {
+    ImagePatch result;
+    result.centre = this->centre;
+    result.imageWithGrad = this->imageWithGrad.clone();
+    return result;
+}
+
+PyramidPatch PyramidPatch::clone() const {
+    PyramidPatch result;
+    result.levels.resize(this->levels.size());
+    transform(this->levels.begin(), this->levels.end(), result.levels.begin(),
+        [](const ImagePatch& patch) { return patch.clone(); });
+    return result;
+}
