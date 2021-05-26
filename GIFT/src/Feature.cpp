@@ -27,7 +27,6 @@ Feature::Feature(
     this->camCoordinates = newCamCoords;
     this->cameraPtr = cameraPtr;
 
-    this->opticalFlowRaw.setZero();
     this->opticalFlowNorm.setZero();
 
     this->pointColor = col;
@@ -37,7 +36,6 @@ Feature::Feature(
 }
 
 void Feature::update(const cv::Point2f& newCamCoords, const colorVec& col) {
-    this->opticalFlowRaw << newCamCoords.x - this->camCoordinates.x, newCamCoords.y - this->camCoordinates.y;
     cv::Point2f newCamCoordsNorm = cameraPtr->undistortPointCV(newCamCoords);
     this->opticalFlowNorm << newCamCoordsNorm.x - this->camCoordinatesNorm().x,
         newCamCoordsNorm.y - this->camCoordinatesNorm().y;

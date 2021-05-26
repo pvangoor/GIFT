@@ -35,7 +35,6 @@ struct Feature {
 
     std::shared_ptr<const GICamera> cameraPtr;
 
-    Eigen::Vector2T opticalFlowRaw;
     Eigen::Vector2T opticalFlowNorm;
 
     colorVec pointColor;
