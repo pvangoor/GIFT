@@ -57,7 +57,7 @@ else()
 endif()
 
 # Add files from within the project
-add_library(GIFT
+add_library(GIFT SHARED
     ${GIFT_SOURCE_FILES}
     ${GIFT_HEADER_FILES}
 )
