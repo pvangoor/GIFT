@@ -39,7 +39,7 @@ class KPFTTest : public ::testing::Test {
 };
 
 TEST_F(KPFTTest, DetectAndTrack) {
-    kpt.settings.maximumFeatures = 100;
+    kpt.maxFeatures = 100;
     kpt.settings.minimumFeatureDistance = 10;
 
     kpt.detectFeatures(img0);
