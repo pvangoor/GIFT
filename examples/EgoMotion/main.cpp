@@ -73,8 +73,8 @@ int main(int argc, char* argv[]) {
     // Set up a monocular feature tracker
     GIFT::StandardCamera cam0 = GIFT::StandardCamera(camConfigFile);
     GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(cam0);
-    ft.maxFeatures = 250;
-    ft.featureDist = 20;
+    ft.settings.maxFeatures = 250;
+    ft.settings.featureDist = 20;
 
     cv::VideoCapture cap(videoFile);
 

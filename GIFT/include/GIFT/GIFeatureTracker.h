@@ -22,10 +22,20 @@
 #include "GIFT/Camera.h"
 #include "GIFT/Feature.h"
 #include "opencv2/core.hpp"
+#include "yaml-cpp/yaml.h"
 
 #include <type_traits>
 
 namespace GIFT {
+
+template <class T> bool safeConfig(const YAML::Node& cfg, T& var) {
+    if (cfg) {
+        var = cfg.as<T>();
+        return true;
+    } else {
+        return false;
+    }
+}
 
 class GIFeatureTracker {
   protected:
@@ -44,8 +54,12 @@ class GIFeatureTracker {
     virtual void setCamera(const std::shared_ptr<const GICamera> cameraParameters);
     virtual void setMask(const cv::Mat& mask);
 
-    ftype featureSearchThreshold = 0.8;
-    int maxFeatures = 50;
+    struct Settings {
+        ftype featureSearchThreshold = 0.8;
+        int maxFeatures = 50;
+        virtual void configure(const YAML::Node& node);
+    };
+    std::unique_ptr<Settings> settings;
 
     // Core
     virtual void processImage(const cv::Mat& image);

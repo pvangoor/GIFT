@@ -8,11 +8,14 @@ include_directories("${PROJECT_BINARY_DIR}")
 # Include libraries from outside project
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 set(ADDITIONAL_INCLUDE_DIRS
 ${EIGEN3_INCLUDE_DIRS}
 ${EIGEN3_INCLUDE_DIRS}/unsupported
-${OpenCV_INCLUDE_DIRS})
+${OpenCV_INCLUDE_DIRS}
+${YAML_CPP_INCLUDE_DIR})
+
 
 # Find project files
 ####################
@@ -48,16 +51,8 @@ set(GIFT_HEADER_FILES
     include/GIFT/Calibration.h
 )
 
-# optional dependency: yaml-cpp
-find_package(yaml-cpp REQUIRED)
-if(yaml-cpp_FOUND)
-    message("Including optional dependency yaml-cpp")
-else()
-    message("yaml-cpp was not found.")
-endif()
-
 # Add files from within the project
-add_library(GIFT SHARED
+add_library(GIFT STATIC
     ${GIFT_SOURCE_FILES}
     ${GIFT_HEADER_FILES}
 )
@@ -76,8 +71,8 @@ target_include_directories(GIFT PUBLIC
 )
 
 target_link_libraries(GIFT
-    ${OpenCV_LIBS}
-    yaml-cpp
+    PUBLIC ${OpenCV_LIBS}
+    PUBLIC ${YAML_CPP_LIBRARIES}
     # Eigen3::Eigen
 )
 

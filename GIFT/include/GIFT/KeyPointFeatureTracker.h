@@ -42,7 +42,7 @@ class KeyPointFeatureTracker : public GIFeatureTracker {
 
   public:
     // Settings
-    struct Settings {
+    struct Settings : GIFeatureTracker::Settings {
         double minimumFeatureDistance = 20;
     };
     Settings settings; // TODO expand these settings to actually change the detector

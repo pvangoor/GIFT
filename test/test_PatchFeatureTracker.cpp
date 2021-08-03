@@ -44,7 +44,7 @@ class PFTTest : public ::testing::Test {
 };
 
 TEST_F(PFTTest, DetectAndTrackTranslation) {
-    pftTrans.maxFeatures = 50;
+    pftTrans.settings.maxFeatures = 50;
     pftTrans.settings.minimumFeatureDistance = 20;
     pftTrans.settings.minimumRelativeQuality = 0.01;
     pftTrans.settings.patchSize = Size(9, 9);
@@ -84,7 +84,7 @@ TEST_F(PFTTest, DetectAndTrackTranslation) {
 }
 
 TEST_F(PFTTest, DetectAndTrackAffine) {
-    pftAffine.maxFeatures = 50;
+    pftAffine.settings.maxFeatures = 50;
     pftAffine.settings.minimumFeatureDistance = 20;
     pftAffine.settings.minimumRelativeQuality = 0.01;
     pftAffine.settings.patchSize = Size(15, 15);

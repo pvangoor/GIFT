@@ -41,3 +41,8 @@ void GIFeatureTracker::processImage(const cv::Mat& image) {
     trackFeatures(image);
     detectFeatures(image);
 }
+
+void GIFeatureTracker::Settings::configure(const YAML::Node& node) {
+    safeConfig(node["featureSearchThreshold"], featureSearchThreshold);
+    safeConfig(node["maxFeatures"], maxFeatures);
+}

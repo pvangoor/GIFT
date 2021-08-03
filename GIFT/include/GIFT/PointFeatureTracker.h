@@ -36,11 +36,16 @@ class PointFeatureTracker : public GIFeatureTracker {
     std::vector<Feature> features;
 
   public:
-    ftype featureDist = 20;
-    ftype minHarrisQuality = 0.1;
-    float maxError = 1e8;
-    int winSize = 21;
-    int maxLevel = 3;
+    struct Settings : GIFeatureTracker::Settings {
+        ftype featureDist = 20;
+        ftype minHarrisQuality = 0.1;
+        float maxError = 1e8;
+        int winSize = 21;
+        int maxLevel = 3;
+        ftype trackedFeatureDist = 0.0;
+        virtual void configure(const YAML::Node& node) override;
+    };
+    Settings settings;
 
   public:
     // Initialisation and configuration
@@ -64,6 +69,7 @@ class PointFeatureTracker : public GIFeatureTracker {
   protected:
     std::vector<cv::Point2f> identifyFeatureCandidates(const cv::Mat& image) const;
     std::vector<cv::Point2f> removeDuplicateFeatures(const std::vector<cv::Point2f>& proposedFeatures) const;
+    static void removeFeaturesTooClose(std::vector<Feature>& features, const ftype& closeDist);
     std::vector<Feature> createNewFeatures(const cv::Mat& image, const std::vector<cv::Point2f>& newFeatures);
 
     void addNewFeatures(std::vector<Feature> newFeatures);

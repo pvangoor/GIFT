@@ -46,7 +46,7 @@ class PatchFeatureTracker : public GIFeatureTracker {
 
   public:
     // Settings
-    struct Settings {
+    struct Settings : GIFeatureTracker::Settings {
         double minimumFeatureDistance = 20;
         double minimumRelativeQuality = 0.05;
         int pyramidLevels = 3;
@@ -70,14 +70,14 @@ class PatchFeatureTracker : public GIFeatureTracker {
         if (gray.channels() > 1)
             cv::cvtColor(image, gray, cv::COLOR_RGB2GRAY);
         goodFeaturesToTrack(
-            gray, newPoints, maxFeatures, settings.minimumRelativeQuality, settings.minimumFeatureDistance);
+            gray, newPoints, settings.maxFeatures, settings.minimumRelativeQuality, settings.minimumFeatureDistance);
 
         // Remove new points that are too close to existing features
         std::vector<cv::Point2f> oldPoints(features.size());
         transform(features.begin(), features.end(), oldPoints.begin(),
             [](const InternalPatchFeature& f) { return f.camCoordinates(); });
         removePointsTooClose(newPoints, oldPoints, settings.minimumFeatureDistance);
-        const int numPointsToAdd = maxFeatures - oldPoints.size();
+        const int numPointsToAdd = settings.maxFeatures - oldPoints.size();
         newPoints.resize(std::max(numPointsToAdd, 0));
 
         // Convert the new points to patch features

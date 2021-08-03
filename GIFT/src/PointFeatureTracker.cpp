@@ -33,7 +33,7 @@ void PointFeatureTracker::processImage(const Mat& image) {
     this->trackFeatures(image);
     image.copyTo(this->previousImage);
 
-    if (this->features.size() > this->featureSearchThreshold * this->maxFeatures)
+    if (this->features.size() > this->settings.featureSearchThreshold * this->settings.maxFeatures)
         return;
 
     detectFeatures(image);
@@ -74,11 +74,12 @@ void PointFeatureTracker::trackFeatures(const Mat& image) {
     vector<Point2f> points;
     vector<uchar> status;
     vector<float> err;
-    calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err, Size(winSize, winSize), maxLevel,
-        TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, (0.01000000000000000021)));
+    calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err, Size(settings.winSize, settings.winSize),
+        settings.maxLevel, TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, (0.01000000000000000021)));
 
+    // Remove features lost in tracking
     for (long int i = points.size() - 1; i >= 0; --i) {
-        if (status[i] == 0 || err[i] >= maxError) {
+        if (status[i] == 0 || err[i] >= settings.maxError) {
             features.erase(features.begin() + i);
             continue;
         }
@@ -94,6 +95,8 @@ void PointFeatureTracker::trackFeatures(const Mat& image) {
             image.at<Vec3b>(points[i]).val[0], image.at<Vec3b>(points[i]).val[1], image.at<Vec3b>(points[i]).val[2]};
         features[i].update(points[i], pointColor);
     }
+
+    removeFeaturesTooClose(features, settings.trackedFeatureDist);
 }
 
 vector<Point2f> PointFeatureTracker::identifyFeatureCandidates(const Mat& image) const {
@@ -105,7 +108,8 @@ vector<Point2f> PointFeatureTracker::identifyFeatureCandidates(const Mat& image)
     }
 
     vector<Point2f> proposedFeatures;
-    goodFeaturesToTrack(imageGrey, proposedFeatures, maxFeatures, minHarrisQuality, featureDist, mask);
+    goodFeaturesToTrack(
+        imageGrey, proposedFeatures, settings.maxFeatures, settings.minHarrisQuality, settings.featureDist, mask);
     vector<Point2f> newFeatures = this->removeDuplicateFeatures(proposedFeatures);
 
     return newFeatures;
@@ -116,7 +120,7 @@ vector<Point2f> PointFeatureTracker::removeDuplicateFeatures(const vector<Point2
     for (const auto& proposedFeature : proposedFeatures) {
         bool useFlag = true;
         for (const auto& feature : this->features) {
-            if (norm(proposedFeature - feature.camCoordinates) < featureDist) {
+            if (norm(proposedFeature - feature.camCoordinates) < settings.featureDist) {
                 useFlag = false;
                 break;
             }
@@ -131,7 +135,7 @@ vector<Point2f> PointFeatureTracker::removeDuplicateFeatures(const vector<Point2
 
 void PointFeatureTracker::addNewFeatures(vector<Feature> newFeatures) {
     for (auto& lm : newFeatures) {
-        if (features.size() >= maxFeatures)
+        if (features.size() >= settings.maxFeatures)
             break;
 
         lm.idNumber = ++currentNumber;
@@ -155,4 +159,41 @@ void PointFeatureTracker::useFeaturePredictions(const std::vector<Feature>& pred
             }
         }
     }
+}
+
+void PointFeatureTracker::removeFeaturesTooClose(std::vector<Feature>& features, const ftype& closeDist) {
+    // Removes features that are closer than closeDist.
+    // Keep the feature with the longest lifetime.
+
+    if (closeDist <= 0.0) {
+        return;
+    }
+
+    ftype closeDist2 = closeDist * closeDist;
+    for (int i = features.size(); i >= 0; --i) {
+        Feature& fi = features[i];
+        for (int j = i - 1; j >= 0; --j) {
+            Feature& fj = features[j];
+            if (fi.lifetime > fj.lifetime) {
+                // If fi is older than fj, fi will not be removed now.
+                continue;
+            }
+            ftype dist2 = (fi.camCoordinates - fj.camCoordinates).dot(fi.camCoordinates - fj.camCoordinates);
+            if (dist2 < closeDist2) {
+                // fi is too close to fj, and fj is at least as old.
+                features.erase(features.begin() + i);
+                break;
+            }
+        }
+    }
+}
+
+void PointFeatureTracker::Settings::configure(const YAML::Node& node) {
+    GIFeatureTracker::Settings::configure(node);
+    safeConfig(node["settings.featureDist"], featureDist);
+    safeConfig(node["settings.minHarrisQuality"], minHarrisQuality);
+    safeConfig(node["maxError"], maxError);
+    safeConfig(node["settings.winSize"], winSize);
+    safeConfig(node["maxLevel"], maxLevel);
+    safeConfig(node["settings.trackedsettings.FeatureDist"], trackedFeatureDist);
 }

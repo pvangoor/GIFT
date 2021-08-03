@@ -37,21 +37,15 @@ int main(int argc, char* argv[]) {
     // Set up the feature tracker
     GIFT::StandardCamera camera{cv::String(argv[1])};
     GIFT::PointFeatureTracker ft = GIFT::PointFeatureTracker(camera);
-    ft.maxFeatures = 50;
-    ft.featureDist = 15;
-    ft.minHarrisQuality = 0.05;
-    ft.featureSearchThreshold = 0.8;
+    ft.settings.maxFeatures = 50;
+    ft.settings.featureDist = 15;
+    ft.settings.minHarrisQuality = 0.05;
+    ft.settings.featureSearchThreshold = 0.8;
 
     if (argc == 4) {
         // std::cout << "Reading filter settings from " << argv[3] << std::endl;
         const YAML::Node configNode = YAML::LoadFile(std::string(argv[3]));
-        ft.maxFeatures = configNode["GIFT"]["maxFeatures"].as<int>();
-        ft.featureDist = configNode["GIFT"]["featureDist"].as<ftype>();
-        ft.minHarrisQuality = configNode["GIFT"]["minHarrisQuality"].as<ftype>();
-        ft.featureSearchThreshold = configNode["GIFT"]["featureSearchThreshold"].as<ftype>();
-        ft.maxError = configNode["GIFT"]["maxError"].as<float>();
-        ft.winSize = configNode["GIFT"]["winSize"].as<int>();
-        ft.maxLevel = configNode["GIFT"]["maxLevel"].as<int>();
+        ft.settings.configure(configNode["GIFT"]);
     }
 
     // Set up the video capture

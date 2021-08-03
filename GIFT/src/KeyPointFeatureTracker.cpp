@@ -44,7 +44,7 @@ void GIFT::KeyPointFeatureTracker::detectFeatures(const Mat& image) {
 
     // Remove points and set up id numbers
     removePointsTooCloseToFeatures(newFeatures);
-    const int allowedNewFeatures = max(0, maxFeatures - int(features.size()));
+    const int allowedNewFeatures = max(0, settings.maxFeatures - int(features.size()));
     filterForBestPoints(newFeatures, allowedNewFeatures, settings.minimumFeatureDistance);
     for_each(newFeatures.begin(), newFeatures.end(), [this](InternalKPFeature& f) { f.id = ++this->currentNumber; });
 
