@@ -22,20 +22,18 @@ using namespace GIFT;
 using namespace cv;
 using namespace Eigen;
 
-Feature::Feature(
-    const Point2f& newCamCoords, const std::shared_ptr<const GICamera>& cameraPtr, int idNumber, const colorVec& col) {
+Feature::Feature(const Point2f& newCamCoords, const std::shared_ptr<const GICamera>& cameraPtr, int idNumber) {
     this->camCoordinates = newCamCoords;
     this->cameraPtr = cameraPtr;
 
     this->opticalFlowNorm.setZero();
 
-    this->pointColor = col;
     this->idNumber = idNumber;
 
     lifetime = 1;
 }
 
-void Feature::update(const cv::Point2f& newCamCoords, const colorVec& col) {
+void Feature::update(const cv::Point2f& newCamCoords) {
     cv::Point2f newCamCoordsNorm = cameraPtr->undistortPointCV(newCamCoords);
     this->opticalFlowNorm << newCamCoordsNorm.x - this->camCoordinatesNorm().x,
         newCamCoordsNorm.y - this->camCoordinatesNorm().y;
@@ -44,7 +42,6 @@ void Feature::update(const cv::Point2f& newCamCoords, const colorVec& col) {
 
     Vector3T bearing = Vector3T(newCamCoordsNorm.x, newCamCoordsNorm.y, 1).normalized();
 
-    this->pointColor = col;
     ++lifetime;
 }
 

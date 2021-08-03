@@ -79,11 +79,11 @@ void GIFT::KeyPointFeatureTracker::trackFeatures(const Mat& image) {
 vector<GIFT::Feature> GIFT::KeyPointFeatureTracker::outputFeatures() const {
     vector<Feature> featuresOut(features.size());
     transform(features.begin(), features.end(), featuresOut.begin(),
-        [this](const InternalKPFeature& f) { return this->featureToLandmark(f); });
+        [this](const InternalKPFeature& f) { return this->exportFeature(f); });
     return featuresOut;
 }
 
-GIFT::Feature GIFT::KeyPointFeatureTracker::featureToLandmark(const InternalKPFeature& feature) const {
+GIFT::Feature GIFT::KeyPointFeatureTracker::exportFeature(const InternalKPFeature& feature) const {
     GIFT::Feature lm;
     lm.camCoordinates = feature.camCoordinates();
     lm.cameraPtr = cameraPtr;

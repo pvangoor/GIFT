@@ -114,17 +114,16 @@ class PatchFeatureTracker : public GIFeatureTracker {
     [[nodiscard]] virtual std::vector<Feature> outputFeatures() const override {
         std::vector<Feature> featuresOut(features.size());
         transform(features.begin(), features.end(), featuresOut.begin(),
-            [this](const InternalPatchFeature& f) { return this->featureToLandmark(f); });
+            [this](const InternalPatchFeature& f) { return this->exportFeature(f); });
         return featuresOut;
     };
 
-    [[nodiscard]] Feature featureToLandmark(const InternalPatchFeature& feature) const {
+    [[nodiscard]] Feature exportFeature(const InternalPatchFeature& feature) const {
         Feature lm;
         lm.camCoordinates = feature.camCoordinates();
         lm.cameraPtr = cameraPtr;
         lm.idNumber = feature.id;
         lm.lifetime = feature.lifetime;
-        lm.pointColor.fill(feature.patch.at(feature.patch.rows() / 2, feature.patch.cols() / 2));
         return lm;
         // TODO: Some parts of the feature are missing. Is this a problem?
     }

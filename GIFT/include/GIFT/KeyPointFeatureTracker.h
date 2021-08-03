@@ -62,7 +62,7 @@ class KeyPointFeatureTracker : public GIFeatureTracker {
 
     [[nodiscard]] virtual std::vector<Feature> outputFeatures() const override;
 
-    [[nodiscard]] Feature featureToLandmark(const InternalKPFeature& feature) const;
+    [[nodiscard]] Feature exportFeature(const InternalKPFeature& feature) const;
 
     void removePointsTooCloseToFeatures(std::vector<InternalKPFeature>& newKeypoints) const;
     static void filterForBestPoints(

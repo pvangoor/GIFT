@@ -51,10 +51,7 @@ vector<Feature> PointFeatureTracker::createNewFeatures(const Mat& image, const v
         return newFeatures;
 
     for (int i = 0; i < newPoints.size(); ++i) {
-        colorVec pointColor = {image.at<Vec3b>(newPoints[i]).val[0], image.at<Vec3b>(newPoints[i]).val[1],
-            image.at<Vec3b>(newPoints[i]).val[2]};
-
-        Feature lm(newPoints[i], cameraPtr, -1, pointColor);
+        Feature lm(newPoints[i], cameraPtr, -1);
 
         newFeatures.emplace_back(lm);
     }
@@ -91,9 +88,7 @@ void PointFeatureTracker::trackFeatures(const Mat& image) {
             }
         }
 
-        colorVec pointColor = {
-            image.at<Vec3b>(points[i]).val[0], image.at<Vec3b>(points[i]).val[1], image.at<Vec3b>(points[i]).val[2]};
-        features[i].update(points[i], pointColor);
+        features[i].update(points[i]);
     }
 
     removeFeaturesTooClose(features, settings.trackedFeatureDist);

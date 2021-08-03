@@ -25,8 +25,6 @@
 #include <memory>
 #include <vector>
 
-using colorVec = std::array<uchar, 3>;
-
 namespace GIFT {
 
 class GICamera;
@@ -37,14 +35,12 @@ struct Feature {
 
     Eigen::Vector2T opticalFlowNorm;
 
-    colorVec pointColor;
     int idNumber;
     int lifetime = 0;
 
     Feature(){};
-    Feature(const cv::Point2f& newCamCoords, const std::shared_ptr<const GICamera>& cameraPtr, int idNumber,
-        const colorVec& col = {0, 0, 0});
-    void update(const cv::Point2f& newCamCoords, const colorVec& col = {0, 0, 0});
+    Feature(const cv::Point2f& newCamCoords, const std::shared_ptr<const GICamera>& cameraPtr, int idNumber);
+    void update(const cv::Point2f& newCamCoords);
 
     cv::Point2f camCoordinatesNorm() const;
     Eigen::Vector3T sphereCoordinates() const;

@@ -24,8 +24,6 @@
 #include <array>
 #include <vector>
 
-using colorVec = std::array<uchar, 3>;
-
 namespace GIFT {
 
 struct StereoLandmark {
