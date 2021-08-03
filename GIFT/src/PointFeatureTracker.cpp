@@ -190,10 +190,10 @@ void PointFeatureTracker::removeFeaturesTooClose(std::vector<Feature>& features,
 
 void PointFeatureTracker::Settings::configure(const YAML::Node& node) {
     GIFeatureTracker::Settings::configure(node);
-    safeConfig(node["settings.featureDist"], featureDist);
-    safeConfig(node["settings.minHarrisQuality"], minHarrisQuality);
+    safeConfig(node["featureDist"], featureDist);
+    safeConfig(node["minHarrisQuality"], minHarrisQuality);
     safeConfig(node["maxError"], maxError);
-    safeConfig(node["settings.winSize"], winSize);
+    safeConfig(node["winSize"], winSize);
     safeConfig(node["maxLevel"], maxLevel);
-    safeConfig(node["settings.trackedsettings.FeatureDist"], trackedFeatureDist);
+    safeConfig(node["trackedFeatureDist"], trackedFeatureDist);
 }
