@@ -26,6 +26,13 @@
 namespace GIFT {
 
 class GICamera {
+  protected:
+    // map from pixels to R3 sphere coordinates
+    virtual Eigen::Vector3T undistortPointCV(const cv::Point2f& point) const {
+        return undistortPointEigen((Eigen::Vector2T() << point.x, point.y).finished());
+    };
+    virtual Eigen::Vector3T undistortPointEigen(const Eigen::Vector2T& point) const = 0;
+    virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const = 0;
 
   public:
     cv::Size imageSize;
@@ -33,43 +40,36 @@ class GICamera {
     GICamera(){};
     GICamera(const cv::String& cameraConfigFile);
 
-    // map from pixels to R3 sphere coordinates
-    virtual Eigen::Vector3T undistortPoint(const cv::Point2f& point) const = 0;
-    virtual Eigen::Vector3T undistortPoint(const Eigen::Vector2T& point) const {
-        return undistortPoint(cv::Point2f(point.x(), point.y()));
-    };
+    virtual cv::Point2f undistortPoint(const cv::Point2f& point) const {
+        Eigen::Vector3T result = undistortPointCV(point);
+        return cv::Point2f(result.x() / result.z(), result.y() / result.z());
+    }
+    virtual Eigen::Vector3T undistortPoint(const Eigen::Vector2T& point) const { return undistortPointEigen(point); }
 
     // map from R3 sphere coordinates to pixels
-    virtual cv::Point2f projectPoint(const Eigen::Vector3T& point) const = 0;
-    virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const {
-        cv::Point2f ptCV = projectPoint(point);
-        Eigen::Vector2T ptEigen;
-        ptEigen << ptCV.x, ptCV.y;
-        return ptEigen;
-    }
-
-    virtual cv::Point2f undistortPointCV(const cv::Point2f& point) const {
-        Eigen::Vector3T uPoint = undistortPoint(point);
-        return cv::Point2f(uPoint.x(), uPoint.y()) / uPoint.z();
+    virtual Eigen::Vector2T projectPoint(const Eigen::Vector3T& point) const { return projectPointEigen(point); };
+    virtual Eigen::Vector2T projectPoint(const Eigen::Vector2T& point) const {
+        return projectPointEigen((Eigen::Vector3T() << point.x(), point.y(), 1.0).finished());
+    };
+    virtual cv::Point2f projectPointCV(const Eigen::Vector3T& point) const {
+        const Eigen::Vector2T projectedPoint = projectPoint(point);
+        return cv::Point2f(projectedPoint.x(), projectedPoint.y());
     };
     virtual cv::Point2f projectPoint(const cv::Point2f& point) const {
-        return projectPoint(Eigen::Vector3T(point.x, point.y, 1.0));
-    }
+        return projectPointCV((Eigen::Vector3T() << point.x, point.y, 1.0).finished());
+    };
 };
 
 class PinholeCamera : public GICamera {
   protected:
     ftype fx, fy, cx, cy; // intrinsic parameters
 
+    virtual Eigen::Vector3T undistortPointEigen(const Eigen::Vector2T& point) const override;
+    virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const override;
+
   public:
     PinholeCamera(cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F));
     PinholeCamera(const cv::String& cameraConfigFile);
-    virtual Eigen::Vector3T undistortPoint(const cv::Point2f& point) const override;
-    virtual cv::Point2f undistortPointCV(const cv::Point2f& point) const override;
-    virtual cv::Point2f projectPoint(const Eigen::Vector3T& point) const override;
-    virtual cv::Point2f projectPoint(const cv::Point2f& point) const override;
-    virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const override;
-
     virtual Eigen::Matrix<double, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const;
 };
 
@@ -78,6 +78,9 @@ class StandardCamera : public PinholeCamera {
     std::vector<ftype> dist;
     std::vector<ftype> invDist;
     std::vector<ftype> computeInverseDistortion() const;
+
+    virtual Eigen::Vector3T undistortPointEigen(const Eigen::Vector2T& point) const override;
+    virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const override;
 
   public:
     StandardCamera(
@@ -88,11 +91,13 @@ class StandardCamera : public PinholeCamera {
     cv::Mat K() const; // intrinsic matrix (3x3)
     const std::vector<ftype>& distortion() const;
 
-    static cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist);
-    cv::Point2f undistortPointCV(const cv::Point2f& point) const override;
-    cv::Point2f projectPoint(const cv::Point2f& point) const override;
-    using PinholeCamera::projectPoint;
-    cv::Point2f distortNormalisedPoint(const cv::Point2f& normalPoint);
+    static Eigen::Vector2T distortHomogeneousPoint(const Eigen::Vector2T& point, const std::vector<ftype>& dist);
+    static Eigen::Vector2T distortPoint(const Eigen::Vector3T& point, const std::vector<ftype>& dist) {
+        return distortHomogeneousPoint(
+            (Eigen::Vector2T() << point.x() / point.z(), point.y() / point.z()).finished(), dist);
+    }
+
+    // virtual Eigen::Matrix<double, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const override;
 };
 
 class DoubleSphereCamera : public PinholeCamera {
@@ -101,15 +106,15 @@ class DoubleSphereCamera : public PinholeCamera {
   protected:
     ftype xi, alpha;
 
+    virtual Eigen::Vector3T undistortPointEigen(const Eigen::Vector2T& point) const override;
+    virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const override;
+
   public:
     DoubleSphereCamera(const std::array<ftype, 6>& doubleSphereParameters, cv::Size sze = cv::Size(0, 0));
     DoubleSphereCamera(const cv::String& cameraConfigFile);
 
     // Geometry functions
     std::array<ftype, 6> parameters() const;
-
-    Eigen::Vector3T undistortPoint(const cv::Point2f& point) const override;
-    cv::Point2f projectPoint(const Eigen::Vector3T& point) const override;
 };
 
 } // namespace GIFT

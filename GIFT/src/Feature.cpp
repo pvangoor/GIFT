@@ -34,7 +34,7 @@ Feature::Feature(const Point2f& newCamCoords, const std::shared_ptr<const GICame
 }
 
 void Feature::update(const cv::Point2f& newCamCoords) {
-    cv::Point2f newCamCoordsNorm = cameraPtr->undistortPointCV(newCamCoords);
+    cv::Point2f newCamCoordsNorm = cameraPtr->undistortPoint(newCamCoords);
     this->opticalFlowNorm << newCamCoordsNorm.x - this->camCoordinatesNorm().x,
         newCamCoordsNorm.y - this->camCoordinatesNorm().y;
 
@@ -51,7 +51,7 @@ Eigen::Vector3T Feature::sphereCoordinates() const {
     return result.normalized();
 }
 
-cv::Point2f Feature::camCoordinatesNorm() const { return cameraPtr->undistortPointCV(camCoordinates); }
+cv::Point2f Feature::camCoordinatesNorm() const { return cameraPtr->undistortPoint(camCoordinates); }
 
 Eigen::Vector2T Feature::camCoordinatesEigen() const {
     Eigen::Vector2T ptEigen;

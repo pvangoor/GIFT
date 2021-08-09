@@ -41,7 +41,7 @@ TEST(CameraTest, PinholeProject) {
         for (int y = 0; y < imageSize.width; y += skip) {
             const Point2f imagePoint(x, y);
             const Point2f normalPoint((x - cx) / fx, (y - cy) / fy);
-            const Point2f estNormalPoint = cam.undistortPointCV(imagePoint);
+            const Point2f estNormalPoint = cam.undistortPoint(imagePoint);
 
             const double error = norm(estNormalPoint - normalPoint);
             EXPECT_LE(error, 1e-4);
@@ -64,12 +64,12 @@ TEST(CameraTest, DoubleSphereReprojection) {
     constexpr int skip = 30;
     for (int x = 0; x < imageSize.width; x += skip) {
         for (int y = 0; y < imageSize.width; y += skip) {
-            const Point2f imagePoint(x, y);
+            const Eigen::Vector2T imagePoint(x, y);
 
             const Eigen::Vector3T spherePoint = cam.undistortPoint(imagePoint);
-            const Point2f estImagePoint = cam.projectPoint(spherePoint);
+            const Eigen::Vector2T estImagePoint = cam.projectPoint(spherePoint);
 
-            const double error = norm(estImagePoint - imagePoint);
+            const double error = (estImagePoint - imagePoint).norm();
             EXPECT_LE(error, 1e-3);
         }
     }

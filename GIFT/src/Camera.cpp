@@ -74,27 +74,10 @@ StandardCamera::StandardCamera(const cv::String& cameraConfigFile) : PinholeCame
     this->invDist = computeInverseDistortion();
 }
 
-Eigen::Vector3T PinholeCamera::undistortPoint(const cv::Point2f& point) const {
-    cv::Point2f uPoint = undistortPointCV(point);
-    return Eigen::Vector3T(uPoint.x, uPoint.y, 1.0).normalized();
-}
-
-cv::Point2f StandardCamera::undistortPointCV(const cv::Point2f& point) const {
-    cv::Point2f udPoint = PinholeCamera::undistortPointCV(point);
-    udPoint = distortNormalisedPoint(udPoint, invDist);
-
-    return udPoint;
-}
-
-cv::Point2f PinholeCamera::undistortPointCV(const cv::Point2f& point) const {
-    return cv::Point2f((point.x - cx) / fx, (point.y - cy) / fy);
-}
-
-cv::Point2f PinholeCamera::projectPoint(const Eigen::Vector3T& point) const {
-    cv::Point2f homogPoint;
-    homogPoint.x = point.x() / point.z();
-    homogPoint.y = point.y() / point.z();
-    return projectPoint(homogPoint);
+Eigen::Vector3T PinholeCamera::undistortPointEigen(const Eigen::Vector2T& point) const {
+    Eigen::Vector3T result;
+    result << (point.x() - cx) / fx, (point.y() - cy) / fy, 1.0;
+    return result.normalized();
 }
 
 Eigen::Matrix<double, 2, 3> PinholeCamera::projectionJacobian(const Eigen::Vector3T& point) const {
@@ -104,43 +87,42 @@ Eigen::Matrix<double, 2, 3> PinholeCamera::projectionJacobian(const Eigen::Vecto
     return J;
 }
 
-cv::Point2f StandardCamera::projectPoint(const cv::Point2f& point) const {
-    cv::Point2f distortedPoint = distortNormalisedPoint(point, this->dist);
-    return PinholeCamera::projectPoint(distortedPoint);
+Eigen::Vector2T PinholeCamera::projectPointEigen(const Eigen::Vector3T& point) const {
+    Eigen::Vector2T result;
+    result << fx * point.x() / point.z() + cx, fy * point.y() / point.z() + cy;
+    return result;
 }
 
-cv::Point2f PinholeCamera::projectPoint(const cv::Point2f& point) const {
-    cv::Point2f projectedPoint(fx * point.x + cx, fy * point.y + cy);
+Eigen::Vector2T StandardCamera::projectPointEigen(const Eigen::Vector3T& point) const {
+    const Eigen::Vector2T homogeneousPoint =
+        (Eigen::Vector2T() << point.x() / point.z(), point.y() / point.z()).finished();
+    const Eigen::Vector2T distortedPoint = distortHomogeneousPoint(homogeneousPoint, this->dist);
+    const Eigen::Vector2T projectedPoint = PinholeCamera::projectPoint(distortedPoint);
     return projectedPoint;
 }
 
-Eigen::Vector2T PinholeCamera::projectPointEigen(const Eigen::Vector3T& point) const {
-    Eigen::Vector2T projPoint;
-    projPoint.x() = fx * point.x() / point.z() + cx;
-    projPoint.y() = fy * point.y() / point.z() + cy;
-    return projPoint;
+Eigen::Vector3T StandardCamera::undistortPointEigen(const Eigen::Vector2T& point) const {
+    Eigen::Vector3T unprojectedPoint = PinholeCamera::undistortPoint(point);
+    Eigen::Vector2T undistortedPoint = distortPoint(unprojectedPoint, invDist);
+    Eigen::Vector3T result;
+    result << undistortedPoint.x(), undistortedPoint.y(), 1.0;
+    return result.normalized();
 }
 
-cv::Point2f StandardCamera::distortNormalisedPoint(const cv::Point2f& normalPoint) {
-    return distortNormalisedPoint(normalPoint, this->dist);
-}
-
-cv::Point2f StandardCamera::distortNormalisedPoint(const cv::Point2f& normalPoint, const std::vector<ftype>& dist) {
-    cv::Point2f distortedPoint = normalPoint;
-    const ftype r2 = normalPoint.x * normalPoint.x + normalPoint.y * normalPoint.y;
+Eigen::Vector2T StandardCamera::distortHomogeneousPoint(const Eigen::Vector2T& point, const std::vector<ftype>& dist) {
+    Eigen::Vector2T distortedPoint = point;
+    const ftype r2 = point.x() * point.x() + point.y() * point.y();
     if (dist.size() >= 2) {
-        distortedPoint.x += normalPoint.x * (dist[0] * r2 + dist[1] * r2 * r2);
-        distortedPoint.y += normalPoint.y * (dist[0] * r2 + dist[1] * r2 * r2);
+        distortedPoint.x() += point.x() * (dist[0] * r2 + dist[1] * r2 * r2);
+        distortedPoint.y() += point.y() * (dist[0] * r2 + dist[1] * r2 * r2);
     }
     if (dist.size() >= 4) {
-        distortedPoint.x +=
-            2 * dist[2] * normalPoint.x * normalPoint.y + dist[3] * (r2 + 2 * normalPoint.x * normalPoint.x);
-        distortedPoint.y +=
-            2 * dist[3] * normalPoint.x * normalPoint.y + dist[2] * (r2 + 2 * normalPoint.y * normalPoint.y);
+        distortedPoint.x() += 2 * dist[2] * point.x() * point.y() + dist[3] * (r2 + 2 * point.x() * point.x());
+        distortedPoint.y() += 2 * dist[3] * point.x() * point.y() + dist[2] * (r2 + 2 * point.y() * point.y());
     }
     if (dist.size() >= 5) {
-        distortedPoint.x += normalPoint.x * dist[4] * r2 * r2 * r2;
-        distortedPoint.y += normalPoint.y * dist[4] * r2 * r2 * r2;
+        distortedPoint.x() += point.x() * dist[4] * r2 * r2 * r2;
+        distortedPoint.y() += point.y() * dist[4] * r2 * r2 * r2;
     }
     return distortedPoint;
 }
@@ -150,13 +132,13 @@ std::vector<ftype> StandardCamera::computeInverseDistortion() const {
 
     // Construct a vector of normalised points
     constexpr int maxPoints = 30;
-    std::vector<cv::Point2f> distortedPoints;
-    std::vector<cv::Point2f> normalPoints;
+    std::vector<Eigen::Vector2T> distortedPoints;
+    std::vector<Eigen::Vector2T> normalPoints;
     for (int x = 0; x < compSize.width; x += compSize.width / maxPoints) {
         for (int y = 0; y < compSize.height; y += compSize.height / maxPoints) {
             // Normalise and distort the point
-            const cv::Point2f normalPoint((x - cx) / fx, (y - cy) / fy);
-            const cv::Point2f distPoint = distortNormalisedPoint(normalPoint, dist);
+            const Eigen::Vector2T normalPoint((x - cx) / fx, (y - cy) / fy);
+            const Eigen::Vector2T distPoint = distortHomogeneousPoint(normalPoint, dist);
 
             normalPoints.emplace_back(normalPoint);
             distortedPoints.emplace_back(distPoint);
@@ -167,11 +149,12 @@ std::vector<ftype> StandardCamera::computeInverseDistortion() const {
     Eigen::Matrix<ftype, Eigen::Dynamic, 5> lmat(distortedPoints.size() * 2, 5);
     Eigen::Matrix<ftype, Eigen::Dynamic, 1> rvec(distortedPoints.size() * 2, 1);
     for (int i = 0; i < distortedPoints.size(); ++i) {
-        const cv::Point2f& p = distortedPoints[i];
-        const ftype r2 = p.x * p.x + p.y * p.y;
-        lmat.block<2, 5>(2 * i, 0) << p.x * r2, p.x * r2 * r2, 2 * p.x * p.y, r2 + 2 * p.x * p.x, p.x * r2 * r2 * r2,
-            p.y * r2, p.y * r2 * r2, r2 + 2 * p.y * p.y, 2 * p.x * p.y, p.y * r2 * r2 * r2;
-        rvec.block<2, 1>(2 * i, 0) << normalPoints[i].x - p.x, normalPoints[i].y - p.y;
+        const Eigen::Vector2T& p = distortedPoints[i];
+        const ftype r2 = p.x() * p.x() + p.y() * p.y();
+        lmat.block<2, 5>(2 * i, 0) << p.x() * r2, p.x() * r2 * r2, 2 * p.x() * p.y(), r2 + 2 * p.x() * p.x(),
+            p.x() * r2 * r2 * r2, p.y() * r2, p.y() * r2 * r2, r2 + 2 * p.y() * p.y(), 2 * p.x() * p.y(),
+            p.y() * r2 * r2 * r2;
+        rvec.block<2, 1>(2 * i, 0) << normalPoints[i].x() - p.x(), normalPoints[i].y() - p.y();
     }
     const Eigen::Matrix<ftype, 5, 1> invDist = lmat.colPivHouseholderQr().solve(rvec);
     std::vector<ftype> invDistVec(invDist.data(), invDist.data() + invDist.rows());
@@ -248,27 +231,26 @@ DoubleSphereCamera::DoubleSphereCamera(const cv::String& cameraConfigFile) {
 
 std::array<ftype, 6> DoubleSphereCamera::parameters() const { return std::array<ftype, 6>{fx, fy, cx, cy, xi, alpha}; }
 
-Eigen::Vector3T DoubleSphereCamera::undistortPoint(const cv::Point2f& point) const {
+Eigen::Vector3T DoubleSphereCamera::undistortPointEigen(const Eigen::Vector2T& point) const {
     Eigen::Vector3T mVec;
 
-    mVec.x() = (point.x - cx) / fx;
-    mVec.y() = (point.y - cy) / fy;
-    float r2 = mVec.x() * mVec.x() + mVec.y() * mVec.y();
+    mVec.x() = (point.x() - cx) / fx;
+    mVec.y() = (point.y() - cy) / fy;
+    const ftype r2 = mVec.x() * mVec.x() + mVec.y() * mVec.y();
     mVec.z() = (1 - alpha * alpha * r2) / (alpha * sqrt(1 - (2 * alpha - 1) * r2) + 1. - alpha);
 
-    float factor = (mVec.z() * xi + sqrt(mVec.z() * mVec.z() + (1 - xi * xi) * r2)) / (mVec.z() * mVec.z() + r2);
+    const ftype factor = (mVec.z() * xi + sqrt(mVec.z() * mVec.z() + (1 - xi * xi) * r2)) / (mVec.z() * mVec.z() + r2);
     mVec = factor * mVec - Eigen::Vector3T(0, 0, xi);
 
     return mVec;
 }
-
-cv::Point2f DoubleSphereCamera::projectPoint(const Eigen::Vector3T& point) const {
-    cv::Point2f projPoint;
-    const float d1 = point.norm();
-    const float d2 = (point + Eigen::Vector3T(0, 0, xi * d1)).norm();
-    const float denom = 1.0 / (alpha * d2 + (1 - alpha) * (xi * d1 + point.z()));
-    projPoint.x = fx * denom * point.x() + cx;
-    projPoint.y = fy * denom * point.y() + cy;
+Eigen::Vector2T DoubleSphereCamera::projectPointEigen(const Eigen::Vector3T& point) const {
+    Eigen::Vector2T projPoint;
+    const ftype d1 = point.norm();
+    const ftype d2 = (point + Eigen::Vector3T(0, 0, xi * d1)).norm();
+    const ftype denom = 1.0 / (alpha * d2 + (1 - alpha) * (xi * d1 + point.z()));
+    projPoint.x() = fx * denom * point.x() + cx;
+    projPoint.y() = fy * denom * point.y() + cy;
 
     return projPoint;
 }
