@@ -42,6 +42,7 @@ struct Feature {
     Feature(const cv::Point2f& newCamCoords, const std::shared_ptr<const GICamera>& cameraPtr, int idNumber);
     void update(const cv::Point2f& newCamCoords);
 
+    Eigen::Vector2T camCoordinatesEigen() const;
     cv::Point2f camCoordinatesNorm() const;
     Eigen::Vector3T sphereCoordinates() const;
     Eigen::Vector3T opticalFlowSphere() const;

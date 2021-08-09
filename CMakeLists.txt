@@ -10,7 +10,7 @@ if(NOT CMAKE_BUILD_TYPE)
     message("Using the default build type: ${CMAKE_BUILD_TYPE}")
 endif(NOT CMAKE_BUILD_TYPE)
 
-option( USE_MARCH_NATIVE "Use the flag -march=native" ON)
+option( USE_MARCH_NATIVE "Use the flag -march=native" OFF)
 if (USE_MARCH_NATIVE AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     include(CheckCXXCompilerFlag)
     CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)

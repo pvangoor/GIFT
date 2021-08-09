@@ -59,7 +59,7 @@ class GIFeatureTracker {
         int maxFeatures = 50;
         virtual void configure(const YAML::Node& node);
     };
-    std::unique_ptr<Settings> settings;
+    Settings settings;
 
     // Core
     virtual void processImage(const cv::Mat& image);

@@ -35,9 +35,18 @@ class GICamera {
 
     // map from pixels to R3 sphere coordinates
     virtual Eigen::Vector3T undistortPoint(const cv::Point2f& point) const = 0;
+    virtual Eigen::Vector3T undistortPoint(const Eigen::Vector2T& point) const {
+        return undistortPoint(cv::Point2f(point.x(), point.y()));
+    };
 
     // map from R3 sphere coordinates to pixels
     virtual cv::Point2f projectPoint(const Eigen::Vector3T& point) const = 0;
+    virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const {
+        cv::Point2f ptCV = projectPoint(point);
+        Eigen::Vector2T ptEigen;
+        ptEigen << ptCV.x, ptCV.y;
+        return ptEigen;
+    }
 
     virtual cv::Point2f undistortPointCV(const cv::Point2f& point) const {
         Eigen::Vector3T uPoint = undistortPoint(point);
@@ -62,6 +71,7 @@ class PinholeCamera : public GICamera {
 
     virtual Eigen::Matrix<double, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const;
 };
+
 class StandardCamera : public PinholeCamera {
   protected:
     std::vector<ftype> dist;

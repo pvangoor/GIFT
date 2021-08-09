@@ -53,6 +53,12 @@ Eigen::Vector3T Feature::sphereCoordinates() const {
 
 cv::Point2f Feature::camCoordinatesNorm() const { return cameraPtr->undistortPointCV(camCoordinates); }
 
+Eigen::Vector2T Feature::camCoordinatesEigen() const {
+    Eigen::Vector2T ptEigen;
+    ptEigen << camCoordinates.x, camCoordinates.y;
+    return ptEigen;
+}
+
 Eigen::Vector3T Feature::opticalFlowSphere() const {
     const Vector3T bearing = sphereCoordinates();
     const Vector3T sphereFlow = bearing.z() * (Matrix3T::Identity() - bearing * bearing.transpose()) *
