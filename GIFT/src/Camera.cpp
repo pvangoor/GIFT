@@ -114,6 +114,13 @@ cv::Point2f PinholeCamera::projectPoint(const cv::Point2f& point) const {
     return projectedPoint;
 }
 
+Eigen::Vector2T PinholeCamera::projectPointEigen(const Eigen::Vector3T& point) const {
+    Eigen::Vector2T projPoint;
+    projPoint.x() = fx * point.x() / point.z() + cx;
+    projPoint.y() = fy * point.y() / point.z() + cy;
+    return projPoint;
+}
+
 cv::Point2f StandardCamera::distortNormalisedPoint(const cv::Point2f& normalPoint) {
     return distortNormalisedPoint(normalPoint, this->dist);
 }

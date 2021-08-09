@@ -68,6 +68,7 @@ class PinholeCamera : public GICamera {
     virtual cv::Point2f undistortPointCV(const cv::Point2f& point) const override;
     virtual cv::Point2f projectPoint(const Eigen::Vector3T& point) const override;
     virtual cv::Point2f projectPoint(const cv::Point2f& point) const override;
+    virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const override;
 
     virtual Eigen::Matrix<double, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const;
 };
