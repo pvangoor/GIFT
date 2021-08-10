@@ -96,13 +96,14 @@ Eigen::Vector2T PinholeCamera::projectPointEigen(const Eigen::Vector3T& point) c
 Eigen::Vector2T StandardCamera::projectPointEigen(const Eigen::Vector3T& point) const {
     const Eigen::Vector2T homogeneousPoint =
         (Eigen::Vector2T() << point.x() / point.z(), point.y() / point.z()).finished();
-    const Eigen::Vector2T distortedPoint = distortHomogeneousPoint(homogeneousPoint, this->dist);
-    const Eigen::Vector2T projectedPoint = PinholeCamera::projectPoint(distortedPoint);
+    Eigen::Vector3T distortedPoint;
+    distortedPoint << distortHomogeneousPoint(homogeneousPoint, this->dist), 1.0;
+    const Eigen::Vector2T projectedPoint = PinholeCamera::projectPointEigen(distortedPoint);
     return projectedPoint;
 }
 
 Eigen::Vector3T StandardCamera::undistortPointEigen(const Eigen::Vector2T& point) const {
-    Eigen::Vector3T unprojectedPoint = PinholeCamera::undistortPoint(point);
+    Eigen::Vector3T unprojectedPoint = PinholeCamera::undistortPointEigen(point);
     Eigen::Vector2T undistortedPoint = distortPoint(unprojectedPoint, invDist);
     Eigen::Vector3T result;
     result << undistortedPoint.x(), undistortedPoint.y(), 1.0;
