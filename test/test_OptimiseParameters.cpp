@@ -119,7 +119,7 @@ TEST_F(OptimiseParametersTest, TranslationConvergeSmallErrorOnBase) {
 TEST_F(OptimiseParametersTest, AffineConvergeSmallErrorOnBase) {
     for (int testIter = 0; testIter < 10; ++testIter) {
         Affine2Group params = Affine2Group::Identity();
-        params.translation = Vector2T::Random() * 3.0;
+        params.translation = Vector2T::Random() * 2.0;
 
         optimiseParameters(params, img0PatchBase, img0ImagePyrBase);
 

@@ -43,6 +43,8 @@ class PFTTest : public ::testing::Test {
     GIFT::PatchFeatureTracker<Affine2Group> pftAffine;
 };
 
+static ftype maxBadFeaturesFrac = 0.2;
+
 TEST_F(PFTTest, DetectAndTrackTranslation) {
     pftTrans.settings.maxFeatures = 50;
     pftTrans.settings.minimumFeatureDistance = 20;
@@ -73,14 +75,18 @@ TEST_F(PFTTest, DetectAndTrackTranslation) {
     }
 
     // Check tracking success
+    int badFeatures = 0;
     for (int i = 0; i < features0.size(); ++i) {
         const GIFT::Feature& lmi0 = features0[i];
         const GIFT::Feature& lmi1 = features1[i];
 
         Point2f coordinateError = (lmi0.camCoordinates + translationVec - lmi1.camCoordinates);
         float coordinateErrorNorm = pow(coordinateError.dot(coordinateError), 0.5);
-        EXPECT_LE(coordinateErrorNorm, 0.1);
+        if (coordinateErrorNorm > 0.1) {
+            ++badFeatures;
+        }
     }
+    EXPECT_LE(badFeatures, maxBadFeaturesFrac * features0.size());
 }
 
 TEST_F(PFTTest, DetectAndTrackAffine) {
@@ -113,12 +119,17 @@ TEST_F(PFTTest, DetectAndTrackAffine) {
     }
 
     // Check tracking success
+    int badFeatures = 0;
     for (int i = 0; i < features0.size(); ++i) {
         const GIFT::Feature& lmi0 = features0[i];
         const GIFT::Feature& lmi1 = features1[i];
 
         Point2f coordinateError = (lmi0.camCoordinates + translationVec - lmi1.camCoordinates);
         float coordinateErrorNorm = pow(coordinateError.dot(coordinateError), 0.5);
-        EXPECT_LE(coordinateErrorNorm, 0.1);
+        if (coordinateErrorNorm > 0.1) {
+            ++badFeatures;
+        }
     }
+
+    EXPECT_LE(badFeatures, maxBadFeaturesFrac * features0.size());
 }
