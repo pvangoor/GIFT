@@ -70,7 +70,7 @@ class PinholeCamera : public GICamera {
   public:
     PinholeCamera(cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F));
     PinholeCamera(const cv::String& cameraConfigFile);
-    virtual Eigen::Matrix<double, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const;
+    virtual Eigen::Matrix<ftype, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const;
 };
 
 class StandardCamera : public PinholeCamera {
@@ -97,7 +97,7 @@ class StandardCamera : public PinholeCamera {
             (Eigen::Vector2T() << point.x() / point.z(), point.y() / point.z()).finished(), dist);
     }
 
-    // virtual Eigen::Matrix<double, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const override;
+    virtual Eigen::Matrix<ftype, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const override;
 };
 
 class DoubleSphereCamera : public PinholeCamera {

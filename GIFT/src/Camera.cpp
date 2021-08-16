@@ -128,6 +128,43 @@ Eigen::Vector2T StandardCamera::distortHomogeneousPoint(const Eigen::Vector2T& p
     return distortedPoint;
 }
 
+Eigen::Matrix<ftype, 2, 3> StandardCamera::projectionJacobian(const Eigen::Vector3T& point) const {
+    // Projection from sphere to homogeneous R2 point
+    Eigen::Matrix<ftype, 2, 3> homogeneousProjJac;
+    homogeneousProjJac << 1.0 / point.z(), 0, -1.0 * point.x() / (point.z() * point.z()), 0, 1.0 / point.z(),
+        -1.0 * point.y() / (point.z() * point.z());
+
+    // Distortion of homogeneous R2 point
+    Eigen::Vector2T hPoint = point.segment<2>(0) / point.z();
+    Eigen::Matrix2T distortionJac = Eigen::Matrix2d::Identity();
+
+    const ftype r2 = hPoint.x() * hPoint.x() + hPoint.y() * hPoint.y();
+    const auto Dr2 = 2 * hPoint.transpose();
+    if (dist.size() >= 2) {
+        distortionJac += Eigen::Matrix2T::Identity() * (dist[0] * r2 + dist[1] * r2 * r2);
+        distortionJac += hPoint * (dist[0] + 2 * r2 * dist[1]) * Dr2;
+    }
+    if (dist.size() >= 4) {
+        const ftype& px = hPoint.x();
+        const ftype& py = hPoint.y();
+        distortionJac(0, 0) += 2.0 * dist[2] * py + 6.0 * dist[3] * px;
+        distortionJac(0, 1) += 2.0 * dist[2] * px + 2.0 * dist[3] * py;
+
+        distortionJac(1, 0) += 2.0 * dist[2] * px + 2.0 * dist[3] * py;
+        distortionJac(1, 1) += 6.0 * dist[2] * py + 2.0 * dist[3] * px;
+    }
+    if (dist.size() >= 5) {
+        distortionJac += Eigen::Matrix2T::Identity() * dist[4] * r2 * r2 * r2;
+        distortionJac += hPoint * (dist[4] * 3 * r2 * r2) * Dr2;
+    }
+
+    Eigen::Matrix2T pixelProjJac;
+    pixelProjJac << fx, 0.0, 0.0, fy;
+
+    const Eigen::Matrix<ftype, 2, 3> fullProjJac = pixelProjJac * distortionJac * homogeneousProjJac;
+    return fullProjJac;
+}
+
 std::vector<ftype> StandardCamera::computeInverseDistortion() const {
     const cv::Size compSize = imageSize.area() == 0 ? cv::Size(int(round(cx * 2)), int(round(cy * 2))) : imageSize;
 

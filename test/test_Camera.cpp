@@ -25,6 +25,40 @@ using namespace GIFT;
 
 static double norm(const Point2f& p) { return pow(p.x * p.x + p.y * p.y, 0.5); }
 
+Eigen::MatrixXd numericalDifferential(
+    std::function<Eigen::VectorXd(const Eigen::VectorXd&)> f, const Eigen::VectorXd& x, ftype h = -1.0) {
+    if (h < 0) {
+        h = std::cbrt(std::numeric_limits<ftype>::epsilon());
+    }
+    Eigen::MatrixXd Df(f(x).rows(), x.rows());
+    for (int j = 0; j < Df.cols(); ++j) {
+        const Eigen::VectorXd ej = Eigen::VectorXd::Unit(Df.cols(), j);
+        Df.col(j) = (f(x + h * ej) - f(x - h * ej)) / (2 * h);
+    }
+    return Df;
+}
+
+template <typename F>
+void testDifferential(const F& f, const Eigen::VectorXd& x, const Eigen::MatrixXd& Df, double h = -1.0) {
+    // Check that each partial derivative is correct
+    if (h < 0) {
+        h = std::cbrt(std::numeric_limits<double>::epsilon());
+    }
+    const int& n = Df.rows();
+    const int& m = Df.cols();
+    Eigen::MatrixXd numericalDf = numericalDifferential(f, x, h);
+
+    EXPECT_FALSE(Df.hasNaN());
+    EXPECT_FALSE(numericalDf.hasNaN());
+    // Check each entry
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+            EXPECT_NEAR(Df(i, j), numericalDf(i, j), std::max(h, 5e3 * h * abs(Df(i, j))))
+                << "Entry (" << i << ", " << j << ")";
+        }
+    }
+}
+
 TEST(CameraTest, PinholeProject) {
     const Size imageSize = Size(752, 480);
     const double fx = 458.654;
@@ -45,6 +79,30 @@ TEST(CameraTest, PinholeProject) {
 
             const double error = norm(estNormalPoint - normalPoint);
             EXPECT_LE(error, 1e-4);
+        }
+    }
+}
+
+TEST(CameraTest, ProjectionJacobian) {
+    const Size imageSize = Size(752, 480);
+    const double fx = 458.654;
+    const double fy = 457.296;
+    const double cx = 367.215;
+    const double cy = 248.375;
+    const Mat K = (Mat_<double>(3, 3) << fx, 0, cx, 0, fy, cy, 0, 0, 1);
+
+    StandardCamera cam = StandardCamera(imageSize, K, {-0.28340811, 0.07395907, 0.00019359, 1.76187114e-05, 1e-4});
+
+    // Test on a grid of points
+    constexpr int skip = 30;
+    const auto projFun = [&cam](const Eigen::Vector3T& sp) { return cam.projectPoint(sp); };
+    for (int x = 0; x < imageSize.width; x += skip) {
+        for (int y = 0; y < imageSize.width; y += skip) {
+            const Vector2T imagePoint(x, y);
+            const Vector3T spherePoint = cam.undistortPoint(imagePoint);
+
+            const Matrix<ftype, 2, 3> Jacobian = cam.projectionJacobian(spherePoint);
+            testDifferential(projFun, spherePoint, Jacobian);
         }
     }
 }
