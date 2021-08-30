@@ -68,6 +68,7 @@ class PinholeCamera : public GICamera {
     virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const override;
 
   public:
+    cv::Mat K() const; // intrinsic matrix (3x3)
     PinholeCamera(cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F));
     PinholeCamera(const cv::String& cameraConfigFile);
     virtual Eigen::Matrix<ftype, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const;
@@ -86,6 +87,32 @@ class StandardCamera : public PinholeCamera {
     StandardCamera(
         cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F), std::vector<ftype> dist = {0, 0, 0, 0});
     StandardCamera(const cv::String& cameraConfigFile);
+
+    // Geometry functions
+    const std::vector<ftype>& distortion() const;
+
+    static Eigen::Vector2T distortHomogeneousPoint(const Eigen::Vector2T& point, const std::vector<ftype>& dist);
+    static Eigen::Vector2T distortPoint(const Eigen::Vector3T& point, const std::vector<ftype>& dist) {
+        return distortHomogeneousPoint(
+            (Eigen::Vector2T() << point.x() / point.z(), point.y() / point.z()).finished(), dist);
+    }
+
+    virtual Eigen::Matrix<ftype, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const override;
+};
+
+class EquidistantCamera : public PinholeCamera {
+  protected:
+    std::vector<ftype> dist;
+    std::vector<ftype> invDist;
+    std::vector<ftype> computeInverseDistortion() const;
+
+    virtual Eigen::Vector3T undistortPointEigen(const Eigen::Vector2T& point) const override;
+    virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const override;
+
+  public:
+    EquidistantCamera(
+        cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F), std::vector<ftype> dist = {0, 0, 0, 0});
+    EquidistantCamera(const cv::String& cameraConfigFile);
 
     // Geometry functions
     cv::Mat K() const; // intrinsic matrix (3x3)

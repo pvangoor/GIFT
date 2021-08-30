@@ -28,11 +28,6 @@ PinholeCamera::PinholeCamera(cv::Size sze, cv::Mat K) {
     this->cy = K.at<double>(1, 2);
 }
 
-StandardCamera::StandardCamera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) : PinholeCamera(sze, K) {
-    this->dist = dist;
-    this->invDist = computeInverseDistortion();
-}
-
 PinholeCamera::PinholeCamera(const cv::String& cameraConfigFile) {
 
     cv::FileStorage fs(cameraConfigFile, cv::FileStorage::READ);
@@ -59,21 +54,6 @@ PinholeCamera::PinholeCamera(const cv::String& cameraConfigFile) {
     this->cy = K.at<double>(1, 2);
 }
 
-StandardCamera::StandardCamera(const cv::String& cameraConfigFile) : PinholeCamera(cameraConfigFile) {
-
-    cv::FileStorage fs(cameraConfigFile, cv::FileStorage::READ);
-
-    if (!fs["distortion_coefficients"].empty()) {
-        fs["distortion_coefficients"] >> this->dist;
-    } else if (!fs["distortion"].empty()) {
-        fs["distortion"] >> this->dist;
-    } else if (!fs["dist"].empty()) {
-        fs["dist"] >> this->dist;
-    }
-
-    this->invDist = computeInverseDistortion();
-}
-
 Eigen::Vector3T PinholeCamera::undistortPointEigen(const Eigen::Vector2T& point) const {
     Eigen::Vector3T result;
     result << (point.x() - cx) / fx, (point.y() - cy) / fy, 1.0;
@@ -91,6 +71,37 @@ Eigen::Vector2T PinholeCamera::projectPointEigen(const Eigen::Vector3T& point) c
     Eigen::Vector2T result;
     result << fx * point.x() / point.z() + cx, fy * point.y() / point.z() + cy;
     return result;
+}
+
+cv::Mat PinholeCamera::K() const {
+    cv::Mat K = cv::Mat::eye(3, 3, CV_64F);
+    K.at<double>(0, 0) = fx;
+    K.at<double>(1, 1) = fy;
+    K.at<double>(0, 2) = cx;
+    K.at<double>(1, 2) = cy;
+    return K;
+}
+
+// Standard Camera
+
+StandardCamera::StandardCamera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) : PinholeCamera(sze, K) {
+    this->dist = dist;
+    this->invDist = computeInverseDistortion();
+}
+
+StandardCamera::StandardCamera(const cv::String& cameraConfigFile) : PinholeCamera(cameraConfigFile) {
+
+    cv::FileStorage fs(cameraConfigFile, cv::FileStorage::READ);
+
+    if (!fs["distortion_coefficients"].empty()) {
+        fs["distortion_coefficients"] >> this->dist;
+    } else if (!fs["distortion"].empty()) {
+        fs["distortion"] >> this->dist;
+    } else if (!fs["dist"].empty()) {
+        fs["dist"] >> this->dist;
+    }
+
+    this->invDist = computeInverseDistortion();
 }
 
 Eigen::Vector2T StandardCamera::projectPointEigen(const Eigen::Vector3T& point) const {
@@ -199,16 +210,9 @@ std::vector<ftype> StandardCamera::computeInverseDistortion() const {
     return invDistVec;
 }
 
-cv::Mat StandardCamera::K() const {
-    cv::Mat K = cv::Mat::eye(3, 3, CV_64F);
-    K.at<double>(0, 0) = fx;
-    K.at<double>(1, 1) = fy;
-    K.at<double>(0, 2) = cx;
-    K.at<double>(1, 2) = cy;
-    return K;
-}
-
 const std::vector<ftype>& StandardCamera::distortion() const { return dist; }
+
+// Double Sphere Camera
 
 DoubleSphereCamera::DoubleSphereCamera(const std::array<ftype, 6>& doubleSphereParameters, cv::Size sze) {
     imageSize = sze;
@@ -292,3 +296,90 @@ Eigen::Vector2T DoubleSphereCamera::projectPointEigen(const Eigen::Vector3T& poi
 
     return projPoint;
 }
+
+// Equidistant Camera
+
+EquidistantCamera::EquidistantCamera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) : PinholeCamera(sze, K) {
+    this->dist = dist;
+}
+
+EquidistantCamera::EquidistantCamera(const cv::String& cameraConfigFile) : PinholeCamera(cameraConfigFile) {
+    cv::FileStorage fs(cameraConfigFile, cv::FileStorage::READ);
+    if (!fs["distortion_coefficients"].empty()) {
+        fs["distortion_coefficients"] >> this->dist;
+    } else if (!fs["distortion"].empty()) {
+        fs["distortion"] >> this->dist;
+    } else if (!fs["dist"].empty()) {
+        fs["dist"] >> this->dist;
+    }
+}
+
+Eigen::Vector2T EquidistantCamera::projectPointEigen(const Eigen::Vector3T& point) const {
+    const Eigen::Vector2T homogeneousPoint =
+        (Eigen::Vector2T() << point.x() / point.z(), point.y() / point.z()).finished();
+    Eigen::Vector3T distortedPoint;
+    distortedPoint << distortHomogeneousPoint(homogeneousPoint, this->dist), 1.0;
+    const Eigen::Vector2T projectedPoint = PinholeCamera::projectPointEigen(distortedPoint);
+    return projectedPoint;
+}
+
+Eigen::Vector3T EquidistantCamera::undistortPointEigen(const Eigen::Vector2T& point) const {
+    Eigen::Vector3T unprojectedPoint = PinholeCamera::undistortPointEigen(point);
+    // Eigen::Vector2T undistortedPoint = distortPoint(unprojectedPoint, invDist);
+    Eigen::Vector2T undistortedPoint = unprojectedPoint.segment<2>(0);
+    Eigen::Vector3T result;
+    result << undistortedPoint.x(), undistortedPoint.y(), 1.0;
+    return result.normalized();
+}
+
+Eigen::Vector2T EquidistantCamera::distortHomogeneousPoint(
+    const Eigen::Vector2T& point, const std::vector<ftype>& dist) {
+
+    const ftype r = sqrt(point.x() * point.x() + point.y() * point.y());
+    const ftype theta = atan(r);
+    const ftype temp = theta * (1.0 + dist[0] * pow(theta, 2) + dist[1] * pow(theta, 4) + dist[2] * pow(theta, 6) +
+                                   dist[3] * pow(theta, 8));
+    const ftype scale = (r > 1e-6) ? temp / r : 1.0;
+
+    return scale * point;
+}
+
+Eigen::Matrix<ftype, 2, 3> EquidistantCamera::projectionJacobian(const Eigen::Vector3T& point) const {
+    // Projection from sphere to homogeneous R2 point
+    Eigen::Matrix<ftype, 2, 3> homogeneousProjJac;
+    homogeneousProjJac << 1.0 / point.z(), 0, -1.0 * point.x() / (point.z() * point.z()), 0, 1.0 / point.z(),
+        -1.0 * point.y() / (point.z() * point.z());
+
+    // Distortion of homogeneous R2 point
+    Eigen::Vector2T hPoint = point.segment<2>(0) / point.z();
+    Eigen::Matrix2T distortionJac = Eigen::Matrix2T::Identity();
+
+    const ftype r = hPoint.norm();
+    if (r > 1e-6) {
+        const ftype theta = atan(r);
+        const ftype temp = (1.0 + dist[0] * pow(theta, 2) + dist[1] * pow(theta, 4) + dist[2] * pow(theta, 6) +
+                            dist[3] * pow(theta, 8));
+        distortionJac = temp * theta / r * Eigen::Matrix2T::Identity();
+
+        // Differentiate wrt theta
+        const Eigen::Matrix<ftype, 1, 2> Dr = hPoint.transpose() / r;
+        const Eigen::Matrix<ftype, 1, 2> Dth = Dr / (1.0 + r * r);
+
+        ftype DTemp = temp / r;
+        for (int i = 1; i < 5; ++i) {
+            DTemp += theta / r * dist[i - 1] * (2 * i) * pow(theta, 2 * i - 1);
+        }
+        distortionJac += hPoint * DTemp * Dth;
+
+        // Differentiate wrt r
+        distortionJac += -theta / (r * r) * temp * hPoint * Dr;
+    };
+
+    Eigen::Matrix2T pixelProjJac;
+    pixelProjJac << fx, 0.0, 0.0, fy;
+
+    const Eigen::Matrix<ftype, 2, 3> fullProjJac = pixelProjJac * distortionJac * homogeneousProjJac;
+    return fullProjJac;
+}
+
+const std::vector<ftype>& EquidistantCamera::distortion() const { return dist; }
