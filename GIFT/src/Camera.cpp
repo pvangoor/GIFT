@@ -327,22 +327,21 @@ Eigen::Vector3T EquidistantCamera::undistortPointEigen(const Eigen::Vector2T& po
     constexpr ftype stepEps = 0.005;
     constexpr ftype resEps = 0.1;
     constexpr int max_iter = 30;
-    constexpr ftype trust = 10000.0;
-    constexpr ftype max_step_size = 0.1;
+    constexpr ftype trust = 1000.0;
 
     // Use Gauss-Newton to estimate
     Eigen::Vector3T result = PinholeCamera::undistortPointEigen(point); // Initial guess
     for (int iter = 0; iter < max_iter; ++iter) {
-        const auto Jac = projectionJacobian(result);
         const Eigen::Vector2T estPoint = projectPoint(result);
         const auto res = point - estPoint;
+        if (res.norm() < resEps) {
+            break;
+        }
+        const auto Jac = projectionJacobian(result);
         const auto Hes = Jac.transpose() * Jac + Eigen::Matrix3T::Identity() * trust;
         Eigen::Vector3T step = Hes.ldlt().solve(Jac.transpose() * res);
-        if (step.norm() > max_step_size) {
-            step = step.normalized() * max_step_size;
-        }
         result = (result + step).normalized();
-        if (step.norm() < stepEps || res.norm() < resEps) {
+        if (step.norm() < stepEps) {
             break;
         }
     }
