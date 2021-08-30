@@ -324,12 +324,29 @@ Eigen::Vector2T EquidistantCamera::projectPointEigen(const Eigen::Vector3T& poin
 }
 
 Eigen::Vector3T EquidistantCamera::undistortPointEigen(const Eigen::Vector2T& point) const {
-    Eigen::Vector3T unprojectedPoint = PinholeCamera::undistortPointEigen(point);
-    // Eigen::Vector2T undistortedPoint = distortPoint(unprojectedPoint, invDist);
-    Eigen::Vector2T undistortedPoint = unprojectedPoint.segment<2>(0);
-    Eigen::Vector3T result;
-    result << undistortedPoint.x(), undistortedPoint.y(), 1.0;
-    return result.normalized();
+    constexpr ftype stepEps = 0.005;
+    constexpr ftype resEps = 0.1;
+    constexpr int max_iter = 30;
+    constexpr ftype trust = 10000.0;
+    constexpr ftype max_step_size = 0.1;
+
+    // Use Gauss-Newton to estimate
+    Eigen::Vector3T result = PinholeCamera::undistortPointEigen(point); // Initial guess
+    for (int iter = 0; iter < max_iter; ++iter) {
+        const auto Jac = projectionJacobian(result);
+        const Eigen::Vector2T estPoint = projectPoint(result);
+        const auto res = point - estPoint;
+        const auto Hes = Jac.transpose() * Jac + Eigen::Matrix3T::Identity() * trust;
+        Eigen::Vector3T step = Hes.ldlt().solve(Jac.transpose() * res);
+        if (step.norm() > max_step_size) {
+            step = step.normalized() * max_step_size;
+        }
+        result = (result + step).normalized();
+        if (step.norm() < stepEps || res.norm() < resEps) {
+            break;
+        }
+    }
+    return result;
 }
 
 Eigen::Vector2T EquidistantCamera::distortHomogeneousPoint(
