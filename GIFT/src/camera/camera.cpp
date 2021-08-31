@@ -53,7 +53,11 @@ GICameraPtr readCamera(const YAML::Node& config) {
             camPtr = std::make_shared<DoubleSphereCamera>(dsIntrinsicsArray, sze);
         }
     } else {
-        camPtr = std::make_shared<PinholeCamera>(sze, K);
+        if (distortion.empty()) {
+            camPtr = std::make_shared<PinholeCamera>(sze, K);
+        } else {
+            camPtr = std::make_shared<StandardCamera>(sze, K, distortion);
+        }
     }
 
     return camPtr;
