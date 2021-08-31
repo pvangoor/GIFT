@@ -58,6 +58,8 @@ class GICamera {
     virtual cv::Point2f projectPoint(const cv::Point2f& point) const {
         return projectPointCV((Eigen::Vector3T() << point.x, point.y, 1.0).finished());
     };
+
+    virtual Eigen::Matrix<ftype, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const = 0;
 };
 
 } // namespace GIFT

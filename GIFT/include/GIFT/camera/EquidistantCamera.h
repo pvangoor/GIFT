@@ -23,24 +23,22 @@ namespace GIFT {
 
 class EquidistantCamera : public PinholeCamera {
   protected:
-    std::vector<ftype> dist;
-    std::vector<ftype> invDist;
-    std::vector<ftype> computeInverseDistortion() const;
+    std::array<ftype, 4> dist;
 
     virtual Eigen::Vector3T undistortPointEigen(const Eigen::Vector2T& point) const override;
     virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const override;
 
   public:
-    EquidistantCamera(
-        cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F), std::vector<ftype> dist = {0, 0, 0, 0});
+    EquidistantCamera(cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F),
+        std::array<ftype, 4> dist = {0, 0, 0, 0});
     EquidistantCamera(const cv::String& cameraConfigFile);
 
     // Geometry functions
     cv::Mat K() const; // intrinsic matrix (3x3)
-    const std::vector<ftype>& distortion() const;
+    const std::array<ftype, 4>& distortion() const;
 
-    static Eigen::Vector2T distortHomogeneousPoint(const Eigen::Vector2T& point, const std::vector<ftype>& dist);
-    static Eigen::Vector2T distortPoint(const Eigen::Vector3T& point, const std::vector<ftype>& dist) {
+    static Eigen::Vector2T distortHomogeneousPoint(const Eigen::Vector2T& point, const std::array<ftype, 4>& dist);
+    static Eigen::Vector2T distortPoint(const Eigen::Vector3T& point, const std::array<ftype, 4>& dist) {
         return distortHomogeneousPoint(
             (Eigen::Vector2T() << point.x() / point.z(), point.y() / point.z()).finished(), dist);
     }

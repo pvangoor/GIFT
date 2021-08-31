@@ -22,3 +22,19 @@
 #include "GIFT/camera/GICamera.h"
 #include "GIFT/camera/PinholeCamera.h"
 #include "GIFT/camera/StandardCamera.h"
+#include "yaml-cpp/yaml.h"
+
+namespace GIFT {
+using GICameraPtr = std::shared_ptr<const GIFT::GICamera>;
+
+template <class T> bool safeConfig(const YAML::Node& cfg, T& var) {
+    if (cfg) {
+        var = cfg.as<T>();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+GICameraPtr readCamera(const YAML::Node& config);
+}

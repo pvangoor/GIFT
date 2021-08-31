@@ -18,19 +18,20 @@
 #include "GIFT/camera/EquidistantCamera.h"
 using namespace GIFT;
 
-EquidistantCamera::EquidistantCamera(cv::Size sze, cv::Mat K, std::vector<ftype> dist) : PinholeCamera(sze, K) {
-    this->dist = dist;
-}
+EquidistantCamera::EquidistantCamera(cv::Size sze, cv::Mat K, std::array<ftype, 4> dist)
+    : PinholeCamera(sze, K), dist(dist) {}
 
 EquidistantCamera::EquidistantCamera(const cv::String& cameraConfigFile) : PinholeCamera(cameraConfigFile) {
     cv::FileStorage fs(cameraConfigFile, cv::FileStorage::READ);
+    std::vector<ftype> temp;
     if (!fs["distortion_coefficients"].empty()) {
-        fs["distortion_coefficients"] >> this->dist;
+        fs["distortion_coefficients"] >> temp;
     } else if (!fs["distortion"].empty()) {
-        fs["distortion"] >> this->dist;
+        fs["distortion"] >> temp;
     } else if (!fs["dist"].empty()) {
-        fs["dist"] >> this->dist;
+        fs["dist"] >> temp;
     }
+    std::copy(temp.begin(), temp.begin() + 4, this->dist.begin());
 }
 
 Eigen::Vector2T EquidistantCamera::projectPointEigen(const Eigen::Vector3T& point) const {
@@ -68,7 +69,7 @@ Eigen::Vector3T EquidistantCamera::undistortPointEigen(const Eigen::Vector2T& po
 }
 
 Eigen::Vector2T EquidistantCamera::distortHomogeneousPoint(
-    const Eigen::Vector2T& point, const std::vector<ftype>& dist) {
+    const Eigen::Vector2T& point, const std::array<ftype, 4>& dist) {
 
     const ftype r = sqrt(point.x() * point.x() + point.y() * point.y());
     const ftype theta = atan(r);
@@ -117,4 +118,4 @@ Eigen::Matrix<ftype, 2, 3> EquidistantCamera::projectionJacobian(const Eigen::Ve
     return fullProjJac;
 }
 
-const std::vector<ftype>& EquidistantCamera::distortion() const { return dist; }
+const std::array<ftype, 4>& EquidistantCamera::distortion() const { return dist; }

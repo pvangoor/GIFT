@@ -28,15 +28,6 @@
 
 namespace GIFT {
 
-template <class T> bool safeConfig(const YAML::Node& cfg, T& var) {
-    if (cfg) {
-        var = cfg.as<T>();
-        return true;
-    } else {
-        return false;
-    }
-}
-
 class GIFeatureTracker {
   protected:
     int currentNumber = 0;

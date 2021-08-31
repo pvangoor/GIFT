@@ -31,6 +31,7 @@ class DoubleSphereCamera : public PinholeCamera {
     virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const override;
 
   public:
+    DoubleSphereCamera() = default;
     DoubleSphereCamera(const std::array<ftype, 6>& doubleSphereParameters, cv::Size sze = cv::Size(0, 0));
     DoubleSphereCamera(const cv::String& cameraConfigFile);
 

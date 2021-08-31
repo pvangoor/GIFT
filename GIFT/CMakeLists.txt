@@ -21,6 +21,7 @@ ${OpenCV_INCLUDE_DIRS}
 ####################
 
 set(GIFT_SOURCE_FILES
+    src/camera/camera.cpp
     src/camera/DoubleSphereCamera.cpp
     src/camera/EquidistantCamera.cpp
     src/camera/PinholeCamera.cpp
