@@ -17,8 +17,8 @@
 
 #pragma once
 
+#include "GIFT/ftype.h"
 #include "eigen3/Eigen/Core"
-#include "ftype.h"
 #include "opencv2/core/core.hpp"
 #include <vector>
 
