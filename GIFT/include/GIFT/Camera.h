@@ -17,4 +17,6 @@
 
 #pragma once
 
+#pragma message("Header GIFT/Camera.h is deprecated. Please use GIFT/camera/camera.h instead.")
+
 #include "GIFT/camera/camera.h"

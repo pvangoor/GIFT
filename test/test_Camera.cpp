@@ -15,7 +15,7 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "GIFT/Camera.h"
+#include "GIFT/camera/camera.h"
 #include "gtest/gtest.h"
 
 using namespace Eigen;

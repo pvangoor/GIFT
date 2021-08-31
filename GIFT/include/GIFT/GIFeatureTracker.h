@@ -19,8 +19,8 @@
 
 #include <vector>
 
-#include "GIFT/Camera.h"
 #include "GIFT/Feature.h"
+#include "GIFT/camera/camera.h"
 #include "opencv2/core.hpp"
 #include "yaml-cpp/yaml.h"
 
