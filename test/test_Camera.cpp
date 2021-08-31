@@ -15,7 +15,7 @@
     along with GIFT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "GIFT/Camera.h"
+#include "GIFT/camera/camera.h"
 #include "gtest/gtest.h"
 
 using namespace Eigen;
@@ -72,7 +72,7 @@ TEST(CameraTest, PinholeProject) {
     // Test on a grid of points
     constexpr int skip = 30;
     for (int x = 0; x < imageSize.width; x += skip) {
-        for (int y = 0; y < imageSize.width; y += skip) {
+        for (int y = 0; y < imageSize.height; y += skip) {
             const Point2f imagePoint(x, y);
             const Point2f normalPoint((x - cx) / fx, (y - cy) / fy);
             const Point2f estNormalPoint = cam.undistortPoint(imagePoint);
@@ -83,7 +83,7 @@ TEST(CameraTest, PinholeProject) {
     }
 }
 
-TEST(CameraTest, ProjectionJacobian) {
+TEST(CameraTest, StandardProjectionJacobian) {
     const Size imageSize = Size(752, 480);
     const double fx = 458.654;
     const double fy = 457.296;
@@ -97,12 +97,63 @@ TEST(CameraTest, ProjectionJacobian) {
     constexpr int skip = 30;
     const auto projFun = [&cam](const Eigen::Vector3T& sp) { return cam.projectPoint(sp); };
     for (int x = 0; x < imageSize.width; x += skip) {
-        for (int y = 0; y < imageSize.width; y += skip) {
+        for (int y = 0; y < imageSize.height; y += skip) {
             const Vector2T imagePoint(x, y);
             const Vector3T spherePoint = cam.undistortPoint(imagePoint);
 
             const Matrix<ftype, 2, 3> Jacobian = cam.projectionJacobian(spherePoint);
             testDifferential(projFun, spherePoint, Jacobian);
+        }
+    }
+}
+
+TEST(CameraTest, EquidistantProjectionJacobian) {
+    const Size imageSize = Size(640, 480);
+    const double fx = 278.66723066149086;
+    const double fy = 278.48991409740296;
+    const double cx = 319.75221200593535;
+    const double cy = 241.96858910358173;
+    const Mat K = (Mat_<double>(3, 3) << fx, 0, cx, 0, fy, cy, 0, 0, 1);
+
+    EquidistantCamera cam = EquidistantCamera(
+        imageSize, K, {-0.013721808247486035, 0.020727425669427896, -0.012786476702685545, 0.0025242267320687625});
+
+    // Test on a grid of points
+    constexpr int skip = 30;
+    const auto projFun = [&cam](const Eigen::Vector3T& sp) { return cam.projectPoint(sp); };
+    for (int x = 0; x < imageSize.width; x += skip) {
+        for (int y = 0; y < imageSize.height; y += skip) {
+            const Vector2T imagePoint(x, y);
+            const Vector3T spherePoint = cam.undistortPoint(imagePoint);
+
+            const Matrix<ftype, 2, 3> Jacobian = cam.projectionJacobian(spherePoint);
+            testDifferential(projFun, spherePoint, Jacobian);
+        }
+    }
+}
+
+TEST(CameraTest, EquidistantReprojection) {
+    const Size imageSize = Size(640, 480);
+    const double fx = 278.66723066149086;
+    const double fy = 278.48991409740296;
+    const double cx = 319.75221200593535;
+    const double cy = 241.96858910358173;
+    const Mat K = (Mat_<double>(3, 3) << fx, 0, cx, 0, fy, cy, 0, 0, 1);
+
+    EquidistantCamera cam = EquidistantCamera(
+        imageSize, K, {-0.013721808247486035, 0.020727425669427896, -0.012786476702685545, 0.0025242267320687625});
+
+    // Test on a grid of points
+    constexpr int skip = 30;
+    for (int x = 0; x < imageSize.width; x += skip) {
+        for (int y = 0; y < imageSize.height; y += skip) {
+            const Eigen::Vector2T imagePoint(x, y);
+
+            const Eigen::Vector3T spherePoint = cam.undistortPoint(imagePoint);
+            const Eigen::Vector2T estImagePoint = cam.projectPoint(spherePoint);
+
+            const double error = (estImagePoint - imagePoint).norm();
+            EXPECT_LE(error, 1e-1);
         }
     }
 }
@@ -121,7 +172,7 @@ TEST(CameraTest, DoubleSphereReprojection) {
     // Test on a grid of points
     constexpr int skip = 30;
     for (int x = 0; x < imageSize.width; x += skip) {
-        for (int y = 0; y < imageSize.width; y += skip) {
+        for (int y = 0; y < imageSize.height; y += skip) {
             const Eigen::Vector2T imagePoint(x, y);
 
             const Eigen::Vector3T spherePoint = cam.undistortPoint(imagePoint);

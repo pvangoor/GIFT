@@ -17,8 +17,8 @@
 
 #pragma once
 
+#include "GIFT/ftype.h"
 #include "eigen3/Eigen/Dense"
-#include "ftype.h"
 #include "opencv2/core/core.hpp"
 #include "opencv2/features2d/features2d.hpp"
 #include <array>

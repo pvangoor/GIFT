@@ -17,6 +17,22 @@
 
 #pragma once
 
-#pragma message("Header GIFT/Camera.h is deprecated. Please use GIFT/camera/camera.h instead.")
+#include "GIFT/camera/GICamera.h"
 
-#include "GIFT/camera/camera.h"
+namespace GIFT {
+
+class PinholeCamera : public GICamera {
+  protected:
+    ftype fx, fy, cx, cy; // intrinsic parameters
+
+    virtual Eigen::Vector3T undistortPointEigen(const Eigen::Vector2T& point) const override;
+    virtual Eigen::Vector2T projectPointEigen(const Eigen::Vector3T& point) const override;
+
+  public:
+    cv::Mat K() const; // intrinsic matrix (3x3)
+    PinholeCamera(cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F));
+    PinholeCamera(const cv::String& cameraConfigFile);
+    virtual Eigen::Matrix<ftype, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const override;
+};
+
+} // namespace GIFT

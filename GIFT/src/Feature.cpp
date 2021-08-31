@@ -16,7 +16,7 @@
 */
 
 #include "GIFT/Feature.h"
-#include "GIFT/Camera.h"
+#include "GIFT/camera/camera.h"
 
 using namespace GIFT;
 using namespace cv;

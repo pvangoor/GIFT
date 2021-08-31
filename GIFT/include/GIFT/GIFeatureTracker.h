@@ -19,23 +19,14 @@
 
 #include <vector>
 
-#include "GIFT/Camera.h"
 #include "GIFT/Feature.h"
+#include "GIFT/camera/camera.h"
 #include "opencv2/core.hpp"
 #include "yaml-cpp/yaml.h"
 
 #include <type_traits>
 
 namespace GIFT {
-
-template <class T> bool safeConfig(const YAML::Node& cfg, T& var) {
-    if (cfg) {
-        var = cfg.as<T>();
-        return true;
-    } else {
-        return false;
-    }
-}
 
 class GIFeatureTracker {
   protected:
