@@ -22,6 +22,8 @@
 namespace GIFT {
 
 class EquidistantCamera : public PinholeCamera {
+  // Implements the Kannala-Brandt 'equidistant' camera model found here:
+  // https://ieeexplore.ieee.org/abstract/document/1642666
   protected:
     std::array<ftype, 4> dist;
 
