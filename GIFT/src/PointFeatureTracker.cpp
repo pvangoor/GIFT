@@ -28,14 +28,24 @@ using namespace Eigen;
 using namespace std;
 using namespace cv;
 
-void PointFeatureTracker::processImage(const Mat& image) {
-    this->trackFeatures(image);
-    image.copyTo(this->previousImage);
+void PointFeatureTracker::processImage(const Mat& image, const std::map<int, cv::Point2f>& predictedFeatures) {
+    // Equalise the image histogram if desired
+    cv::Mat equalisedImage = image;
+    if (settings.equaliseImageHistogram) {
+        cv::Mat greyImage = image;
+        if (image.channels() > 1) {
+            cv::cvtColor(image, greyImage, cv::COLOR_BGR2GRAY);
+        }
+        cv::equalizeHist(greyImage, equalisedImage);
+    }
+
+    this->trackFeatures(equalisedImage, predictedFeatures);
+    equalisedImage.copyTo(this->previousImage);
 
     if (this->features.size() > this->settings.featureSearchThreshold * this->settings.maxFeatures)
         return;
 
-    detectFeatures(image);
+    detectFeatures(equalisedImage);
 }
 
 void PointFeatureTracker::detectFeatures(const Mat& image) {
@@ -58,7 +68,7 @@ vector<Feature> PointFeatureTracker::createNewFeatures(const Mat& image, const v
     return newFeatures;
 }
 
-void PointFeatureTracker::trackFeatures(const Mat& image) {
+void PointFeatureTracker::trackFeatures(const Mat& image, const std::map<int, cv::Point2f>& predictedFeatures) {
     if (features.empty())
         return;
 
@@ -68,10 +78,20 @@ void PointFeatureTracker::trackFeatures(const Mat& image) {
     }
 
     vector<Point2f> points;
+    for (const auto& feature : features) {
+        const auto& predIt = predictedFeatures.find(feature.idNumber);
+        if (predIt != predictedFeatures.end()) {
+            points.emplace_back(predIt->second);
+        } else {
+            points.emplace_back(feature.camCoordinates);
+        }
+    }
+
     vector<uchar> status;
     vector<float> err;
     calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err, Size(settings.winSize, settings.winSize),
-        settings.maxLevel, TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, (0.01000000000000000021)));
+        settings.maxLevel, TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, (0.01000000000000000021)),
+        cv::OPTFLOW_USE_INITIAL_FLOW);
 
     // Remove features lost in tracking
     for (long int i = points.size() - 1; i >= 0; --i) {
@@ -95,9 +115,9 @@ void PointFeatureTracker::trackFeatures(const Mat& image) {
 
 vector<Point2f> PointFeatureTracker::identifyFeatureCandidates(const Mat& image) const {
     Mat imageGrey;
-    if (image.channels() > 1)
-        [[unlikely]] { cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY); }
-    else {
+    if (image.channels() > 1) [[unlikely]] {
+        cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
+    } else {
         imageGrey = image;
     }
 
@@ -143,18 +163,6 @@ Eigen::Matrix3T GIFT::skew_matrix(const Eigen::Vector3T& t) {
     return t_hat;
 }
 
-void PointFeatureTracker::useFeaturePredictions(const std::vector<Feature>& predictedFeatures) {
-    for (const Feature& pf : predictedFeatures) {
-        // Find a match
-        for (Feature& f : this->features) {
-            if (f.idNumber == pf.idNumber) {
-                f.camCoordinates = pf.camCoordinates;
-                break;
-            }
-        }
-    }
-}
-
 void PointFeatureTracker::removeFeaturesTooClose(std::vector<Feature>& features, const ftype& closeDist) {
     // Removes features that are closer than closeDist.
     // Keep the feature with the longest lifetime.
@@ -190,4 +198,5 @@ void PointFeatureTracker::Settings::configure(const YAML::Node& node) {
     safeConfig(node["winSize"], winSize);
     safeConfig(node["maxLevel"], maxLevel);
     safeConfig(node["trackedFeatureDist"], trackedFeatureDist);
+    safeConfig(node["equaliseImageHistogram"], equaliseImageHistogram);
 }

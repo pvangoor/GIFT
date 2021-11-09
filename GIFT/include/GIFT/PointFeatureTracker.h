@@ -43,6 +43,7 @@ class PointFeatureTracker : public GIFeatureTracker {
         int winSize = 21;
         int maxLevel = 3;
         ftype trackedFeatureDist = 0.0;
+        bool equaliseImageHistogram = false;
         virtual void configure(const YAML::Node& node) override;
     };
     Settings settings;
@@ -57,10 +58,10 @@ class PointFeatureTracker : public GIFeatureTracker {
     PointFeatureTracker(const CamClass& cameraParams) : GIFeatureTracker(cameraParams){};
 
     // Core
-    virtual void processImage(const cv::Mat& image) override;
+    virtual void processImage(const cv::Mat& image, const std::map<int, cv::Point2f>& predictedFeatures = {});
     virtual void detectFeatures(const cv::Mat& image) override;
-    virtual void trackFeatures(const cv::Mat& image) override;
-    virtual void useFeaturePredictions(const std::vector<Feature>& predictedFeatures);
+    virtual void trackFeatures(const cv::Mat& image, const std::map<int, cv::Point2f>& predictedFeatures);
+    virtual void trackFeatures(const cv::Mat& image) override { trackFeatures(image, {}); };
     std::vector<Feature> outputFeatures() const { return features; };
 
     // EgoMotion
