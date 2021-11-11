@@ -89,9 +89,17 @@ void PointFeatureTracker::trackFeatures(const Mat& image, const std::map<int, cv
 
     vector<uchar> status;
     vector<float> err;
-    calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err, Size(settings.winSize, settings.winSize),
-        settings.maxLevel, TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, (0.01000000000000000021)),
-        cv::OPTFLOW_USE_INITIAL_FLOW);
+    if (predictedFeatures.empty()) {
+        points.clear();
+        calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err,
+            Size(settings.winSize, settings.winSize), settings.maxLevel,
+            TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, (0.01000000000000000021)));
+    } else {
+        calcOpticalFlowPyrLK(previousImage, image, oldPoints, points, status, err,
+            Size(settings.winSize, settings.winSize), settings.maxLevel,
+            TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 30, (0.01000000000000000021)),
+            cv::OPTFLOW_USE_INITIAL_FLOW);
+    }
 
     // Remove features lost in tracking
     for (long int i = points.size() - 1; i >= 0; --i) {
