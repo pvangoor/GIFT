@@ -118,6 +118,8 @@ void PointFeatureTracker::trackFeatures(const Mat& image, const std::map<int, cv
         features[i].update(points[i]);
     }
 
+    // rejectStaticWorldOutliers(features);
+
     removeFeaturesTooClose(features, settings.trackedFeatureDist);
 }
 
