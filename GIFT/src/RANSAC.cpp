@@ -22,6 +22,9 @@
 std::vector<GIFT::Feature> GIFT::determineStaticWorldInliers(
     const std::vector<GIFT::Feature>& features, const GIFT::RansacParameters& params, std::mt19937& generator) {
     std::vector<GIFT::Feature> bestFitInliers(0);
+    if (features.size() < params.minInliers || features.size() < params.minDataPoints || params.maxIterations == 0) {
+        return features;
+    }
 
     for (size_t iter = 0; iter < params.maxIterations; ++iter) {
         std::vector<GIFT::Feature> sampledFeatures = sampleVector(features, params.minDataPoints, generator);

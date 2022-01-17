@@ -43,7 +43,10 @@ void PointFeatureTracker::processImage(const Mat& image, const std::map<int, cv:
     equalisedImage.copyTo(this->previousImage);
 
     if (settings.ransacParams.maxIterations > 0) {
-        features = determineStaticWorldInliers(features, settings.ransacParams, settings.rng);
+        const auto inlierFeatures = determineStaticWorldInliers(features, settings.ransacParams, settings.rng);
+        if (inlierFeatures.size() > 0) {
+            features = inlierFeatures;
+        }
     }
 
     if (this->features.size() > this->settings.featureSearchThreshold * this->settings.maxFeatures)

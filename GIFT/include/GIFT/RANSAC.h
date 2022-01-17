@@ -37,9 +37,9 @@ std::vector<GIFT::Feature> determineStaticWorldInliers(
 
 Eigen::Matrix3T fitEssentialMatrix(const std::vector<GIFT::Feature>& features);
 
-template <typename T>
-std::vector<T> sampleVector(const std::vector<T>& items, const size_t& n, std::mt19937& generator) {
+template <typename T> std::vector<T> sampleVector(const std::vector<T>& items, size_t n, std::mt19937& generator) {
     // This is basic reservoir sampling
+    n = std::min(items.size(), n);
     std::vector<T> sample;
     sample.insert(sample.end(), items.begin(), items.begin() + n);
 
