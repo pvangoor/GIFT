@@ -27,7 +27,6 @@ set(GIFT_SOURCE_FILES
     src/camera/PinholeCamera.cpp
     src/camera/StandardCamera.cpp
     src/PointFeatureTracker.cpp
-    src/StereoFeatureTracker.cpp
     src/EgoMotion.cpp
     src/Feature.cpp
     src/ImagePyramid.cpp
@@ -37,6 +36,7 @@ set(GIFT_SOURCE_FILES
     src/KeyPointFeatureTracker.cpp
     src/Visualisation.cpp
     src/Calibration.cpp
+    src/RANSAC.cpp
 )
 
 set(GIFT_HEADER_FILES
@@ -48,7 +48,6 @@ set(GIFT_HEADER_FILES
     include/GIFT/camera/StandardCamera.h
     include/GIFT/Camera.h
     include/GIFT/PointFeatureTracker.h
-    include/GIFT/StereoFeatureTracker.h
     include/GIFT/Feature.h
     include/GIFT/EgoMotion.h
     include/GIFT/ImagePyramid.h
@@ -59,6 +58,7 @@ set(GIFT_HEADER_FILES
     include/GIFT/KeyPointFeatureTracker.h
     include/GIFT/Visualisation.h
     include/GIFT/Calibration.h
+    include/GIFT/RANSAC.h
 )
 
 # Add files from within the project
