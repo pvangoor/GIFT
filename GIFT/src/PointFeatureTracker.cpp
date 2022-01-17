@@ -214,5 +214,6 @@ void PointFeatureTracker::Settings::configure(const YAML::Node& node) {
     safeConfig(node["trackedFeatureDist"], trackedFeatureDist);
     safeConfig(node["equaliseImageHistogram"], equaliseImageHistogram);
 
+    ransacParams.maxIterations = 0; // No RANSAC by default
     safeConfig(node["ransacParams"], ransacParams);
 }
