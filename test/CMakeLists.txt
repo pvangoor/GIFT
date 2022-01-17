@@ -16,6 +16,7 @@ set(TESTS_LIST
     test_PatchFeatureTracker
     test_KeyPointFeatureTracker
     test_Calibration
+    test_RANSAC
 )
 
 foreach(TEST_NAME ${TESTS_LIST})

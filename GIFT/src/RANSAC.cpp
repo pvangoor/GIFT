@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <limits>
 
-std::vector<GIFT::Feature> determineStaticWorldInliers(
+std::vector<GIFT::Feature> GIFT::determineStaticWorldInliers(
     const std::vector<GIFT::Feature>& features, const GIFT::RansacParameters& params, std::mt19937& generator) {
     std::vector<GIFT::Feature> bestFitInliers(0);
 
@@ -49,7 +49,7 @@ std::vector<GIFT::Feature> determineStaticWorldInliers(
     return bestFitInliers;
 }
 
-Eigen::Matrix3T fitEssentialMatrix(const std::vector<GIFT::Feature>& features) {
+Eigen::Matrix3T GIFT::fitEssentialMatrix(const std::vector<GIFT::Feature>& features) {
     // This uses the 8-point algorithm.
     // The resulting essential matrix E is expected to satisfy
     // p_{t-1}^\top E p_t = 0, for every feature point p.

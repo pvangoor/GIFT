@@ -32,15 +32,15 @@ struct RansacParameters {
 };
 
 std::vector<GIFT::Feature> determineStaticWorldInliers(
-    std::vector<GIFT::Feature>& features, const RansacParameters& params);
+    const std::vector<GIFT::Feature>& features, const RansacParameters& params, std::mt19937& generator);
 
 Eigen::Matrix3T fitEssentialMatrix(const std::vector<GIFT::Feature>& features);
 
 template <typename T>
 std::vector<T> sampleVector(const std::vector<T>& items, const size_t& n, std::mt19937& generator) {
     // This is basic reservoir sampling
-    std::vector<T> sample(n);
-    sample.insert(sample.begin(), items.begin(), items.begin() + n);
+    std::vector<T> sample;
+    sample.insert(sample.end(), items.begin(), items.begin() + n);
 
     for (size_t i = n; i < items.size(); ++i) {
         std::uniform_int_distribution<size_t> distribution(0, i);
