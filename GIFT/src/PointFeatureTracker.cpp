@@ -42,6 +42,10 @@ void PointFeatureTracker::processImage(const Mat& image, const std::map<int, cv:
     this->trackFeatures(equalisedImage, predictedFeatures);
     equalisedImage.copyTo(this->previousImage);
 
+    if (settings.ransacParams.maxIterations > 0) {
+        features = determineStaticWorldInliers(features, settings.ransacParams, settings.rng);
+    }
+
     if (this->features.size() > this->settings.featureSearchThreshold * this->settings.maxFeatures)
         return;
 
@@ -209,4 +213,6 @@ void PointFeatureTracker::Settings::configure(const YAML::Node& node) {
     safeConfig(node["maxLevel"], maxLevel);
     safeConfig(node["trackedFeatureDist"], trackedFeatureDist);
     safeConfig(node["equaliseImageHistogram"], equaliseImageHistogram);
+
+    safeConfig(node["ransacParams"], ransacParams);
 }

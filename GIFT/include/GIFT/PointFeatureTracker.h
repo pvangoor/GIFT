@@ -20,6 +20,7 @@
 #include "GIFT/EgoMotion.h"
 
 #include "GIFT/GIFeatureTracker.h"
+#include "GIFT/RANSAC.h"
 
 #include "eigen3/Eigen/Dense"
 
@@ -43,7 +44,12 @@ class PointFeatureTracker : public GIFeatureTracker {
         int winSize = 21;
         int maxLevel = 3;
         ftype trackedFeatureDist = 0.0;
+
         bool equaliseImageHistogram = false;
+        // To disable RANSAC, set max iterations to 0.
+        RansacParameters ransacParams;
+        std::mt19937 rng = std::mt19937(0);
+
         virtual void configure(const YAML::Node& node) override;
     };
     Settings settings;

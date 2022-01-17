@@ -20,13 +20,14 @@
 #include <random>
 #include <vector>
 
+#include "yaml-cpp/yaml.h"
 #include <GIFT/Feature.h>
 
 namespace GIFT {
 
 struct RansacParameters {
-    size_t minDataPoints = 10;
     size_t maxIterations = 5;
+    size_t minDataPoints = 10;
     ftype inlierThreshold = 0.1;
     size_t minInliers = 20;
 };
@@ -54,3 +55,30 @@ std::vector<T> sampleVector(const std::vector<T>& items, const size_t& n, std::m
 }
 
 }; // namespace GIFT
+
+namespace YAML {
+template <> struct convert<GIFT::RansacParameters> {
+    static Node encode(const GIFT::RansacParameters& rhs) {
+        Node node;
+        node["maxIterations"] = rhs.maxIterations;
+        node["minDataPoints"] = rhs.minDataPoints;
+        node["inlierThreshold"] = rhs.inlierThreshold;
+        node["minInliers"] = rhs.minInliers;
+        return node;
+    }
+
+    static bool decode(const Node& node, GIFT::RansacParameters& rhs) {
+        if (!node.IsMap()) {
+            return false;
+        }
+        if (!(node["maxIterations"] && node["minDataPoints"] && node["inlierThreshold"] && node["minInliers"]))
+            return false;
+
+        rhs.maxIterations = node["maxIterations"].as<size_t>();
+        rhs.minDataPoints = node["minDataPoints"].as<size_t>();
+        rhs.inlierThreshold = node["inlierThreshold"].as<ftype>();
+        rhs.minInliers = node["minInliers"].as<size_t>();
+        return true;
+    }
+};
+} // namespace YAML
