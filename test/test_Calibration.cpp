@@ -18,7 +18,7 @@
 #include "GIFT/Calibration.h"
 #include "gtest/gtest.h"
 
-#include "unsupported/Eigen/MatrixFunctions"
+#include "eigen3/unsupported/Eigen/MatrixFunctions"
 
 #include "opencv2/core/eigen.hpp"
 

@@ -17,8 +17,8 @@
 
 #include "GIFT/Calibration.h"
 
-#include "Eigen/SVD"
-#include "unsupported/Eigen/MatrixFunctions"
+#include "eigen3/Eigen/SVD"
+#include "eigen3/unsupported/Eigen/MatrixFunctions"
 
 #include "opencv2/core/eigen.hpp"
 
