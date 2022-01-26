@@ -67,7 +67,7 @@ Eigen::Matrix3T GIFT::initialisePinholeIntrinsics(const std::vector<cv::Mat>& ho
     });
 
     Eigen::Matrix<ftype, Eigen::Dynamic, 6> constraintMatrix(2 * constraintMatrices.size(), 6);
-    for (int i = 0; i < constraintMatrices.size(); ++i) {
+    for (size_t i = 0; i < constraintMatrices.size(); ++i) {
         constraintMatrix.block<2, 6>(2 * i, 0) = constraintMatrices[i];
     }
 

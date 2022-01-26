@@ -31,4 +31,4 @@ std::vector<Eigen::Matrix4T> initialisePoses(
     const std::vector<Eigen::Matrix3T>& homographies, const Eigen::Matrix3T& cameraMatrix);
 Eigen::Matrix4T initialisePose(const Eigen::Matrix3T& homography, const Eigen::Matrix3T& cameraMatrix);
 
-}; // namespace GIFT
+} // namespace GIFT
