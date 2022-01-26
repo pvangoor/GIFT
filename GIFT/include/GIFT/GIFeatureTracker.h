@@ -47,7 +47,7 @@ class GIFeatureTracker {
 
     struct Settings {
         ftype featureSearchThreshold = 0.8;
-        int maxFeatures = 50;
+        size_t maxFeatures = 50;
         virtual void configure(const YAML::Node& node);
     };
     Settings settings;

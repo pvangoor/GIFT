@@ -270,11 +270,6 @@ Vector3T EgoMotion::estimateAngularVelocity(
     const vector<pair<Vector3T, Vector3T>>& sphereFlows, const Vector3T& linVel) {
     // Uses ordinary least squares to estimate angular velocity from linear velocity and flows.
     auto Proj3 = [](const Vector3T& vec) { return Matrix3T::Identity() - vec * vec.transpose() / vec.squaredNorm(); };
-    auto skew = [](const Vector3T& v) {
-        Matrix3T m;
-        m << 0, -v(2), v(1), v(2), 0, -v(0), -v(1), v(0), 0;
-        return m;
-    };
 
     bool velocityFlag = (linVel.norm() > 1e-4);
 

@@ -45,7 +45,7 @@ void GIFT::optimiseParameters(vector<ParameterGroup>& params, const vector<Pyram
 void GIFT::optimiseParameters(
     vector<ParameterGroup>& params, const vector<PyramidPatch>& patches, const ImagePyramid& pyramid) {
     assert(patches.size() == params.size());
-    for (int i = 0; i < params.size(); ++i) {
+    for (size_t i = 0; i < params.size(); ++i) {
         optimiseParameters(params[i], patches[i], pyramid);
     }
 }
