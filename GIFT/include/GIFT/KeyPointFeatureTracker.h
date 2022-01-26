@@ -66,7 +66,7 @@ class KeyPointFeatureTracker : public GIFeatureTracker {
 
     void removePointsTooCloseToFeatures(std::vector<InternalKPFeature>& newKeypoints) const;
     static void filterForBestPoints(
-        std::vector<InternalKPFeature>& proposedFeatures, const int& maxFeatures, const double& minDist);
+        std::vector<InternalKPFeature>& proposedFeatures, const size_t& maxFeatures, const double& minDist);
 };
 
 } // namespace GIFT

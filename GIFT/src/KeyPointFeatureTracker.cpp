@@ -37,14 +37,15 @@ void GIFT::KeyPointFeatureTracker::detectFeatures(const Mat& image) {
     });
 
     // Set descriptors
-    for (int i = 0; i < newFeatures.size(); ++i) {
+    for (size_t i = 0; i < newFeatures.size(); ++i) {
         InternalKPFeature& feature = newFeatures[i];
         feature.descriptor = newDescriptors.row(i);
     }
 
     // Remove points and set up id numbers
     removePointsTooCloseToFeatures(newFeatures);
-    const int allowedNewFeatures = max(0, settings.maxFeatures - int(features.size()));
+    const size_t allowedNewFeatures =
+        features.size() > settings.maxFeatures ? 0 : settings.maxFeatures - features.size();
     filterForBestPoints(newFeatures, allowedNewFeatures, settings.minimumFeatureDistance);
     for_each(newFeatures.begin(), newFeatures.end(), [this](InternalKPFeature& f) { f.id = ++this->currentNumber; });
 
@@ -111,7 +112,7 @@ void GIFT::KeyPointFeatureTracker::removePointsTooCloseToFeatures(vector<Interna
 }
 
 void GIFT::KeyPointFeatureTracker::filterForBestPoints(
-    vector<InternalKPFeature>& proposedFeatures, const int& allowedFeatures, const double& minDist) {
+    vector<InternalKPFeature>& proposedFeatures, const size_t& allowedFeatures, const double& minDist) {
     // Use only the features with the highest responses, while ignoring features too close together
     if (allowedFeatures <= 0) {
         proposedFeatures.clear();
