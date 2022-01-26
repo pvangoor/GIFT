@@ -26,6 +26,12 @@ option(GIFT_USE_SINGLE_FLOAT "Toggle ON/OFF to use double/single precision float
 
 add_subdirectory(GIFT)
 
+option(EXTRA_WARNINGS "Toggle to use extra warnings during compilation." ON)
+if (${EXTRA_WARNINGS})
+    message("Extra warnings are enabled.")
+    target_compile_options(GIFT PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
 # uninstall target
 if(NOT TARGET uninstall)
     configure_file(

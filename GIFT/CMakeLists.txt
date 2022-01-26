@@ -12,7 +12,6 @@ find_package(yaml-cpp REQUIRED)
 
 set(ADDITIONAL_INCLUDE_DIRS
 ${EIGEN3_INCLUDE_DIRS}
-${EIGEN3_INCLUDE_DIRS}/unsupported
 ${OpenCV_INCLUDE_DIRS}
 )
 
