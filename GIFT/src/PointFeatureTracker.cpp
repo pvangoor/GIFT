@@ -57,22 +57,12 @@ void PointFeatureTracker::processImage(const Mat& image, const std::map<int, cv:
 
 void PointFeatureTracker::detectFeatures(const Mat& image) {
     vector<Point2f> newPoints = this->identifyFeatureCandidates(image);
-    vector<Feature> newFeatures = this->createNewFeatures(image, newPoints);
+
+    vector<Feature> newFeatures(newPoints.size());
+    std::transform(newPoints.begin(), newPoints.end(), newFeatures.begin(),
+        [this](const cv::Point2f& pt) { return Feature(pt, this->cameraPtr, -1); });
+
     this->addNewFeatures(newFeatures);
-}
-
-vector<Feature> PointFeatureTracker::createNewFeatures(const Mat& image, const vector<Point2f>& newPoints) {
-    vector<Feature> newFeatures;
-    if (newPoints.empty())
-        return newFeatures;
-
-    for (int i = 0; i < newPoints.size(); ++i) {
-        Feature lm(newPoints[i], cameraPtr, -1);
-
-        newFeatures.emplace_back(lm);
-    }
-
-    return newFeatures;
 }
 
 void PointFeatureTracker::trackFeatures(const Mat& image, const std::map<int, cv::Point2f>& predictedFeatures) {

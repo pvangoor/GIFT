@@ -61,7 +61,7 @@ class PointFeatureTracker : public GIFeatureTracker {
     PointFeatureTracker(const std::shared_ptr<const GICamera> cameraParams, const cv::Mat& mask)
         : GIFeatureTracker(cameraParams, mask) {}
     template <class CamClass, std::enable_if_t<std::is_base_of<GICamera, CamClass>::value, bool> = true>
-    PointFeatureTracker(const CamClass& cameraParams) : GIFeatureTracker(cameraParams){};
+    PointFeatureTracker(const CamClass& cameraParams) : GIFeatureTracker(cameraParams) {}
 
     // Core
     virtual void processImage(const cv::Mat& image, const std::map<int, cv::Point2f>& predictedFeatures = {});
@@ -77,7 +77,6 @@ class PointFeatureTracker : public GIFeatureTracker {
     std::vector<cv::Point2f> identifyFeatureCandidates(const cv::Mat& image) const;
     std::vector<cv::Point2f> removeDuplicateFeatures(const std::vector<cv::Point2f>& proposedFeatures) const;
     static void removeFeaturesTooClose(std::vector<Feature>& features, const ftype& closeDist);
-    std::vector<Feature> createNewFeatures(const cv::Mat& image, const std::vector<cv::Point2f>& newFeatures);
 
     void addNewFeatures(std::vector<Feature> newFeatures);
     void computeLandmarkPositions();

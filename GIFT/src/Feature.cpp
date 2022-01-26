@@ -39,9 +39,6 @@ void Feature::update(const cv::Point2f& newCamCoords) {
         newCamCoordsNorm.y - this->camCoordinatesNorm().y;
 
     this->camCoordinates = newCamCoords;
-
-    Vector3T bearing = Vector3T(newCamCoordsNorm.x, newCamCoordsNorm.y, 1).normalized();
-
     ++lifetime;
 }
 
