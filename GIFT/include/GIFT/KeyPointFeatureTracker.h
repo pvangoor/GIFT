@@ -53,7 +53,7 @@ class KeyPointFeatureTracker : public GIFeatureTracker {
     KeyPointFeatureTracker(const std::shared_ptr<const GICamera> cameraParams, const cv::Mat& mask)
         : GIFeatureTracker(cameraParams, mask){};
     template <class CamClass, std::enable_if_t<std::is_base_of<GICamera, CamClass>::value, bool> = true>
-    KeyPointFeatureTracker(const CamClass& cameraParams) : GIFeatureTracker(cameraParams){};
+    KeyPointFeatureTracker(const CamClass& cameraParams) : GIFeatureTracker(cameraParams) {}
 
     // Core
     virtual void detectFeatures(const cv::Mat& image) override;
@@ -66,7 +66,7 @@ class KeyPointFeatureTracker : public GIFeatureTracker {
 
     void removePointsTooCloseToFeatures(std::vector<InternalKPFeature>& newKeypoints) const;
     static void filterForBestPoints(
-        std::vector<InternalKPFeature>& proposedFeatures, const int& maxFeatures, const double& minDist);
+        std::vector<InternalKPFeature>& proposedFeatures, const size_t& maxFeatures, const double& minDist);
 };
 
 } // namespace GIFT

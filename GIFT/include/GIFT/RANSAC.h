@@ -54,7 +54,7 @@ template <typename T> std::vector<T> sampleVector(const std::vector<T>& items, s
     return sample;
 }
 
-}; // namespace GIFT
+} // namespace GIFT
 
 namespace YAML {
 template <> struct convert<GIFT::RansacParameters> {

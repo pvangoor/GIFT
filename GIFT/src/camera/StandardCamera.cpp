@@ -131,7 +131,7 @@ std::vector<ftype> StandardCamera::computeInverseDistortion() const {
     // Set up the least squares problem
     Eigen::Matrix<ftype, Eigen::Dynamic, 5> lmat(distortedPoints.size() * 2, 5);
     Eigen::Matrix<ftype, Eigen::Dynamic, 1> rvec(distortedPoints.size() * 2, 1);
-    for (int i = 0; i < distortedPoints.size(); ++i) {
+    for (size_t i = 0; i < distortedPoints.size(); ++i) {
         const Eigen::Vector2T& p = distortedPoints[i];
         const ftype r2 = p.x() * p.x() + p.y() * p.y();
         lmat.block<2, 5>(2 * i, 0) << p.x() * r2, p.x() * r2 * r2, 2 * p.x() * p.y(), r2 + 2 * p.x() * p.x(),

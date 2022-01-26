@@ -89,7 +89,7 @@ int PyramidPatch::totalPixelCount() const {
 Eigen::VectorXT PyramidPatch::pyramidVector() const {
     Eigen::VectorXT PVec(totalPixelCount());
     int currentBase = 0;
-    for (int lv = 0; lv < levels.size(); ++lv) {
+    for (size_t lv = 0; lv < levels.size(); ++lv) {
         PVec.segment(currentBase, levels[lv].area()) = levels[lv].imageVector();
         currentBase += levels[lv].area();
     }
@@ -100,7 +100,7 @@ Eigen::VectorXT PyramidPatch::pyramidVector() const {
 Eigen::Matrix<ftype, Eigen::Dynamic, 2> PyramidPatch::pyramidVectorDifferential() const {
     Eigen::Matrix<ftype, Eigen::Dynamic, 2> DPVec(totalPixelCount(), 2);
     int currentBase = 0;
-    for (int lv = 0; lv < levels.size(); ++lv) {
+    for (size_t lv = 0; lv < levels.size(); ++lv) {
         // Note: the differential is halved each level up since the motion of a pixel on the base
         // corresponds to only half that motion on the level above.
         DPVec.block(currentBase, 0, levels[lv].area(), 2) = levels[lv].imageVectorDifferential() * pow(2, -lv);
@@ -136,7 +136,7 @@ ImagePatch GIFT::extractImagePatch(const cv::Point2f& point, const cv::Size& sze
 PyramidPatch GIFT::extractPyramidPatch(
     const cv::Point2f& point, const cv::Size& sze, const ImageWithGradientPyramid& pyr, const Eigen::Matrix2T& axes) {
     std::vector<cv::Size> sizes(pyr.levels.size());
-    for (int lv = 0; lv < sizes.size(); ++lv) {
+    for (size_t lv = 0; lv < sizes.size(); ++lv) {
         sizes[lv] = sze;
     }
     return extractPyramidPatch(point, sizes, pyr, axes);

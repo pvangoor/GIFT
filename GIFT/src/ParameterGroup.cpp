@@ -61,7 +61,9 @@ void Affine2Group::changeLevel(const int& newLevel) {
     this->translation = pow(2, -levelDiff) * this->translation;
 }
 
-Matrix<ftype, 2, Dynamic> TranslationGroup::actionJacobian(const Vector2T& point) const { return Matrix2T::Identity(); }
+Matrix<ftype, 2, Dynamic> TranslationGroup::actionJacobian([[maybe_unused]] const Vector2T& point) const {
+    return Matrix2T::Identity();
+}
 
 Vector2T TranslationGroup::applyLeftAction(const Vector2T& point) const { return point + translation; }
 
