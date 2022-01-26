@@ -122,9 +122,9 @@ void PointFeatureTracker::trackFeatures(const Mat& image, const std::map<int, cv
 
 vector<Point2f> PointFeatureTracker::identifyFeatureCandidates(const Mat& image) const {
     Mat imageGrey;
-    if (image.channels() > 1) [[unlikely]] {
-        cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY);
-    } else {
+    if (image.channels() > 1)
+        [[unlikely]] { cv::cvtColor(image, imageGrey, cv::COLOR_BGR2GRAY); }
+    else {
         imageGrey = image;
     }
 
@@ -179,7 +179,7 @@ void PointFeatureTracker::removeFeaturesTooClose(std::vector<Feature>& features,
     }
 
     ftype closeDist2 = closeDist * closeDist;
-    for (int i = features.size(); i >= 0; --i) {
+    for (int i = features.size() - 1; i >= 0; --i) {
         Feature& fi = features[i];
         for (int j = i - 1; j >= 0; --j) {
             Feature& fj = features[j];
