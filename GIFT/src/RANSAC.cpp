@@ -21,14 +21,15 @@
 
 std::vector<GIFT::Feature> GIFT::determineStaticWorldInliers(
     const std::vector<GIFT::Feature>& features, const GIFT::RansacParameters& params, std::mt19937& generator) {
-    std::vector<GIFT::Feature> bestFitInliers(0);
+    std::vector<GIFT::Feature> bestFitInliers;
     if (features.size() < params.minInliers || features.size() < params.minDataPoints || params.maxIterations == 0) {
         return features;
     }
 
     for (size_t iter = 0; iter < params.maxIterations; ++iter) {
         std::vector<GIFT::Feature> sampledFeatures = sampleVector(features, params.minDataPoints, generator);
-        Eigen::Matrix3T sampleEssentialMatrix = GIFT::fitEssentialMatrix(sampledFeatures);
+        assert(sampledFeatures.size() == params.minDataPoints);
+        const Eigen::Matrix3T sampleEssentialMatrix = GIFT::fitEssentialMatrix(sampledFeatures);
 
         // Determine inliers
         std::vector<GIFT::Feature> modelInliers(features.size());
@@ -49,6 +50,9 @@ std::vector<GIFT::Feature> GIFT::determineStaticWorldInliers(
         }
     }
 
+    if (bestFitInliers.size() < params.minInliers) {
+        return features;
+    }
     return bestFitInliers;
 }
 
@@ -61,18 +65,18 @@ Eigen::Matrix3T GIFT::fitEssentialMatrix(const std::vector<GIFT::Feature>& featu
     Eigen::MatrixXT A(features.size(), 9);
     for (size_t i = 0; i < features.size(); ++i) {
         const GIFT::Feature& f = features[i];
-        const cv::Point2f& p2 = f.camCoordinatesNorm();
-        const cv::Point2f& p1 = p2 - cv::Point2f(f.opticalFlowNorm.x(), f.opticalFlowNorm.y());
+        const cv::Point2f p2 = f.camCoordinatesNorm();
+        const cv::Point2f p1 = p2 - cv::Point2f(f.opticalFlowNorm.x(), f.opticalFlowNorm.y());
         A.row(i) << p1.x * p2.x, p1.x * p2.y, p1.x, p1.y * p2.x, p1.y * p2.y, p1.y, p2.x, p2.y, 1;
     }
 
     // The initial solution is found using an SVD of A.
-    const Eigen::BDCSVD svdA(A, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    const Eigen::JacobiSVD svdA(A, Eigen::ComputeFullU | Eigen::ComputeFullV);
     const Eigen::Matrix<ftype, 9, 1> solutionVec = svdA.matrixV().rightCols<1>();
     const Eigen::Matrix3T solutionMat = Eigen::Matrix3T(solutionVec.data()).transpose();
 
     // The final solution is found by projecting to the nearest essential matrix.
-    const Eigen::BDCSVD svdB(solutionMat, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    const Eigen::JacobiSVD svdB(solutionMat, Eigen::ComputeFullU | Eigen::ComputeFullV);
     const Eigen::Vector3T& singularVals = svdB.singularValues();
     const ftype avgSingularVal = 0.5 * (singularVals(0) + singularVals(1));
     const Eigen::Matrix3d essentialMat = svdB.matrixU() *
