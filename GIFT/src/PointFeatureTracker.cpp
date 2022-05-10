@@ -164,12 +164,6 @@ void PointFeatureTracker::addNewFeatures(vector<Feature> newFeatures) {
     }
 }
 
-Eigen::Matrix3T GIFT::skew_matrix(const Eigen::Vector3T& t) {
-    Eigen::Matrix3T t_hat;
-    t_hat << 0, -t(2), t(1), t(2), 0, -t(0), -t(1), t(0), 0;
-    return t_hat;
-}
-
 void PointFeatureTracker::removeFeaturesTooClose(std::vector<Feature>& features, const ftype& closeDist) {
     // Removes features that are closer than closeDist.
     // Keep the feature with the longest lifetime.

@@ -29,8 +29,6 @@
 
 namespace GIFT {
 
-Eigen::Matrix3T skew_matrix(const Eigen::Vector3T& t);
-
 class PointFeatureTracker : public GIFeatureTracker {
   protected:
     cv::Mat previousImage;
