@@ -20,7 +20,9 @@
 #include "eigen3/Eigen/SVD"
 #include "eigen3/unsupported/Eigen/MatrixFunctions"
 
+#define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
 #include "opencv2/core/eigen.hpp"
+#undef OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
 
 Eigen::Matrix3T GIFT::initialisePinholeIntrinsics(const std::vector<Eigen::Matrix3T>& homographies) {
     std::vector<cv::Mat> cvHomographies(homographies.size());
