@@ -82,6 +82,7 @@ Eigen::Matrix3T GIFT::initialisePinholeIntrinsics(const std::vector<cv::Mat>& ho
     #else
     Eigen::BDCSVD<Eigen::MatrixXT> svd(constraintMatrix, Eigen::ComputeThinU | Eigen::ComputeThinV);
     #endif
+    Eigen::Matrix<ftype, 6, 1> bVector = svd.matrixV().block<6, 1>(0, 5);
 
     // assert(svd.singularValues()(5) > 1e-6);
     assert(!bVector.hasNaN());
