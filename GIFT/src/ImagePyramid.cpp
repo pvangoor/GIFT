@@ -110,7 +110,7 @@ Eigen::Matrix<ftype, Eigen::Dynamic, 2> PyramidPatch::pyramidVectorDifferential(
     return DPVec;
 }
 
-ftype PyramidPatch::at(int row, int col, int lv) const {
+ftype PyramidPatch::at(int row, int col, size_t lv) const {
     assert(lv < levels.size());
     assert(row < rows(lv));
     assert(col < cols(lv));
@@ -144,11 +144,11 @@ PyramidPatch GIFT::extractPyramidPatch(
 
 PyramidPatch GIFT::extractPyramidPatch(const cv::Point2f& point, const std::vector<cv::Size>& sizes,
     const ImageWithGradientPyramid& pyr, const Eigen::Matrix2T& axes) {
-    int numLevels = pyr.levels.size();
+    size_t numLevels = pyr.levels.size();
     assert(numLevels == sizes.size());
     PyramidPatch patch;
     patch.levels.resize(numLevels);
-    for (int lv = 0; lv < numLevels; ++lv) {
+    for (size_t lv = 0; lv < numLevels; ++lv) {
         patch.levels[lv] = extractImagePatch(point * pow(2, -lv), sizes[lv], pyr.levels[lv], axes);
     }
     return patch;

@@ -221,7 +221,7 @@ void EgoMotion::optimizationStep(
 
     // Step with Newton's method
     // Compute the solution to Hess^{-1} * grad
-    Matrix<ftype, 6, 1> step = hessian.bdcSvd(ComputeFullU | ComputeFullV).solve(gradient);
+    Matrix<ftype, 6, 1> step = hessian.bdcSvd<ComputeFullU | ComputeFullV>().solve(gradient);
     wHat += -step.block<3, 1>(0, 0);
 
     linVel = linVel.norm() * wHat.normalized();

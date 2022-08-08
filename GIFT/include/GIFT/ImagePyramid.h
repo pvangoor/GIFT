@@ -69,9 +69,9 @@ struct ImagePatch {
 struct PyramidPatch {
     std::vector<ImagePatch> levels;
 
-    int rows(const int& lv = 0) const { return levels[lv].rows(); };
-    int cols(const int& lv = 0) const { return levels[lv].cols(); };
-    ftype at(int row, int col, int lv = 0) const;
+    int rows(const size_t& lv = 0) const { return levels[lv].rows(); };
+    int cols(const size_t& lv = 0) const { return levels[lv].cols(); };
+    ftype at(int row, int col, size_t lv = 0) const;
     int totalPixelCount() const;
     Eigen::Vector2T centre(const int& lv = 0) const { return levels[lv].centre; };
     Eigen::VectorXT pyramidVector() const;
