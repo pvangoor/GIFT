@@ -60,6 +60,14 @@ class GICamera {
     };
 
     virtual Eigen::Matrix<ftype, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const = 0;
+
+    virtual bool isInDomain(const Eigen::Vector3T& point) const {
+        const Eigen::Vector2T pixelCoords = projectPoint(point);
+        return (pixelCoords.x() >= 0 && pixelCoords.y() >= 0 && pixelCoords.x() < imageSize.width && pixelCoords.y() < imageSize.height );
+    }
+    virtual bool isInDomain(const Eigen::Vector2T& point) const {
+        return isInDomain((Eigen::Vector3T() << point.x(), point.y(), 1.0).finished());
+    };
 };
 
 } // namespace GIFT

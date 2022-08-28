@@ -81,3 +81,10 @@ cv::Mat PinholeCamera::K() const {
     K.at<double>(1, 2) = cy;
     return K;
 }
+
+bool PinholeCamera::isInDomain(const Eigen::Vector3T& point) const {
+    if (point.z() <= 0) {
+        return false;
+    }
+    return GICamera::isInDomain(point);
+}

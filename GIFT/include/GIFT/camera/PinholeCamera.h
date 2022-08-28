@@ -33,6 +33,7 @@ class PinholeCamera : public GICamera {
     PinholeCamera(cv::Size sze = cv::Size(0, 0), cv::Mat K = cv::Mat::eye(3, 3, CV_64F));
     PinholeCamera(const cv::String& cameraConfigFile);
     virtual Eigen::Matrix<ftype, 2, 3> projectionJacobian(const Eigen::Vector3T& point) const override;
+    virtual bool isInDomain(const Eigen::Vector3T& point) const override;
 };
 
 } // namespace GIFT

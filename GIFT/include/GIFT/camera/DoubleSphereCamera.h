@@ -35,6 +35,8 @@ class DoubleSphereCamera : public PinholeCamera {
     DoubleSphereCamera(const std::array<ftype, 6>& doubleSphereParameters, cv::Size sze = cv::Size(0, 0));
     DoubleSphereCamera(const cv::String& cameraConfigFile);
 
+    using GICamera::isInDomain;
+
     // Geometry functions
     std::array<ftype, 6> parameters() const;
 };
