@@ -219,13 +219,13 @@ void EgoMotion::optimizationStep(
     gradient.block<3, 1>(0, 0) = ProjWHat * tempHess11 * wHat;
     gradient.block<3, 1>(3, 0) = -tempGrad2;
 
-    // Step with Newton's method
-    // Compute the solution to Hess^{-1} * grad
-    #if EIGEN_MAJOR_VERSION >= 4
+// Step with Newton's method
+// Compute the solution to Hess^{-1} * grad
+#if EIGEN_MAJOR_VERSION >= 4 && EIGEN_MINOR_VERSION > 90
     Matrix<ftype, 6, 1> step = hessian.bdcSvd<ComputeFullU | ComputeFullV>().solve(gradient);
-    #else
+#else
     Matrix<ftype, 6, 1> step = hessian.bdcSvd(ComputeFullU | ComputeFullV).solve(gradient);
-    #endif 
+#endif
     wHat += -step.block<3, 1>(0, 0);
 
     linVel = linVel.norm() * wHat.normalized();

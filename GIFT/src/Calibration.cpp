@@ -77,11 +77,11 @@ Eigen::Matrix3T GIFT::initialisePinholeIntrinsics(const std::vector<cv::Mat>& ho
 
     // Compute the smallest right singular vector of the constraint matrix
 
-    #if EIGEN_MAJOR_VERSION >= 4
-    Eigen::BDCSVD<Eigen::MatrixXT,Eigen::ComputeThinU | Eigen::ComputeThinV> svd(constraintMatrix);
-    #else
+#if EIGEN_MAJOR_VERSION >= 4 && EIGEN_MINOR_VERSION > 90
+    Eigen::BDCSVD<Eigen::MatrixXT, Eigen::ComputeThinU | Eigen::ComputeThinV> svd(constraintMatrix);
+#else
     Eigen::BDCSVD<Eigen::MatrixXT> svd(constraintMatrix, Eigen::ComputeThinU | Eigen::ComputeThinV);
-    #endif
+#endif
     Eigen::Matrix<ftype, 6, 1> bVector = svd.matrixV().block<6, 1>(0, 5);
 
     // assert(svd.singularValues()(5) > 1e-6);
